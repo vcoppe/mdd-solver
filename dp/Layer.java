@@ -1,52 +1,83 @@
 package dp;
 
 import core.Problem;
+import core.Variable;
 import heuristics.VariableSelector;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+/*
+ * Represents a layer of the MDD
+ */
 public class Layer {
 	
-	List<State> states;
+	Map<StateRepresentation, State> states;
 	Problem problem;
 	VariableSelector variableSelector;
 	
 	public Layer(Problem problem, VariableSelector variableSelector) {
-		this.states = new ArrayList<State>();
+		this.states = new HashMap<StateRepresentation, State>();
 		this.problem = problem;
 		this.variableSelector = variableSelector;
 	}
 	
 	public Layer(State state, VariableSelector variableSelector, Problem problem) {
-		this.states = new ArrayList<State>();
-		this.states.add(state);
+		this.states = new HashMap<StateRepresentation, State>();
+		this.states.put(state.stateRepresentation(), state);
 		this.problem = problem;
 		this.variableSelector = variableSelector;
 	}
 	
-	public Layer(List<State> states, VariableSelector variableSelector, Problem problem) {
+	public Layer(Map<StateRepresentation, State> states, VariableSelector variableSelector, Problem problem) {
 		this.states = states;
 		this.problem = problem;
 		this.variableSelector = variableSelector;
 	}
 	
 	public void addState(State state) {
-		this.states.add(state);
+		if(this.states.containsKey(state.stateRepresentation())) {
+			this.states.get(state.stateRepresentation()).update(state);
+		} else {
+			this.states.put(state.stateRepresentation(), state);
+		}
 	}
 	
-	public void addStates(List<State> states) {
+	public void addStates(Set<State> states) {
 		for(State state : states) {
-			this.states.add(state);
+			if(this.states.containsKey(state.stateRepresentation())) {
+				this.states.get(state.stateRepresentation()).update(state);
+			} else {
+				this.states.put(state.stateRepresentation(), state);
+			}
+		}
+	}
+	
+	public void removeStates(Set<State> states) {
+		for(State state : states) {
+			if(this.states.containsKey(state.stateRepresentation())) {
+				this.states.remove(state.stateRepresentation());
+			}
 		}
 	}
 	
 	public Layer nextLayer() {
 		Layer next = new Layer(this.problem, this.variableSelector);
-		for(State state : this.states) {
-			next.addStates(this.problem.successors(state, this.variableSelector.select(state.variables())));
+		Variable nextVar = null;
+		for(State state : this.states.values()) {
+			if(nextVar == null) {
+				nextVar = this.variableSelector.select(state.variables());
+			}
+			next.addStates(this.problem.successors(state, nextVar));
 		}
+		
 		return next;
+	}
+	
+	public Set<State> states() {
+		return new HashSet<State>(this.states.values());
 	}
 	
 	public int width() {
@@ -54,12 +85,8 @@ public class Layer {
 	}
 	
 	public double value() {
-		if(this.width() == 0) {
-			return Double.NaN;
-		}
-		
 		double val = Double.MIN_VALUE;
-		for(State state : this.states) {
+		for(State state : this.states.values()) {
 			val = Math.max(val, state.value());
 		}
 		return val;

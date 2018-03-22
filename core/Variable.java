@@ -5,6 +5,9 @@ import utils.InconsistencyException;
 import java.util.HashSet;
 import java.util.Set;
 
+/*
+ * Represents a variable that can take integer values
+ */
 public class Variable {
 	
 	int id;
