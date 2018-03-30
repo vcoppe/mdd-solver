@@ -4,6 +4,7 @@ import heuristics.DeleteSelector;
 import heuristics.MergeSelector;
 import heuristics.VariableSelector;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import core.Problem;
@@ -18,8 +19,9 @@ import core.Problem;
 public class DP {
 	
 	int nVariables;
-	Layer [] layers;
+	ArrayList<Layer> layers;
 	
+	Layer root;
 	Problem problem;
 	MergeSelector mergeSelector;
 	DeleteSelector deleteSelector;
@@ -27,39 +29,43 @@ public class DP {
 	public DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
 		this.problem = problem;
 		this.nVariables = problem.nVariables();
-		this.layers = new Layer[this.nVariables+1];
-		this.layers[0] = new Layer(problem.root(), variableSelector, problem);
+		this.layers = new ArrayList<Layer>();
+		this.root = new Layer(problem, variableSelector, problem.root(), 0);
 		this.mergeSelector = mergeSelector;
 		this.deleteSelector = deleteSelector;
 	}
 	
 	public double solveRestricted(int width) {
-		for(int i = 0; i < nVariables; i++) {
-			while(this.layers[i].width() > width) {
-				Set<State> toRemove = this.deleteSelector.select(this.layers[i]);
-				this.layers[i].removeStates(toRemove);
+		this.layers.clear();
+		this.layers.add(root);
+		Layer lastLayer = root;
+		do {
+			while(lastLayer.width() > width) {
+				Set<State> toRemove = this.deleteSelector.select(lastLayer);
+				lastLayer.removeStates(toRemove);
 			}
-			// System.out.println("Layer " + i + " : size = " + this.layers[i].width());
-			
-			this.layers[i+1] = this.layers[i].nextLayer();
-			// System.out.println("Layer " + (i+1) + " : size = " + this.layers[i+1].width());
-		}
-		return this.layers[nVariables].value();
+			lastLayer = lastLayer.nextLayer();
+			this.layers.add(lastLayer);
+		} while(!lastLayer.isLast());
+		
+		return lastLayer.value();
 	}
 	
 	public double solveRelaxed(int width) {
-		for(int i = 0; i < nVariables; i++) {
-			while(this.layers[i].width() > width) {
-				Set<State> toMerge = this.mergeSelector.select(this.layers[i]);
-				this.layers[i].removeStates(toMerge);
-				this.layers[i].addState(this.problem.merge(toMerge));
+		this.layers.clear();
+		this.layers.add(root);
+		Layer lastLayer = root;
+		do {
+			while(lastLayer.width() > width) {
+				Set<State> toMerge = this.mergeSelector.select(lastLayer);
+				lastLayer.removeStates(toMerge);
+				lastLayer.addState(this.problem.merge(toMerge));
 			}
-			// System.out.println("Layer " + i + " : size = " + this.layers[i].width());
-			
-			this.layers[i+1] = this.layers[i].nextLayer();
-			// System.out.println("Layer " + (i+1) + " : size = " + this.layers[i+1].width());
-		}
-		return this.layers[nVariables].value();
+			lastLayer = lastLayer.nextLayer();
+			this.layers.add(lastLayer);
+		} while(!lastLayer.isLast());
+		
+		return lastLayer.value();
 	}
 	
 	public double solveExact() {

@@ -14,6 +14,12 @@ public interface Problem {
 	
 	int nVariables();
 	
+	/*
+	 * Given a state and a variable, returns the list of states reached after having assigned
+	 * the variable to every possible value.
+	 * Should transmit the cost, the exact property, the variables and assign a valid StateRepresentation
+	 * to the successors.
+	 */
 	Set<State> successors(State s, Variable var);
 
 	State merge(Set<State> states);

@@ -57,7 +57,7 @@ public class Variable {
 		this.domain.clear();
 		this.domain.add(value);
 		
-		// System.out.println(">>> " + value + " assigned to variable " + this.id);
+		//System.out.println(">>> " + value + " assigned to variable " + this.id);
 	}
 	
 	public boolean contains(int value) {
