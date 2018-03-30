@@ -18,57 +18,97 @@ import core.Problem;
  */
 public class DP {
 	
-	int nVariables;
-	ArrayList<Layer> layers;
-	
-	Layer root;
-	Problem problem;
-	MergeSelector mergeSelector;
-	DeleteSelector deleteSelector;
+	private Layer root;
+	private Layer lastExactLayer;
+	private boolean exact;
+	private ArrayList<Layer> layers;
+	private Problem problem;
+	private MergeSelector mergeSelector;
+	private DeleteSelector deleteSelector;
+	private VariableSelector variableSelector;
 	
 	public DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
-		this.problem = problem;
-		this.nVariables = problem.nVariables();
-		this.layers = new ArrayList<Layer>();
-		this.root = new Layer(problem, variableSelector, problem.root(), 0);
-		this.mergeSelector = mergeSelector;
-		this.deleteSelector = deleteSelector;
+		this(problem, mergeSelector, deleteSelector, variableSelector, problem.root());
 	}
 	
-	public double solveRestricted(int width) {
+	public DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
+		this.problem = problem;
+		this.layers = new ArrayList<Layer>();
+		this.root = new Layer(problem, variableSelector, initialState, initialState.layerNumber());
+		this.exact = true;
+		this.lastExactLayer = null;
+		this.mergeSelector = mergeSelector;
+		this.deleteSelector = deleteSelector;
+		this.variableSelector = variableSelector;
+	}
+	
+	public void setInitialState(State initialState) {
+		this.root = new Layer(this.problem, this.variableSelector, initialState, initialState.layerNumber());
+		this.lastExactLayer = null;
+		this.exact = true;
+	}
+	
+	public State solveRestricted(int width) {
 		this.layers.clear();
 		this.layers.add(root);
 		Layer lastLayer = root;
-		do {
+		while(!lastLayer.isFinal()) {
+			lastLayer = lastLayer.nextLayer();
+
 			while(lastLayer.width() > width) {
 				Set<State> toRemove = this.deleteSelector.select(lastLayer);
 				lastLayer.removeStates(toRemove);
 			}
-			lastLayer = lastLayer.nextLayer();
+			
 			this.layers.add(lastLayer);
-		} while(!lastLayer.isLast());
+			
+			if(lastLayer.isExact()) {
+				this.lastExactLayer = lastLayer;
+			} else {
+				this.exact = false;
+			}
+		}
 		
-		return lastLayer.value();
+		return lastLayer.best();
 	}
 	
-	public double solveRelaxed(int width) {
+	public State solveRelaxed(int width) {
 		this.layers.clear();
 		this.layers.add(root);
 		Layer lastLayer = root;
-		do {
+		
+		while(!lastLayer.isFinal()) {
+			lastLayer = lastLayer.nextLayer();
+			
 			while(lastLayer.width() > width) {
 				Set<State> toMerge = this.mergeSelector.select(lastLayer);
 				lastLayer.removeStates(toMerge);
-				lastLayer.addState(this.problem.merge(toMerge));
+				State mergedState = this.problem.merge(toMerge);
+				mergedState.setExact(false);
+				lastLayer.addState(mergedState);
 			}
-			lastLayer = lastLayer.nextLayer();
+			
 			this.layers.add(lastLayer);
-		} while(!lastLayer.isLast());
+			
+			if(lastLayer.isExact()) {
+				this.lastExactLayer = lastLayer;
+			} else {
+				this.exact = false;
+			}
+		}
 		
-		return lastLayer.value();
+		return lastLayer.best();
 	}
 	
-	public double solveExact() {
+	public Layer lastExactLayer() {
+		return this.lastExactLayer;
+	}
+	
+	public boolean isExact() {
+		return this.exact;
+	}
+	
+	public State solveExact() {
 		return this.solveRelaxed(Integer.MAX_VALUE);
 	}
 }

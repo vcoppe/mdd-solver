@@ -10,8 +10,8 @@ import java.util.Set;
  */
 public class Variable {
 	
-	int id;
-	Set<Integer> domain;
+	private int id;
+	private Set<Integer> domain;
 	
 	public Variable(int id, int min, int max) {
 		this.id = id;
@@ -41,12 +41,27 @@ public class Variable {
 		return this.domainSize() == 1;
 	}
 	
+	public Set<Integer> domain() {
+		return this.domain;
+	}
+	
 	public int domainSize() {
 		return this.domain.size();
 	}
 	
 	public int id() {
 		return this.id;
+	}
+	
+	public int value() {
+		if(!this.isAssigned()) {
+			return -1;
+		}
+		
+		for(int v : this.domain) {
+			return v;
+		}
+		return -1;
 	}
 	
 	public void assign(int value) throws InconsistencyException {

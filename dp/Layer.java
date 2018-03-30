@@ -14,11 +14,11 @@ import java.util.Set;
  */
 public class Layer {
 	
-	Map<StateRepresentation, State> states;
-	Problem problem;
-	VariableSelector variableSelector;
-	boolean exact;
-	int number;
+	private Map<StateRepresentation, State> states;
+	private Problem problem;
+	private VariableSelector variableSelector;
+	private boolean exact;
+	private int number;
 	
 	public Layer(Problem problem, VariableSelector variableSelector, int number) {
 		this.states = new HashMap<StateRepresentation, State>();
@@ -37,16 +37,9 @@ public class Layer {
 		this.number = number;
 	}
 	
-	public Layer(Problem problem, VariableSelector variableSelector, Map<StateRepresentation, State> states, int number) {
-		this.states = states;
-		this.problem = problem;
-		this.variableSelector = variableSelector;
-		this.exact = true;
-		this.number = number;
-	}
-	
 	public void addState(State state) {
 		this.exact &= state.isExact();
+		state.setLayerNumber(this.number);
 		if(this.states.containsKey(state.stateRepresentation())) {
 			this.states.get(state.stateRepresentation()).update(state);
 		} else {
@@ -57,6 +50,7 @@ public class Layer {
 	public void addStates(Set<State> states) {
 		for(State state : states) {
 			this.exact &= state.isExact();
+			state.setLayerNumber(this.number);
 			if(this.states.containsKey(state.stateRepresentation())) {
 				this.states.get(state.stateRepresentation()).update(state);
 			} else {
@@ -64,17 +58,14 @@ public class Layer {
 			}
 		}
 	}
-	
-	/*
-	 * Should only be use to solve the restricted case so no need
-	 * to restore an eventually lost exact property.
-	 */
+
 	public void removeStates(Set<State> states) {
 		for(State state : states) {
 			if(this.states.containsKey(state.stateRepresentation())) {
 				this.states.remove(state.stateRepresentation());
 			}
 		}
+		this.exact = false;
 	}
 	
 	public Layer nextLayer() {
@@ -86,6 +77,7 @@ public class Layer {
 			}
 			next.addStates(this.problem.successors(state, nextVar));
 		}
+		next.setExact(this.exact);
 		
 		return next;
 	}
@@ -98,22 +90,32 @@ public class Layer {
 		return this.states.size();
 	}
 	
-	public double value() {
-		double val = Double.MIN_VALUE;
+	public State best() {
+		State best = null;
 		for(State state : this.states.values()) {
-			val = Math.max(val, state.value());
+			if(best == null || state.value() > best.value()) {
+				best = state;
+			}
 		}
-		return val;
+		return best;
 	}
 	
 	public boolean isExact() {
 		return this.exact;
 	}
 	
-	public boolean isLast() {
+	public void setExact(boolean exact) {
+		this.exact = exact;
+	}
+	
+	public boolean isFinal() {
 		for(State state : this.states.values()) {
-			return state.nVariables() == this.number;
+			return state.isFinal();
 		}
 		return false;
+	}
+	
+	public int number() {
+		return this.number;
 	}
 }

@@ -10,6 +10,7 @@ public class State {
 	
 	private double value;
 	private boolean exact;
+	private int layerNumber;
 	private StateRepresentation stateRepresentation;
 	
 	private int nVariables;
@@ -23,12 +24,17 @@ public class State {
 		this.stateRepresentation = stateRepresentation;
 		this.value = value;
 		this.exact = exact;
+		this.layerNumber = 0;
 		this.nVariables = variables.length;
 		this.variables = new Variable[this.nVariables];
 		
 		for (int i = 0; i < this.nVariables; i++) {
 			this.variables[i] = variables[i].copy();
 		}
+	}
+	
+	public State copy() {
+		return new State(this.stateRepresentation, this.variables, this.value, this.exact);
 	}
 	
 	public Variable [] variables() {
@@ -39,26 +45,38 @@ public class State {
 		this.variables[id].assign(value);
 	}
 	
+	public void update(State other) {
+		if(this.value < other.value()) {
+			for (int i = 0; i < this.nVariables; i++) {
+				this.variables[i] = other.variables[i].copy();
+			}
+			this.value = other.value();
+		}
+		this.exact &= other.exact;
+	}
+	
 	public double value() {
 		return this.value;
+	}
+	
+	public int layerNumber() {
+		return this.layerNumber;
 	}
 	
 	public void setExact(boolean exact) {
 		this.exact = exact;
 	}
 	
+	public void setLayerNumber(int layerNumber) {
+		this.layerNumber = layerNumber;
+	}
+	
 	public boolean isExact() {
 		return this.exact;
 	}
 	
-	public void update(State other) {
-		if(this.value < other.value()) {
-			for (int i = 0; i < this.nVariables; i++) {
-				this.variables[i] = variables[i].copy();
-			}
-			this.value = other.value();
-		}
-		this.exact &= other.exact;
+	public boolean isFinal() {
+		return this.layerNumber == this.nVariables;
 	}
 	
 	public StateRepresentation stateRepresentation() {
