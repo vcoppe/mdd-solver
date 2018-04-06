@@ -9,8 +9,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/*
- * Represents a layer of the MDD
+/**
+ * Represents a layer of the MDD.
+ * 
+ * @author Vianney Coppé
  */
 public class Layer {
 	
@@ -20,6 +22,12 @@ public class Layer {
 	private boolean exact;
 	private int number;
 	
+	/**
+	 * Returns an empty layer of the problem.
+	 * @param problem the implementation of a problem
+	 * @param variableSelector heuristic to select the next variable to be assigned
+	 * @param number the number of the layer
+	 */
 	public Layer(Problem problem, VariableSelector variableSelector, int number) {
 		this.states = new HashMap<StateRepresentation, State>();
 		this.problem = problem;
@@ -28,6 +36,13 @@ public class Layer {
 		this.number = number;
 	}
 	
+	/**
+	 * Returns a layer containing the given state.
+	 * @param problem the implementation of a problem
+	 * @param variableSelector heuristic to select the next variable to be assigned
+	 * @param state the state to be contained
+	 * @param number the number of the layer
+	 */
 	public Layer(Problem problem, VariableSelector variableSelector, State state, int number) {
 		this.states = new HashMap<StateRepresentation, State>();
 		this.states.put(state.stateRepresentation(), state);
@@ -37,6 +52,10 @@ public class Layer {
 		this.number = number;
 	}
 	
+	/**
+	 * Adds states to the layer or updates an existing state in the layer with the same {@code StateRepresentation}.
+	 * @param state the state to be added
+	 */
 	public void addState(State state) {
 		this.exact &= state.isExact();
 		state.setLayerNumber(this.number);
@@ -47,6 +66,10 @@ public class Layer {
 		}
 	}
 	
+	/**
+	 * Adds a state to the layer or updates existing states in the layer with the same {@code StateRepresentation}.
+	 * @param states a {@code Set} of {@code State} objects to be added
+	 */
 	public void addStates(Set<State> states) {
 		for(State state : states) {
 			this.exact &= state.isExact();
@@ -59,6 +82,10 @@ public class Layer {
 		}
 	}
 
+	/**
+	 * Remove the states from the layer.
+	 * @param states the states to be removed
+	 */
 	public void removeStates(Set<State> states) {
 		for(State state : states) {
 			if(this.states.containsKey(state.stateRepresentation())) {
@@ -68,6 +95,12 @@ public class Layer {
 		this.exact = false;
 	}
 	
+	/**
+	 * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
+	 * to assign and the {@code problem} implementation to provide the successors of all the states of
+	 * the layer.
+	 * @return the next layer of the MDD
+	 */
 	public Layer nextLayer() {
 		Layer next = new Layer(this.problem, this.variableSelector, this.number+1);
 		Variable nextVar = null;
@@ -82,14 +115,26 @@ public class Layer {
 		return next;
 	}
 	
+	/**
+	 * Returns a {@code Set} of all states contained in the layer.
+	 * @return a {@code Set} with all the states
+	 */
 	public Set<State> states() {
 		return new HashSet<State>(this.states.values());
 	}
 	
+	/**
+	 * Returns the width of the layer.
+	 * @return the number of states in the layer
+	 */
 	public int width() {
 		return this.states.size();
 	}
 	
+	/**
+	 * Returns the best state of the layer.
+	 * @return a {@code State} object representing the best state of the layer
+	 */
 	public State best() {
 		State best = null;
 		for(State state : this.states.values()) {
@@ -100,14 +145,26 @@ public class Layer {
 		return best;
 	}
 	
+	/**
+	 * Returns a {@code boolean} telling if the layer is equal to the corresponding complete MDD layer.
+	 * @return {@code true} <==> the layer is equal to the corresponding complete MDD layer
+	 */
 	public boolean isExact() {
 		return this.exact;
 	}
 	
+	/**
+	 * Help function to set the exact property of the layer.
+	 * @param exact a {@code boolean} telling if the layer is exact or not
+	 */
 	public void setExact(boolean exact) {
 		this.exact = exact;
 	}
 	
+	/**
+	 * Returns a {@code boolean} telling if the layer is the last one i. e. all the variables are assigned.
+	 * @return {@code true} <==> the layer is the final one
+	 */
 	public boolean isFinal() {
 		for(State state : this.states.values()) {
 			return state.isFinal();
@@ -115,6 +172,10 @@ public class Layer {
 		return false;
 	}
 	
+	/**
+	 * Help function to get the number of the layer in the MDD.
+	 * @return the number of the layer
+	 */
 	public int number() {
 		return this.number;
 	}

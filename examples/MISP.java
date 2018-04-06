@@ -3,7 +3,6 @@ package examples;
 import core.Problem;
 import core.Solver;
 import core.Variable;
-import dp.DP;
 import dp.State;
 import dp.StateRepresentation;
 import utils.InconsistencyException;
@@ -143,11 +142,6 @@ public class MISP implements Problem {
 		g[3].add(4); g[4].add(3);
 		
 		Problem p = new MISP(weights, g);
-//		DP dp = new DP(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-//		
-//		System.out.println("Exact solution : " + dp.solveExact());
-//		System.out.println("Lower bound : " + dp.solveRestricted(2));
-//		System.out.println("Upper bound : " + dp.solveRelaxed(1));
 		
 		Solver solver = new Solver(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
 		solver.solve();

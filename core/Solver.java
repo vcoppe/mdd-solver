@@ -9,18 +9,35 @@ import heuristics.DeleteSelector;
 import heuristics.MergeSelector;
 import heuristics.VariableSelector;
 
+/**
+ * Implementation of the branch and bound algorithm for MDDs.
+ * 
+ * @author Vianney Coppé
+ */
 public class Solver {
 	
 	private Problem problem;
 	private DP dp;
 	private int width = 2; // should be greater than the domain size of the variables
 	
+	/**
+	 * Constructor of the solver : allows the user to choose heuristics. 
+	 * @param problem the implementation of a problem
+	 * @param mergeSelector heuristic to select nodes to merge (to build relaxed MDDs)
+	 * @param deleteSelector heuristic to select nodes to delete (to build restricted MDDs)
+	 * @param variableSelector heuristic to select the next variable to be assigned
+	 * @return the {@code Solver} object ready to solve the problem
+	 */
 	public Solver(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
 		this.problem = problem;
 		this.dp = new DP(problem, mergeSelector, deleteSelector, variableSelector);
 	}
 	
-	public void solve() {
+	/**
+	 * Solves the given problem with the given heuristics and returns the optimal solution if it exists.
+	 * @return an object {@code State} containing the optimal value and assignment
+	 */
+	public State solve() {
 		State best = null;
 		double lowerBound = Double.MIN_VALUE;
 		
@@ -30,26 +47,15 @@ public class Solver {
 		while(!q.isEmpty()) {
 			State state = q.poll();		
 
-			System.out.println("Solving restricted");
 			this.dp.setInitialState(state);
 			State result = this.dp.solveRestricted(this.width);
 
 			if(best == null || result.value() > best.value()) {
 				best = result.copy();
 				System.out.println("Improved solution : " + best.value());
-				for(Variable var : best.variables()) {
-					System.out.print(var.value() + " ");
-				}
-				System.out.println();
-				System.out.println("Improved solution : " + result.value());
-				for(Variable var : result.variables()) {
-					System.out.print(var.value() + " ");
-				}
-				System.out.println();
 			}
 
 			if(!this.dp.isExact()) {
-				System.out.println("Solving relaxed");
 				this.dp.setInitialState(state);
 				result = this.dp.solveRelaxed(this.width);
 
@@ -63,11 +69,14 @@ public class Solver {
 			System.out.println("No solution found");
 		} else {
 			System.out.println("Optimal solution : " + best.value());
+			System.out.print("Assignment       : ");
 			for(Variable var : best.variables()) {
 				System.out.print(var.value() + " ");
 			}
 			System.out.println();
 		}
+		
+		return best;
 	}
 	
 }
