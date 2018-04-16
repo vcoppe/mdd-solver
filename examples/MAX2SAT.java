@@ -23,6 +23,16 @@ public class MAX2SAT implements Problem {
 	int nVariables;
 	State root;
 	
+	/**
+	 * Returns the representation of the MAX2SAT problem.
+	 * @param g an array of maps where {@code g[i].get(j)} contains an array with the weight
+	 * of the clauses with the variables {@code i} and {@code j} with
+	 * 0 = 00 -> FF
+	 * 1 = 01 -> FT
+	 * 2 = 10 -> TF
+	 * 3 = 11 -> TT
+	 * where the first bit corresponds to the smallest variable id.
+	 */
 	public MAX2SAT(Map<Integer, double[]>[] g) {
 		this.nVariables = g.length;
 		this.g = g;
