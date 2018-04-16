@@ -5,6 +5,9 @@ import core.Solver;
 import core.Variable;
 import dp.State;
 import dp.StateRepresentation;
+import heuristics.SimpleDeleteSelector;
+import heuristics.SimpleMergeSelector;
+import heuristics.SimpleVariableSelector;
 import utils.InconsistencyException;
 
 import java.util.HashSet;
@@ -41,6 +44,14 @@ public class MISP implements Problem {
 		}
 
 		this.root = new State(new MISPState(this.nVariables), variables, 0);
+	}
+
+	public State root() {
+		return this.root;
+	}
+
+	public int nVariables() {
+		return this.nVariables;
 	}
 
 	public Set<State> successors(State s, Variable var) {
@@ -96,14 +107,6 @@ public class MISP implements Problem {
 		}
 		
 		return new State(mispState, variables, maxValue);
-	}
-
-	public State root() {
-		return this.root;
-	}
-
-	public int nVariables() {
-		return this.nVariables;
 	}
 	
 	class MISPState implements StateRepresentation {

@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * Enables solving new problems by implementing the successors and merge functions.
- * The interface StateRepresentation should also be implemented.
+ * The interface {@code StateRepresentation} should also be implemented.
  * 
  * @author Vianney Coppé
  */

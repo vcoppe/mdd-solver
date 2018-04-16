@@ -16,25 +16,14 @@ import heuristics.SimpleMergeSelector;
 import heuristics.SimpleVariableSelector;
 import utils.InconsistencyException;
 
-/**
- * Implementation of the Maximum Cut Problem.
- * 
- * @author Vianney Coppé
- */
-public class MCP implements Problem {
+public class MAX2SAT implements Problem {
 	
-	Map<Integer, Double> [] g;
+	Map<Integer, double[]>[] g;
 	
 	int nVariables;
 	State root;
 	
-	/**
-	 * Returns the representation of the MCP problem.
-	 * @param g the adjacency lists in the format of a map, where 
-	 * {@code g[i]} contains the key {@code j} if the vertices{@code i} and {@code j} 
-	 * are connected with an edge and {@code g[i].get(j)} is the weight of this edge
-	 */
-	public MCP(Map<Integer, Double> [] g) {
+	public MAX2SAT(Map<Integer, double[]>[] g) {
 		this.nVariables = g.length;
 		this.g = g;
 		
@@ -43,29 +32,7 @@ public class MCP implements Problem {
 			variables[i] = new Variable(i, 2);
 		}
 		
-		try {
-			variables[0].assign(0); // arbitrarily assign first vertex to one side
-		} catch (InconsistencyException e) {
-			System.out.println("Should not happen");
-		}
-		
-		double rootValue = 0;
-		for(Map<Integer, Double> adj : g) {
-			for(double e : adj.values()) {
-				rootValue += Math.min(0, e);
-			}
-		}
-		rootValue /= 2; // edges were counted twice
-		
-		double [] benefits0 = new double[this.nVariables];
-		for(int i = 1; i < this.nVariables; i++) {
-			if(g[0].containsKey(i)) {
-				benefits0[i] += g[0].get(i);
-			}
-		}
-		
-		this.root = new State(new MCPState(benefits0), variables, rootValue);
-		this.root.setLayerNumber(1); // already 1 variable assigned
+		this.root = new State(new MAX2SATState(this.nVariables), variables, 0);
 	}
 
 	public State root() {
@@ -81,25 +48,33 @@ public class MCP implements Problem {
 		Set<State> ret = new HashSet<State>();
 		
 		Variable [] variables = s.variables();
-		MCPState mcpState = ((MCPState) s.stateRepresentation());
+		MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation());
 		
 		// assigning var to 0
 		double [] benefits0 = new double[this.nVariables];
-		double value0 = s.value() + Math.max(0, -mcpState.benefits[u]);
+		double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
 		
 		for(int i = 0; i < this.nVariables; i++) {
 			if(i != u && !variables[i].isAssigned()) {
-				benefits0[i] = mcpState.benefits[i];
+				benefits0[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
-					if(mcpState.benefits[i] * g[u].get(i) <= 0) {
-						value0 += Math.min(Math.abs(mcpState.benefits[i]), Math.abs(g[u].get(i)));
+					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
+					if(u > i) {
+						numTF = 1;
+						numFT = 2;
 					}
-					benefits0[i] += g[u].get(i);
+					
+					value0 += g[u].get(i)[numFF] + g[u].get(i)[numFT] 
+							+ Math.min(
+									Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numTT],
+									Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numTF]
+									);
+					benefits0[i] += g[u].get(i)[numTT] - g[u].get(i)[numTF];
 				}
 			}
 		}
 		
-		State state0 = new State(new MCPState(benefits0), variables, value0);
+		State state0 = new State(new MAX2SATState(benefits0), variables, value0);
 		
 		try {
 			state0.assign(u, 0);
@@ -111,21 +86,29 @@ public class MCP implements Problem {
 		
 		// assigning var to 1
 		double [] benefits1 = new double[this.nVariables];
-		double value1 = s.value() + Math.max(0, mcpState.benefits[u]);
+		double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
 		
 		for(int i = 0; i < this.nVariables; i++) {
 			if(i != u && !variables[i].isAssigned()) {
-				benefits1[i] = mcpState.benefits[i];
+				benefits1[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
-					if(mcpState.benefits[i] * g[u].get(i) >= 0) {
-						value1 += Math.min(Math.abs(mcpState.benefits[i]), Math.abs(g[u].get(i)));
+					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
+					if(u > i) {
+						numTF = 1;
+						numFT = 2;
 					}
-					benefits1[i] -= g[u].get(i);
+
+					value1 += g[u].get(i)[numTF] + g[u].get(i)[numTT] 
+							+ Math.min(
+									Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numFT],
+									Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numFF]
+									);
+					benefits1[i] += g[u].get(i)[numFT] - g[u].get(i)[numFF];
 				}
 			}
 		}
 		
-		State state1 = new State(new MCPState(benefits1), variables, value1);
+		State state1 = new State(new MAX2SATState(benefits1), variables, value1);
 		
 		try {
 			state1.assign(u, 1);
@@ -143,14 +126,14 @@ public class MCP implements Problem {
 		double maxValue = Double.MIN_VALUE;
 		double [] benefits = new double[nVariables];
 		double [] newValues = new double[states.size()];
-		MCPState [] statesRep = new MCPState[states.size()];
+		MAX2SATState [] statesRep = new MAX2SATState[states.size()];
 		
 		int i = 0;
 		for(State state : states) {
 			if(variables == null) {
 				variables = state.variables();
 			}
-			statesRep[i++] = (MCPState) state.stateRepresentation();
+			statesRep[i++] = (MAX2SATState) state.stateRepresentation();
 			maxValue = Math.max(maxValue, state.value());
 		}
 		
@@ -159,7 +142,7 @@ public class MCP implements Problem {
 			double minValue = Double.MAX_VALUE;
 			boolean same = true;
 			
-			for(MCPState state : statesRep) {
+			for(MAX2SATState state : statesRep) {
 				minValue = Math.min(minValue, Math.abs(state.benefits[i]));
 				if(sign == 0 && state.benefits[i] != 0) {
 					sign = state.benefits[i]/state.benefits[i]; // +/- 1
@@ -178,18 +161,18 @@ public class MCP implements Problem {
 			}
 		}
 		
-		return new State(new MCPState(benefits), variables, maxValue);
+		return new State(new MAX2SATState(benefits), variables, maxValue);
 	}
 	
-	class MCPState implements StateRepresentation {
+	class MAX2SATState implements StateRepresentation {
 		
 		double [] benefits ;
 		
-		public MCPState(int size) {
+		public MAX2SATState(int size) {
 			this.benefits = new double[size];
 		}
 		
-		public MCPState(double [] benefits) {
+		public MAX2SATState(double [] benefits) {
 			this.benefits = benefits;
 		}
 		
@@ -198,31 +181,41 @@ public class MCP implements Problem {
 		}
 		
 		public boolean equals(Object o) {
-			if(!(o instanceof MCPState)) {
+			if(!(o instanceof MAX2SATState)) {
 				return false;
 			}
 			
-			MCPState other = (MCPState) o;
+			MAX2SATState other = (MAX2SATState) o;
 			return Arrays.equals(benefits, other.benefits);
 		}
 	}
 	
 	public static void main(String[] args) {
 		@SuppressWarnings("unchecked")
-		Map<Integer, Double> [] g = new Map[4];
+		Map<Integer, double[]> [] g = new Map[3];
 		for(int i = 0; i < g.length; i++) {
-			g[i] = new HashMap<Integer, Double>();
+			g[i] = new HashMap<Integer, double[]>();
 		}
 		
-		Edge [] edges = {new Edge(0, 1, 1), new Edge(0, 2, 2), new Edge(0, 3, -2),
-				new Edge(1, 2, 3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
+		Clause [] clauses = {
+				new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
+				new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2), 
+				new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
+				};
 		
-		for(Edge e : edges) {
-			g[e.u].put(e.v, e.w);
-			g[e.v].put(e.u, e.w);
+		for(Clause clause : clauses) {
+			if(!g[clause.u].containsKey(clause.v)) {
+				g[clause.u].put(clause.v, new double[4]);
+			}
+			g[clause.u].get(clause.v)[clause.num] = clause.w;
+
+			if(!g[clause.v].containsKey(clause.u)) {
+				g[clause.v].put(clause.u, new double[4]);
+			}
+			g[clause.v].get(clause.u)[clause.num] = clause.w;
 		}
 		
-		Problem p = new MCP(g);
+		Problem p = new MAX2SAT(g);
 		
 		Solver solver = new Solver(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
 		solver.solve();
@@ -230,15 +223,32 @@ public class MCP implements Problem {
 
 }
 
-class Edge {
+class Clause {
 	
 	int u, v;
+	int num; 	// 0 = 00 -> FF
+				// 1 = 01 -> FT
+				// 2 = 10 -> TF
+				// 3 = 11 -> TT
 	double w;
 	
-	public Edge(int u, int v, double w) {
+	// two variables u, v and tu, tv their truth values
+	// true <==> ((u == tu) || (v == tv))
+	public Clause(int u, int v, int tu, int tv, double w) {
+		if(u > v) {
+			int tmp = u;
+			u = v;
+			v = tmp;
+			
+			tmp = tu;
+			tu = tv;
+			tv = tmp;
+		}
+		
 		this.u = u;
 		this.v = v;
 		this.w = w;
+		
+		this.num = (tu << 1)|tv;
 	}
-	
 }

@@ -1,7 +1,6 @@
-package examples;
+package heuristics;
 
 import core.Variable;
-import heuristics.VariableSelector;
 
 public class SimpleVariableSelector implements VariableSelector {
 

@@ -1,4 +1,4 @@
-package examples;
+package heuristics;
 
 import dp.StateRepresentation;
 
