@@ -12,8 +12,10 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.BitSet;
 
-/*
- * Implementation of the Maximum Independent Set Problem
+/**
+ * Implementation of the Maximum Independent Set Problem.
+ * 
+ * @author Vianney Coppé
  */
 public class MISP implements Problem {
 	
@@ -23,6 +25,11 @@ public class MISP implements Problem {
 	int nVariables;
 	State root;
 	
+	/**
+	 * Creates the representation of the MISP problem.
+	 * @param weights the weights of the vertices
+	 * @param g the adjacency lists
+	 */
 	public MISP(int [] weights, LinkedList<Integer> [] g) {
 		this.nVariables = weights.length;
 		this.weights = weights;
@@ -51,7 +58,7 @@ public class MISP implements Problem {
 			System.err.println(e.getMessage());
 		}
 		
-		if(!mispState.bs.get(u)) {
+		if(!mispState.bs.get(u)) { 
 			return ret;
 		}
 		
@@ -75,7 +82,7 @@ public class MISP implements Problem {
 
 	public State merge(Set<State> states) {
 		Variable [] variables = null;
-		double maxValue = Integer.MIN_VALUE;
+		double maxValue = Double.MIN_VALUE;
 		MISPState mispState = null;
 		
 		for(State state : states) {

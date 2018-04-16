@@ -104,6 +104,7 @@ public class Layer {
 	public Layer nextLayer() {
 		Layer next = new Layer(this.problem, this.variableSelector, this.number+1);
 		Variable nextVar = null;
+		
 		for(State state : this.states.values()) {
 			if(nextVar == null) {
 				nextVar = this.variableSelector.select(state.variables());
