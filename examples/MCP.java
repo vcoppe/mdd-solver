@@ -20,12 +20,12 @@ import utils.InconsistencyException;
  */
 public class MCP implements Problem {
 	
-	Map<Integer, Edge> [] g;
+	Map<Integer, Double> [] g;
 	
 	int nVariables;
 	State root;
 	
-	public MCP(Map<Integer, Edge> [] g) {
+	public MCP(Map<Integer, Double> [] g) {
 		this.nVariables = g.length;
 		this.g = g;
 		
@@ -41,9 +41,9 @@ public class MCP implements Problem {
 		}
 		
 		double rootValue = 0;
-		for(Map<Integer, Edge> adj : g) {
-			for(Edge e : adj.values()) {
-				rootValue += Math.min(0, e.w);
+		for(Map<Integer, Double> adj : g) {
+			for(double e : adj.values()) {
+				rootValue += Math.min(0, e);
 			}
 		}
 		rootValue /= 2; // edges were counted twice
@@ -51,7 +51,7 @@ public class MCP implements Problem {
 		double [] benefits0 = new double[this.nVariables];
 		for(int i = 1; i < this.nVariables; i++) {
 			if(g[0].containsKey(i)) {
-				benefits0[i] += g[0].get(i).w;
+				benefits0[i] += g[0].get(i);
 			}
 		}
 		
@@ -82,10 +82,10 @@ public class MCP implements Problem {
 			if(i != u && !variables[i].isAssigned()) {
 				benefits0[i] = mcpState.benefits[i];
 				if(g[u].containsKey(i)) {
-					if(mcpState.benefits[i] * g[u].get(i).w <= 0) {
-						value0 += Math.min(Math.abs(mcpState.benefits[i]), Math.abs(g[u].get(i).w));
+					if(mcpState.benefits[i] * g[u].get(i) <= 0) {
+						value0 += Math.min(Math.abs(mcpState.benefits[i]), Math.abs(g[u].get(i)));
 					}
-					benefits0[i] += g[u].get(i).w;
+					benefits0[i] += g[u].get(i);
 				}
 			}
 		}
@@ -108,10 +108,10 @@ public class MCP implements Problem {
 			if(i != u && !variables[i].isAssigned()) {
 				benefits1[i] = mcpState.benefits[i];
 				if(g[u].containsKey(i)) {
-					if(mcpState.benefits[i] * g[u].get(i).w >= 0) {
-						value1 += Math.min(Math.abs(mcpState.benefits[i]), Math.abs(g[u].get(i).w));
+					if(mcpState.benefits[i] * g[u].get(i) >= 0) {
+						value1 += Math.min(Math.abs(mcpState.benefits[i]), Math.abs(g[u].get(i)));
 					}
-					benefits1[i] -= g[u].get(i).w;
+					benefits1[i] -= g[u].get(i);
 				}
 			}
 		}
@@ -199,17 +199,17 @@ public class MCP implements Problem {
 	
 	public static void main(String[] args) {
 		@SuppressWarnings("unchecked")
-		Map<Integer, Edge> [] g = new Map[4];
+		Map<Integer, Double> [] g = new Map[4];
 		for(int i = 0; i < g.length; i++) {
-			g[i] = new HashMap<Integer, Edge>();
+			g[i] = new HashMap<Integer, Double>();
 		}
 		
 		Edge [] edges = {new Edge(0, 1, 1), new Edge(0, 2, 2), new Edge(0, 3, -2),
 				new Edge(1, 2, 3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
 		
 		for(Edge e : edges) {
-			g[e.u].put(e.v, e);
-			g[e.v].put(e.u, e);
+			g[e.u].put(e.v, e.w);
+			g[e.v].put(e.u, e.w);
 		}
 		
 		Problem p = new MCP(g);
@@ -222,19 +222,13 @@ public class MCP implements Problem {
 
 class Edge {
 	
-	int u, v, w;
+	int u, v;
+	double w;
 	
-	public Edge(int u, int v, int w) {
+	public Edge(int u, int v, double w) {
 		this.u = u;
 		this.v = v;
 		this.w = w;
-	}
-	
-	public int to(int i) {
-		if(i == this.u) {
-			return this.v;
-		}
-		return this.u;
 	}
 	
 }
