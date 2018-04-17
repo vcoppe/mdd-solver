@@ -82,7 +82,7 @@ public class DP {
 			lastLayer = lastLayer.nextLayer();
 
 			while(lastLayer.width() > width) {
-				Set<State> toRemove = this.deleteSelector.select(lastLayer);
+				Set<State> toRemove = this.deleteSelector.select(lastLayer, width-lastLayer.width());
 				lastLayer.removeStates(toRemove);
 			}
 			
@@ -113,7 +113,7 @@ public class DP {
 			lastLayer = lastLayer.nextLayer();
 			
 			while(lastLayer.width() > width) {
-				Set<State> toMerge = this.mergeSelector.select(lastLayer);
+				Set<State> toMerge = this.mergeSelector.select(lastLayer, width-lastLayer.width()+1);
 				lastLayer.removeStates(toMerge);
 				State mergedState = this.problem.merge(toMerge);
 				mergedState.setExact(false);

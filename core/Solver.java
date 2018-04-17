@@ -1,6 +1,6 @@
 package core;
 
-import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 import dp.DP;
@@ -18,7 +18,6 @@ public class Solver {
 	
 	private Problem problem;
 	private DP dp;
-	private int width = 2; // should be greater than the domain size of the variables
 	
 	/**
 	 * Constructor of the solver : allows the user to choose heuristics. 
@@ -41,14 +40,15 @@ public class Solver {
 		State best = null;
 		double lowerBound = Double.MIN_VALUE;
 		
-		Queue<State> q = new LinkedList<State>();
+		Queue<State> q = new PriorityQueue<State>(); // nodes are popped starting with the one with least value
 		q.add(this.problem.root());
 		
 		while(!q.isEmpty()) {
 			State state = q.poll();		
 
 			this.dp.setInitialState(state);
-			State result = this.dp.solveRestricted(this.width);
+			State result = this.dp.solveRestricted(problem.nVariables()-state.layerNumber()); 	// the width of the DD is equal to the number
+																								// of variables not bound
 
 			if(best == null || result.value() > best.value()) {
 				best = result.copy();
@@ -57,7 +57,7 @@ public class Solver {
 
 			if(!this.dp.isExact()) {
 				this.dp.setInitialState(state);
-				result = this.dp.solveRelaxed(this.width);
+				result = this.dp.solveRelaxed(problem.nVariables()-state.layerNumber());
 
 				if(result.value() > lowerBound) {
 					q.addAll(this.dp.lastExactLayer().states());

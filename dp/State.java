@@ -8,7 +8,7 @@ import utils.InconsistencyException;
  * 
  * @author Vianney Coppé
  */
-public class State {
+public class State implements Comparable<State> {
 	
 	private double value;
 	private boolean exact;
@@ -149,4 +149,9 @@ public class State {
 	public int nVariables() {
 		return this.nVariables;
 	}
+
+	public int compareTo(State o) {
+		return Double.compare(this.value, o.value);
+	}
+
 }

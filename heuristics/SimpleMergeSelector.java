@@ -8,11 +8,11 @@ import dp.State;
 
 public class SimpleMergeSelector implements MergeSelector {
 
-	public Set<State> select(Layer layer) {
+	public Set<State> select(Layer layer, int number) {
 		Set<State> ret = new HashSet<State>();
 		for(State s : layer.states()) {
 			ret.add(s);
-			if(ret.size() > 1) break;
+			if(ret.size() == number) break;
 		}
 		return ret;
 	}
