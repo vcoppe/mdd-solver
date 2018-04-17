@@ -5,8 +5,8 @@ import core.Solver;
 import core.Variable;
 import dp.State;
 import dp.StateRepresentation;
-import heuristics.SimpleDeleteSelector;
-import heuristics.SimpleMergeSelector;
+import heuristics.MinLPDeleteSelector;
+import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
 import utils.InconsistencyException;
 
@@ -27,6 +27,16 @@ public class MISP implements Problem {
 	
 	int nVariables;
 	State root;
+	
+	/**
+	 * Creates the representation of the MISP problem.
+	 * @param n the number of vertices
+	 * @param weights the weights of the vertices
+	 * @param edges an array of {@code Edge} objects with vertices in [0,n-1]
+	 */
+	public MISP(int n, int [] weights, Edge [] edges) {
+		this(weights, toGraph(n, edges));
+	}
 	
 	/**
 	 * Creates the representation of the MISP problem.
@@ -109,6 +119,21 @@ public class MISP implements Problem {
 		return new State(mispState, variables, maxValue);
 	}
 	
+	private static LinkedList<Integer> [] toGraph(int n, Edge [] edges) {
+		@SuppressWarnings("unchecked")
+		LinkedList<Integer> [] g = new LinkedList[n];
+		for (int i = 0; i < g.length; i++) {
+			g[i] = new LinkedList<Integer>();
+		}
+		
+		for(Edge e : edges) {
+			g[e.u].add(e.v);
+			g[e.v].add(e.u);
+		}
+		
+		return g;
+	}
+	
 	class MISPState implements StateRepresentation {
 		
 		int size;
@@ -137,23 +162,11 @@ public class MISP implements Problem {
 	
 	public static void main(String[] args) {
 		int [] weights = {3, 4, 2, 2, 7};
+		Edge [] edges = {new Edge(0, 1), new Edge(0, 2), new Edge(1, 2), new Edge(1, 3), new Edge(2, 3), new Edge(3, 4)};
 		
-		@SuppressWarnings("unchecked")
-		LinkedList<Integer> [] g = new LinkedList[weights.length];
-		for (int i = 0; i < weights.length; i++) {
-			g[i] = new LinkedList<Integer>();
-		}
+		Problem p = new MISP(5, weights, edges);
 		
-		g[0].add(1); g[1].add(0);
-		g[0].add(2); g[2].add(0);
-		g[1].add(2); g[2].add(1);
-		g[1].add(3); g[3].add(1);
-		g[2].add(3); g[3].add(2);
-		g[3].add(4); g[4].add(3);
-		
-		Problem p = new MISP(weights, g);
-		
-		Solver solver = new Solver(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 		solver.solve();
 	}
 }

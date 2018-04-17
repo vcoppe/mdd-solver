@@ -11,8 +11,8 @@ import core.Solver;
 import core.Variable;
 import dp.State;
 import dp.StateRepresentation;
-import heuristics.SimpleDeleteSelector;
-import heuristics.SimpleMergeSelector;
+import heuristics.MinLPDeleteSelector;
+import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
 import utils.InconsistencyException;
 
@@ -22,6 +22,15 @@ public class MAX2SAT implements Problem {
 	
 	int nVariables;
 	State root;
+	
+	/**
+	 * Returns the representation of the MAX2SAT problem.
+	 * @param n the number of boolean variables
+	 * @param clauses an array of {@code Clause} objects with variables indexes in [0,n-1]
+	 */
+	public MAX2SAT(int n, Clause [] clauses) {
+		this(toGraph(n, clauses));
+	}
 	
 	/**
 	 * Returns the representation of the MAX2SAT problem.
@@ -174,6 +183,28 @@ public class MAX2SAT implements Problem {
 		return new State(new MAX2SATState(benefits), variables, maxValue);
 	}
 	
+	private static Map<Integer, double[]>[] toGraph(int n, Clause [] clauses) {
+		@SuppressWarnings("unchecked")
+		Map<Integer, double[]> [] g = new Map[n];
+		for(int i = 0; i < g.length; i++) {
+			g[i] = new HashMap<Integer, double[]>();
+		}
+		
+		for(Clause clause : clauses) {
+			if(!g[clause.u].containsKey(clause.v)) {
+				g[clause.u].put(clause.v, new double[4]);
+			}
+			g[clause.u].get(clause.v)[clause.num] = clause.w;
+
+			if(!g[clause.v].containsKey(clause.u)) {
+				g[clause.v].put(clause.u, new double[4]);
+			}
+			g[clause.v].get(clause.u)[clause.num] = clause.w;
+		}
+		
+		return g;
+	}
+	
 	class MAX2SATState implements StateRepresentation {
 		
 		double [] benefits ;
@@ -201,38 +232,25 @@ public class MAX2SAT implements Problem {
 	}
 	
 	public static void main(String[] args) {
-		@SuppressWarnings("unchecked")
-		Map<Integer, double[]> [] g = new Map[3];
-		for(int i = 0; i < g.length; i++) {
-			g[i] = new HashMap<Integer, double[]>();
-		}
-		
 		Clause [] clauses = {
 				new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
 				new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2), 
 				new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
 				};
 		
-		for(Clause clause : clauses) {
-			if(!g[clause.u].containsKey(clause.v)) {
-				g[clause.u].put(clause.v, new double[4]);
-			}
-			g[clause.u].get(clause.v)[clause.num] = clause.w;
-
-			if(!g[clause.v].containsKey(clause.u)) {
-				g[clause.v].put(clause.u, new double[4]);
-			}
-			g[clause.v].get(clause.u)[clause.num] = clause.w;
-		}
+		Problem p = new MAX2SAT(3, clauses);
 		
-		Problem p = new MAX2SAT(g);
-		
-		Solver solver = new Solver(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 		solver.solve();
 	}
 
 }
 
+/**
+ * Representation of a boolean clause for the MAX2SAT problem.
+ * 
+ * @author Vianney Coppé
+ */
 class Clause {
 	
 	int u, v;
@@ -242,8 +260,11 @@ class Clause {
 				// 3 = 11 -> TT
 	double w;
 	
-	// two variables u, v and tu, tv their truth values
-	// true <==> ((u == tu) || (v == tv))
+	/**
+	 * Returns a {@code Clause} object representing a disjunction with the two variables {@code u} and {@code v},
+	 * and with {@code tu} and {@code tv} their corresponding truth values : 
+	 * {@code true <==> ((u == tu) || (v == tv))}.
+	 */
 	public Clause(int u, int v, int tu, int tv, double w) {
 		if(u > v) {
 			int tmp = u;

@@ -11,8 +11,8 @@ import core.Solver;
 import core.Variable;
 import dp.State;
 import dp.StateRepresentation;
-import heuristics.SimpleDeleteSelector;
-import heuristics.SimpleMergeSelector;
+import heuristics.MinLPDeleteSelector;
+import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
 import utils.InconsistencyException;
 
@@ -27,6 +27,15 @@ public class MCP implements Problem {
 	
 	int nVariables;
 	State root;
+	
+	/**
+	 * Returns the representation of the MCP problem.
+	 * @param n the number of vertices
+	 * @param edges a list of {@code Edge} objects with vertices indexes in [0,n-1]
+	 */
+	public MCP(int n, Edge [] edges) {
+		this(toGraph(n, edges));
+	}
 	
 	/**
 	 * Returns the representation of the MCP problem.
@@ -181,6 +190,22 @@ public class MCP implements Problem {
 		return new State(new MCPState(benefits), variables, maxValue);
 	}
 	
+	private static Map<Integer, Double> [] toGraph(int n, Edge [] edges) {
+		@SuppressWarnings("unchecked")
+		Map<Integer, Double> [] g = new Map[n];
+		
+		for(int i = 0; i < g.length; i++) {
+			g[i] = new HashMap<Integer, Double>();
+		}
+		
+		for(Edge e : edges) {
+			g[e.u].put(e.v, e.w);
+			g[e.v].put(e.u, e.w);
+		}
+		
+		return g;
+	}
+	
 	class MCPState implements StateRepresentation {
 		
 		double [] benefits ;
@@ -208,37 +233,13 @@ public class MCP implements Problem {
 	}
 	
 	public static void main(String[] args) {
-		@SuppressWarnings("unchecked")
-		Map<Integer, Double> [] g = new Map[4];
-		for(int i = 0; i < g.length; i++) {
-			g[i] = new HashMap<Integer, Double>();
-		}
-		
 		Edge [] edges = {new Edge(0, 1, 1), new Edge(0, 2, 2), new Edge(0, 3, -2),
 				new Edge(1, 2, 3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
 		
-		for(Edge e : edges) {
-			g[e.u].put(e.v, e.w);
-			g[e.v].put(e.u, e.w);
-		}
+		Problem p = new MCP(4, edges);
 		
-		Problem p = new MCP(g);
-		
-		Solver solver = new Solver(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 		solver.solve();
 	}
 
-}
-
-class Edge {
-	
-	int u, v;
-	double w;
-	
-	public Edge(int u, int v, double w) {
-		this.u = u;
-		this.v = v;
-		this.w = w;
-	}
-	
 }
