@@ -22,7 +22,9 @@ public class MinLPMergeSelector implements MergeSelector {
 		
 		for(State s : states) {
 			ret.add(s);
-			if(ret.size() == number) break;
+			if(ret.size() == number) {
+				return ret;
+			}
 		}
 		
 		return ret;

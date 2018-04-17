@@ -22,7 +22,7 @@ import java.util.BitSet;
  */
 public class MISP implements Problem {
 	
-	int [] weights;
+	double [] weights;
 	LinkedList<Integer> [] g;
 	
 	int nVariables;
@@ -34,7 +34,7 @@ public class MISP implements Problem {
 	 * @param weights the weights of the vertices
 	 * @param edges an array of {@code Edge} objects with vertices in [0,n-1]
 	 */
-	public MISP(int n, int [] weights, Edge [] edges) {
+	public MISP(int n, double [] weights, Edge [] edges) {
 		this(weights, toGraph(n, edges));
 	}
 	
@@ -43,7 +43,7 @@ public class MISP implements Problem {
 	 * @param weights the weights of the vertices
 	 * @param g the adjacency lists
 	 */
-	public MISP(int [] weights, LinkedList<Integer> [] g) {
+	public MISP(double [] weights, LinkedList<Integer> [] g) {
 		this.nVariables = weights.length;
 		this.weights = weights;
 		this.g = g;
@@ -161,7 +161,7 @@ public class MISP implements Problem {
 	}
 	
 	public static void main(String[] args) {
-		int [] weights = {3, 4, 2, 2, 7};
+		double [] weights = {3, 4, 2, 2, 7};
 		Edge [] edges = {new Edge(0, 1), new Edge(0, 2), new Edge(1, 2), new Edge(1, 3), new Edge(2, 3), new Edge(3, 4)};
 		
 		Problem p = new MISP(5, weights, edges);
