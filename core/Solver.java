@@ -16,6 +16,8 @@ import heuristics.VariableSelector;
  */
 public class Solver {
 	
+	private boolean print = false;
+	
 	private Problem problem;
 	private DP dp;
 	
@@ -52,7 +54,7 @@ public class Solver {
 
 			if(best == null || result.value() > best.value()) {
 				best = result.copy();
-				System.out.println("Improved solution : " + best.value());
+				if(print) System.out.println("Improved solution : " + best.value());
 			}
 
 			if(!this.dp.isExact()) {
@@ -65,15 +67,17 @@ public class Solver {
 			}
 		}
 		
-		if(best == null) {
-			System.out.println("No solution found");
-		} else {
-			System.out.println("Optimal solution : " + best.value());
-			System.out.print("Assignment       : ");
-			for(Variable var : best.variables()) {
-				System.out.print(var.value() + " ");
+		if(print) {
+			if(best == null) {
+				System.out.println("No solution found");
+			} else {
+				System.out.println("Optimal solution : " + best.value());
+				System.out.print("Assignment       : ");
+				for(Variable var : best.variables()) {
+					System.out.print(var.value() + " ");
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 		
 		return best;

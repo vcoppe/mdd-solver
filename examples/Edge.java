@@ -7,7 +7,7 @@ package examples;
  */
 public class Edge {
 	
-	int u, v;
+	public int u, v;
 	double w;
 	
 	/**

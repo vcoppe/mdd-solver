@@ -230,6 +230,16 @@ public class MCP implements Problem {
 			MCPState other = (MCPState) o;
 			return Arrays.equals(benefits, other.benefits);
 		}
+
+		public double rank(State state) {
+			double rank = state.value();
+			
+			for(int i = 0; i < benefits.length; i++) {
+				rank += Math.abs(benefits[i]);
+			}
+			
+			return rank;
+		}
 	}
 	
 	public static void main(String[] args) {

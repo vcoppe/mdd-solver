@@ -12,4 +12,6 @@ public interface StateRepresentation {
 	
 	boolean equals(Object obj);
 	
+	double rank(State state);
+	
 }

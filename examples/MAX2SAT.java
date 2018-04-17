@@ -5,20 +5,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javafx.util.Pair;
 
 import core.Problem;
 import core.Solver;
 import core.Variable;
+import dp.Layer;
 import dp.State;
 import dp.StateRepresentation;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
-import heuristics.SimpleVariableSelector;
+import heuristics.VariableSelector;
 import utils.InconsistencyException;
 
 public class MAX2SAT implements Problem {
 	
-	Map<Integer, double[]>[] g;
+	static Map<Integer, double[]>[] g;
 	
 	int nVariables;
 	State root;
@@ -44,7 +46,7 @@ public class MAX2SAT implements Problem {
 	 */
 	public MAX2SAT(Map<Integer, double[]>[] g) {
 		this.nVariables = g.length;
-		this.g = g;
+		MAX2SAT.g = g;
 		
 		Variable [] variables = new Variable[this.nVariables];
 		for(int i = 0; i < this.nVariables; i++) {
@@ -229,6 +231,56 @@ public class MAX2SAT implements Problem {
 			MAX2SATState other = (MAX2SATState) o;
 			return Arrays.equals(benefits, other.benefits);
 		}
+
+		public double rank(State state) {
+			double rank = state.value();
+			
+			for(int i = 0; i < benefits.length; i++) {
+				rank += Math.abs(benefits[i]);
+			}
+			
+			return rank;
+		}
+	}
+	
+	public static class MAX2SATVariableSelector implements VariableSelector {
+
+		boolean done = false;
+		int [] order;
+		
+		public Variable select(Variable[] vars, Layer layer) {
+			if(!done) {
+				order = new int[vars.length];
+				@SuppressWarnings("unchecked")
+				Pair<Double, Integer>[] l = new Pair[vars.length];
+				
+				for(int i = 0; i < vars.length; i++) {
+					double sum = 0;
+					for(double [] weights : g[i].values()) {
+						for(double w : weights) {
+							sum += w;
+						}
+					}
+					l[i] = new Pair<Double, Integer>(sum, i);
+				}
+				
+				Arrays.sort(l, (a, b) -> b.getKey().compareTo(a.getKey()));
+				for(int i = 0; i < vars.length; i++) {
+					order[i] = l[i].getValue();
+				}
+				
+				done = true;
+			}
+			
+			for(int index : order) {
+				if(!vars[index].isAssigned()) {
+					return vars[index];
+				}
+			}
+			
+			return null;
+		}
+		
 	}
 	
 	public static void main(String[] args) {
@@ -240,46 +292,8 @@ public class MAX2SAT implements Problem {
 		
 		Problem p = new MAX2SAT(3, clauses);
 		
-		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
 		solver.solve();
 	}
 
-}
-
-/**
- * Representation of a boolean clause for the MAX2SAT problem.
- * 
- * @author Vianney Coppé
- */
-class Clause {
-	
-	int u, v;
-	int num; 	// 0 = 00 -> FF
-				// 1 = 01 -> FT
-				// 2 = 10 -> TF
-				// 3 = 11 -> TT
-	double w;
-	
-	/**
-	 * Returns a {@code Clause} object representing a disjunction with the two variables {@code u} and {@code v},
-	 * and with {@code tu} and {@code tv} their corresponding truth values : 
-	 * {@code true <==> ((u == tu) || (v == tv))}.
-	 */
-	public Clause(int u, int v, int tu, int tv, double w) {
-		if(u > v) {
-			int tmp = u;
-			u = v;
-			v = tmp;
-			
-			tmp = tu;
-			tu = tv;
-			tv = tmp;
-		}
-		
-		this.u = u;
-		this.v = v;
-		this.w = w;
-		
-		this.num = (tu << 1)|tv;
-	}
 }

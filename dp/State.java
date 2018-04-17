@@ -151,7 +151,7 @@ public class State implements Comparable<State> {
 	}
 
 	public int compareTo(State o) {
-		return Double.compare(this.value, o.value);
+		return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
 	}
 
 }

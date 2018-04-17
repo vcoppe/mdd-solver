@@ -3,11 +3,12 @@ package examples;
 import core.Problem;
 import core.Solver;
 import core.Variable;
+import dp.Layer;
 import dp.State;
 import dp.StateRepresentation;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
-import heuristics.SimpleVariableSelector;
+import heuristics.VariableSelector;
 import utils.InconsistencyException;
 
 import java.util.HashSet;
@@ -153,11 +154,43 @@ public class MISP implements Problem {
 			return Integer.compare(this.hashCode(), o.hashCode()) == 0;
 		}
 		
+		public boolean isFree(int u) {
+			return this.bs.get(u);
+		}
+		
 		public MISPState copy() {
 			MISPState next = new MISPState(this.size);
 			next.bs.and(this.bs);
 			return next;
 		}
+
+		public double rank(State state) {
+			return state.value();
+		}
+	}
+	
+	public static class MISPVariableSelector implements VariableSelector {
+
+		public Variable select(Variable[] vars, Layer layer) {
+			int minCount = Integer.MAX_VALUE, index = -1;
+			int [] count = new int[vars.length];
+			
+			for(State state : layer.states()) {
+				for(int i = 0; i < vars.length; i++) if(!vars[i].isAssigned()) {
+					if(((MISPState) state.stateRepresentation()).isFree(i)) {
+						count[i]++;
+					}
+					
+					if(count[i] < minCount) {
+						minCount = count[i];
+						index = i;
+					}
+				}
+			}
+			
+			return vars[index];
+		}
+		
 	}
 	
 	public static void main(String[] args) {
@@ -166,7 +199,7 @@ public class MISP implements Problem {
 		
 		Problem p = new MISP(5, weights, edges);
 		
-		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
 		solver.solve();
 	}
 }

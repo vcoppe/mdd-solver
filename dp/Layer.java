@@ -107,7 +107,7 @@ public class Layer {
 		
 		for(State state : this.states.values()) {
 			if(nextVar == null) {
-				nextVar = this.variableSelector.select(state.variables());
+				nextVar = this.variableSelector.select(state.variables(), this);
 			}
 			next.addStates(this.problem.successors(state, nextVar));
 		}
