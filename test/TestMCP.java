@@ -17,27 +17,10 @@ import heuristics.SimpleVariableSelector;
 import heuristics.VariableSelector;
 
 public class TestMCP {
-
-	static long startTime;
-	static long endTime;
 	
-	static int n;
-	static Edge [] input;
+	static Random random = new Random(12);
 	
-	private static long run(MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
-		Problem p = new MCP(n, input);
-		
-		Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
-		
-		startTime = System.currentTimeMillis();
-		solver.solve();
-		endTime = System.currentTimeMillis();
-		
-		return endTime - startTime;
-	}
-	
-	public static void main(String[] args) {
-		n = 20;
+	public static Problem generate(int n) {
 		LinkedList<Edge> edges = new LinkedList<Edge>();
 		
 		Random random = new Random(12);
@@ -51,17 +34,33 @@ public class TestMCP {
 			}
 		}
 		
-		input = new Edge[edges.size()];
+		Edge [] input = new Edge[edges.size()];
 		edges.toArray(input);
 		
-		int times = 10;
+		return new MCP(n, input);
+	}
+	
+	private static long run(Problem p, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
+		Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
+		
+		long startTime = System.currentTimeMillis();
+		solver.solve();
+		long endTime = System.currentTimeMillis();
+		
+		return endTime - startTime;
+	}
+	
+	public static void main(String[] args) {
+		Problem p = generate(20);
+		
+		int times = 5;
 		long conf1 = 0, conf2 = 0, conf3 = 0, conf4 = 0;
 		System.out.print("[");
 		for(int i = 0; i < times; i++) {
-			conf1 += run(new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			conf2 += run(new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			conf3 += run(new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-			conf4 += run(new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			conf1 += run(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			conf2 += run(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			conf3 += run(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			conf4 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 			System.out.print("=");
 		}
 		System.out.println("]");
