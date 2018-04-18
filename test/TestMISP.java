@@ -52,16 +52,16 @@ public class TestMISP {
 	}
 	
 	public static void main(String[] args) {
-		Problem p = generate(35);
+		Problem p = generate(70);
 		
 		int times = 5;
 		long conf1 = 0, conf2 = 0, conf3 = 0, conf4 = 0, conf5 = 0;
 		System.out.print("[");
 		for(int i = 0; i < times; i++) {
-			conf1 += run(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			conf2 += run(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			conf3 += run(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-			conf4 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			//conf1 += run(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			//conf2 += run(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			//conf3 += run(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			//conf4 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 			conf5 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
 			System.out.print("=");
 		}

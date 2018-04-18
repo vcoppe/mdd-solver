@@ -76,21 +76,25 @@ public class MAX2SAT implements Problem {
 		double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
 		
 		for(int i = 0; i < this.nVariables; i++) {
-			if(i != u && !variables[i].isAssigned()) {
-				benefits0[i] = max2satState.benefits[i];
+			if(!variables[i].isAssigned()) {
+				if(u != i) benefits0[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
 					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
 					if(u > i) {
 						numTF = 1;
 						numFT = 2;
 					}
-					
-					value0 += g[u].get(i)[numFF] + g[u].get(i)[numFT] 
-							+ Math.min(
-									Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numTT],
-									Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numTF]
-									);
-					benefits0[i] += g[u].get(i)[numTT] - g[u].get(i)[numTF];
+
+					if(u != i) {
+						value0 += g[u].get(i)[numFF] + g[u].get(i)[numFT] 
+								+ Math.min(
+										Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numTT],
+										Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numTF]
+										);
+						benefits0[i] += g[u].get(i)[numTT] - g[u].get(i)[numTF];
+					} else {
+						value0 += g[u].get(i)[numFF];
+					}
 				}
 			}
 		}
@@ -110,8 +114,8 @@ public class MAX2SAT implements Problem {
 		double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
 		
 		for(int i = 0; i < this.nVariables; i++) {
-			if(i != u && !variables[i].isAssigned()) {
-				benefits1[i] = max2satState.benefits[i];
+			if(!variables[i].isAssigned()) {
+				if(u != i) benefits1[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
 					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
 					if(u > i) {
@@ -119,12 +123,16 @@ public class MAX2SAT implements Problem {
 						numFT = 2;
 					}
 
-					value1 += g[u].get(i)[numTF] + g[u].get(i)[numTT] 
-							+ Math.min(
-									Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numFT],
-									Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numFF]
-									);
-					benefits1[i] += g[u].get(i)[numFT] - g[u].get(i)[numFF];
+					if(u != i) {
+						value1 += g[u].get(i)[numTF] + g[u].get(i)[numTT] 
+								+ Math.min(
+										Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numFT],
+										Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numFF]
+										);
+						benefits1[i] += g[u].get(i)[numFT] - g[u].get(i)[numFF];
+					} else {
+						value1 += g[u].get(i)[numTT];
+					}
 				}
 			}
 		}
@@ -154,8 +162,8 @@ public class MAX2SAT implements Problem {
 			if(variables == null) {
 				variables = state.variables();
 			}
+			newValues[i] = state.value();
 			statesRep[i++] = (MAX2SATState) state.stateRepresentation();
-			maxValue = Math.max(maxValue, state.value());
 		}
 		
 		for(i = 0; i < nVariables; i++) {
@@ -180,6 +188,10 @@ public class MAX2SAT implements Problem {
 			for(int j = 0; j < newValues.length; j++) {
 				newValues[j] += Math.abs(statesRep[j].benefits[i]) - Math.abs(benefits[i]);
 			}
+		}
+		
+		for(int j = 0; j < newValues.length; j++) {
+			maxValue = Math.max(maxValue, newValues[j]);
 		}
 		
 		return new State(new MAX2SATState(benefits), variables, maxValue);

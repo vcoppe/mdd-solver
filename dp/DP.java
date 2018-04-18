@@ -77,7 +77,9 @@ public class DP {
 	public State solveRestricted(int width) {
 		this.layers.clear();
 		this.layers.add(root);
+		this.lastExactLayer = null;
 		Layer lastLayer = root;
+		
 		while(!lastLayer.isFinal()) {
 			lastLayer = lastLayer.nextLayer();
 
@@ -107,6 +109,7 @@ public class DP {
 	public State solveRelaxed(int width) {
 		this.layers.clear();
 		this.layers.add(root);
+		this.lastExactLayer = null;
 		Layer lastLayer = root;
 		
 		while(!lastLayer.isFinal()) {

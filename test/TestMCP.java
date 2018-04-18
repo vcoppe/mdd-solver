@@ -51,16 +51,16 @@ public class TestMCP {
 	}
 	
 	public static void main(String[] args) {
-		Problem p = generate(20);
+		Problem p = generate(50);
 		
 		int times = 5;
 		long conf1 = 0, conf2 = 0, conf3 = 0, conf4 = 0;
 		System.out.print("[");
 		for(int i = 0; i < times; i++) {
-			conf1 += run(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			conf2 += run(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			//conf1 += run(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			//conf2 += run(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
 			conf3 += run(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-			conf4 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			//conf4 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 			System.out.print("=");
 		}
 		System.out.println("]");

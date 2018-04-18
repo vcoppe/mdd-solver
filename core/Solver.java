@@ -16,7 +16,8 @@ import heuristics.VariableSelector;
  */
 public class Solver {
 	
-	private boolean print = false;
+	private boolean print = true;
+	private int maxWidth = 50;
 	
 	private Problem problem;
 	private DP dp;
@@ -49,17 +50,18 @@ public class Solver {
 			State state = q.poll();		
 
 			this.dp.setInitialState(state);
-			State result = this.dp.solveRestricted(problem.nVariables()-state.layerNumber()); 	// the width of the DD is equal to the number
+			State result = this.dp.solveRestricted(Math.min(maxWidth, problem.nVariables()-state.layerNumber())); 	// the width of the DD is equal to the number
 																								// of variables not bound
 
 			if(best == null || result.value() > best.value()) {
 				best = result.copy();
+				lowerBound = best.value();
 				if(print) System.out.println("Improved solution : " + best.value());
 			}
 
 			if(!this.dp.isExact()) {
 				this.dp.setInitialState(state);
-				result = this.dp.solveRelaxed(problem.nVariables()-state.layerNumber());
+				result = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables()-state.layerNumber())); 	
 
 				if(result.value() > lowerBound) {
 					q.addAll(this.dp.lastExactLayer().states());
