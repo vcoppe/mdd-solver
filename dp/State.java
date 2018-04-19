@@ -1,5 +1,8 @@
 package dp;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import core.Variable;
 import utils.InconsistencyException;
 
@@ -15,6 +18,7 @@ public class State implements Comparable<State> {
 	private boolean exact;
 	private int layerNumber;
 	private StateRepresentation stateRepresentation;
+	private Set<State> parents;
 	
 	private int nVariables;
 	private Variable [] variables;
@@ -42,6 +46,7 @@ public class State implements Comparable<State> {
 		this.nVariables = variables.length;
 		this.variables = new Variable[this.nVariables];
 		this.relaxedValue = Double.MAX_VALUE;
+		this.parents = new HashSet<State>();
 		
 		for (int i = 0; i < this.nVariables; i++) {
 			this.variables[i] = variables[i].copy();
@@ -86,6 +91,7 @@ public class State implements Comparable<State> {
 			this.value = other.value();
 		}
 		this.exact &= other.exact;
+		this.parents.addAll(other.parents);
 	}
 	
 	/**
@@ -163,5 +169,31 @@ public class State implements Comparable<State> {
 	public void setRelaxedValue(double relaxedValue) {
 		this.relaxedValue = relaxedValue;
 	}
+	
+	public int hashCode() {
+		return this.stateRepresentation.hashCode();
+	}
+	
+	public boolean equals(State other) {
+		if(this.layerNumber != other.layerNumber) {
+			return false;
+		}
+		if(this.hashCode() != other.hashCode()) {
+			return false;
+		}
+		
+		if(!this.stateRepresentation.equals(other.stateRepresentation)) {
+			return false;
+		}
+		
+		return true;
+	}
 
+	public void addParent(State s) {
+		this.parents.add(s);
+	}
+	
+	public Set<State> exactParents() {
+		return this.parents;
+	}
 }

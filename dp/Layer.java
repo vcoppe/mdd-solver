@@ -72,13 +72,7 @@ public class Layer {
 	 */
 	public void addStates(Set<State> states) {
 		for(State state : states) {
-			this.exact &= state.isExact();
-			state.setLayerNumber(this.number);
-			if(this.states.containsKey(state.stateRepresentation())) {
-				this.states.get(state.stateRepresentation()).update(state);
-			} else {
-				this.states.put(state.stateRepresentation(), state);
-			}
+			this.addState(state);
 		}
 	}
 
@@ -94,6 +88,16 @@ public class Layer {
 		}
 		this.exact = false;
 	}
+
+	public void removeStates(Set<State> states, Set<State> frontier) {
+		for(State state : states) {
+			if(this.states.containsKey(state.stateRepresentation())) {
+				this.states.remove(state.stateRepresentation());
+			}
+			frontier.addAll(state.exactParents());
+		}
+		this.exact = false;
+	}
 	
 	/**
 	 * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
@@ -104,14 +108,23 @@ public class Layer {
 	public Layer nextLayer() {
 		Layer next = new Layer(this.problem, this.variableSelector, this.number+1);
 		Variable nextVar = null;
-		
+
+		next.setExact(this.exact);
 		for(State state : this.states.values()) {
 			if(nextVar == null) {
 				nextVar = this.variableSelector.select(state.variables(), this);
 			}
-			next.addStates(this.problem.successors(state, nextVar));
+			
+			Set<State> succ = this.problem.successors(state, nextVar);
+			for(State s : succ) {
+				if(state.isExact()) {
+					s.addParent(state);
+				} else {
+					s.setExact(false);
+				}
+			}
+			next.addStates(succ);
 		}
-		next.setExact(this.exact);
 		
 		return next;
 	}

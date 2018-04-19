@@ -5,6 +5,7 @@ import heuristics.MergeSelector;
 import heuristics.VariableSelector;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 import core.Problem;
@@ -21,6 +22,7 @@ public class DP {
 	
 	private Layer root;
 	private Layer lastExactLayer;
+	private Set<State> frontier;
 	private boolean exact;
 	private ArrayList<Layer> layers;
 	private Problem problem;
@@ -53,6 +55,7 @@ public class DP {
 		this.root = new Layer(problem, variableSelector, initialState, initialState.layerNumber());
 		this.exact = true;
 		this.lastExactLayer = null;
+		this.frontier = new HashSet<State>();
 		this.mergeSelector = mergeSelector;
 		this.deleteSelector = deleteSelector;
 		this.variableSelector = variableSelector;
@@ -114,6 +117,7 @@ public class DP {
 		this.layers.clear();
 		this.layers.add(root);
 		this.lastExactLayer = null;
+		this.frontier.clear();
 		Layer lastLayer = root;
 		
 		while(!lastLayer.isFinal()) {
@@ -125,10 +129,13 @@ public class DP {
 			
 			while(lastLayer.width() > width) {
 				Set<State> toMerge = this.mergeSelector.select(lastLayer, lastLayer.width()-width+1);
-				lastLayer.removeStates(toMerge);
+				lastLayer.removeStates(toMerge, this.frontier);
+				
 				State mergedState = this.problem.merge(toMerge);
 				mergedState.setExact(false);
+				
 				lastLayer.addState(mergedState);
+				this.exact = false;
 			}
 			
 			this.layers.add(lastLayer);
@@ -137,6 +144,13 @@ public class DP {
 				this.lastExactLayer = lastLayer;
 			} else {
 				this.exact = false;
+			}
+		}
+		
+		for(State s : lastLayer.states()) {
+			if(s.isExact()) {
+				System.out.println(s.stateRepresentation());
+				this.frontier.add(s);
 			}
 		}
 		
@@ -165,5 +179,17 @@ public class DP {
 	 */
 	public State solveExact() {
 		return this.solveRelaxed(Integer.MAX_VALUE, Integer.MIN_VALUE, 0);
+	}
+	
+	public Set<State> exactCutset() {
+		return this.FC();
+	}
+
+	public Set<State> LEL() {
+		return this.lastExactLayer.states();
+	}
+	
+	public Set<State> FC() {
+		return this.frontier;
 	}
 }

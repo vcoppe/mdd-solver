@@ -76,7 +76,7 @@ public class Solver {
 				result = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables()-state.layerNumber()), startTime, timeOut);
 
 				if(result.value() > lowerBound) {
-					for(State s : this.dp.lastExactLayer().states()) {
+					for(State s : this.dp.exactCutset()) {
 						s.setRelaxedValue(result.value());
 						q.add(s);
 					}
