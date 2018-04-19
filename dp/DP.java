@@ -74,13 +74,17 @@ public class DP {
 	 * @param width the maximum width of the layers
 	 * @return the {@code State} object representing the best solution found
 	 */
-	public State solveRestricted(int width) {
+	public State solveRestricted(int width, long startTime, int timeOut) {
 		this.layers.clear();
 		this.layers.add(root);
 		this.lastExactLayer = null;
 		Layer lastLayer = root;
 		
 		while(!lastLayer.isFinal()) {
+			if(System.currentTimeMillis()-startTime > timeOut * 1000) {
+				return lastLayer.best();
+			}
+			
 			lastLayer = lastLayer.nextLayer();
 
 			while(lastLayer.width() > width) {
@@ -106,13 +110,17 @@ public class DP {
 	 * @param width the maximum width of the layers
 	 * @return the {@code State} object representing the best solution found
 	 */
-	public State solveRelaxed(int width) {
+	public State solveRelaxed(int width, long startTime, int timeOut) {
 		this.layers.clear();
 		this.layers.add(root);
 		this.lastExactLayer = null;
 		Layer lastLayer = root;
 		
 		while(!lastLayer.isFinal()) {
+			if(System.currentTimeMillis()-startTime > timeOut * 1000) {
+				return lastLayer.best();
+			}
+			
 			lastLayer = lastLayer.nextLayer();
 			
 			while(lastLayer.width() > width) {
@@ -156,6 +164,6 @@ public class DP {
 	 * @return the {@code State} object representing the best solution found
 	 */
 	public State solveExact() {
-		return this.solveRelaxed(Integer.MAX_VALUE);
+		return this.solveRelaxed(Integer.MAX_VALUE, Integer.MIN_VALUE, 0);
 	}
 }

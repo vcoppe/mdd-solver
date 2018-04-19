@@ -240,6 +240,10 @@ public class MCP implements Problem {
 			
 			return rank;
 		}
+
+		public MCPState copy() {
+			return new MCPState(this.benefits.clone());
+		}
 	}
 	
 	public static void main(String[] args) {

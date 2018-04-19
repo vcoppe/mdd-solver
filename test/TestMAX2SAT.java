@@ -5,6 +5,9 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import core.Problem;
 import core.Solver;
 import examples.Clause;
@@ -18,8 +21,14 @@ import heuristics.SimpleMergeSelector;
 import heuristics.SimpleVariableSelector;
 import heuristics.VariableSelector;
 
-public class TestMAX2SAT {
+@SuppressWarnings("unused")
+@RunWith(Parameterized.class)
+public class TestMAX2SAT extends TestHelper {
 	
+	public TestMAX2SAT(String path) {
+		super(path);
+	}
+
 	static Random random = new Random(12);
 	
 	public static Problem generate(int n) {
@@ -40,7 +49,7 @@ public class TestMAX2SAT {
 		return new MAX2SAT(n, input);
 	}
 	
-	private static long run(Problem p, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
+	private static long runTime(Problem p, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
 		Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
 		
 		long startTime = System.currentTimeMillis();
@@ -50,18 +59,23 @@ public class TestMAX2SAT {
 		return endTime - startTime;
 	}
 	
+	private static double run(Problem p, int timeOut, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
+		Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
+		return solver.solve(timeOut).value();
+	}
+	
 	private static void testPerf() {
-		Problem p = generate(150);
+		Problem p = generate(100);
 		
 		int times = 5;
 		long conf1 = 0, conf2 = 0, conf3 = 0, conf4 = 0, conf5 = 0;
 		System.out.print("[");
 		for(int i = 0; i < times; i++) {
-			//conf1 += run(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			//conf2 += run(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-			//conf3 += run(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-			conf4 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-			//conf5 += run(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
+			//conf1 += runTime(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			//conf2 += runTime(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
+			//conf3 += runTime(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			conf4 += runTime(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+			//conf5 += runTime(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
 			System.out.print("=");
 		}
 		System.out.println("]");
@@ -75,11 +89,12 @@ public class TestMAX2SAT {
 	}
 	
 	/**
-	 * instances can be found on http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm
+	 * Instances can be found on <a href=http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
 	 * @param path path to an input file in DIMACS wcnf format
 	 */
-	private static void testData(String path) {
+	protected boolean testData(int timeOut) {
 		int n = 0, m = 0, i = 0;
+		double opt = -1;
 		Clause [] clauses = null;
 		
 		try {
@@ -90,7 +105,12 @@ public class TestMAX2SAT {
 				String [] tokens = line.split("\\s+");
 				
 				if(tokens.length > 0) {
-					if(tokens[0].equals("c")) continue;
+					if(tokens[0].equals("c")) {
+						if(tokens.length > 2 && tokens[1].equals("opt")) {
+							opt = Double.valueOf(tokens[2]);
+						}
+						continue;
+					}
 					if(tokens[0].equals("p")) {
 						assert(tokens.length == 4);
 						assert(tokens[1].equals("wcnf"));
@@ -131,13 +151,15 @@ public class TestMAX2SAT {
 			e.printStackTrace();
 		}
 		
-		//run(new MAX2SAT(n, clauses), new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());// new SimpleVariableSelector());
-		run(new MAX2SAT(n, clauses), new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+		if(opt != -1) {
+			System.out.println("Value to reach : " + opt);
+		}
+		return opt == run(new MAX2SAT(n, clauses), timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 	}
 	
-	public static void main(String[] args) {
-		//testPerf();
-		testData("data/max2sat/frb15-9-2.wcnf");
+	@Parameterized.Parameters
+    public static Object[] data() { 
+		return dataFromFolder("data/max2sat"); 
 	}
 	
 }

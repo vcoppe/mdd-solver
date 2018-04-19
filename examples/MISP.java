@@ -69,35 +69,42 @@ public class MISP implements Problem {
 		int u = var.id();
 		Set<State> ret = new HashSet<State>();
 		MISPState mispState = ((MISPState) s.stateRepresentation());
-		
+		Variable [] variables = s.variables();
+
+		// assign 0
+		MISPState mispState0 = mispState.copy();
+		mispState0.bs.clear(u);
+		State dontTake = new State(mispState0, variables, s.value());
+
 		try {
-			MISPState newMispState = mispState.copy();
-			newMispState.bs.clear(u);
-			State dontTake = new State(newMispState, s.variables(), s.value());
 			dontTake.assign(u, 0);
-			ret.add(dontTake);
 		} catch(InconsistencyException e) {
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 		
-		if(!mispState.bs.get(u)) { 
+		ret.add(dontTake);
+		
+		if(!mispState.isFree(u)) { 
 			return ret;
 		}
 		
-		MISPState newMispState = mispState.copy();
-		newMispState.bs.clear(u);
+		// assign 1
+		MISPState mispState1 = mispState.copy();
+		mispState1.bs.clear(u);
 		
-		for (int v : g[u]) {
-			newMispState.bs.clear(v);
+		for(int v : g[u]) {
+			mispState1.bs.clear(v);
 		}
 
+		State take = new State(mispState1, variables, s.value() + this.weights[u]);
+
 		try {
-			State take = new State(newMispState, s.variables(), s.value() + this.weights[u]);
 			take.assign(u, 1);
-			ret.add(take);
 		} catch(InconsistencyException e) {
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
+
+		ret.add(take);
 		
 		return ret;
 	}
@@ -120,19 +127,19 @@ public class MISP implements Problem {
 		return new State(mispState, variables, maxValue);
 	}
 	
-	private static LinkedList<Integer> [] toGraph(int n, Edge [] edges) {
+	public static LinkedList<Integer> [] toGraph(int n, Edge [] edges) {
 		@SuppressWarnings("unchecked")
-		LinkedList<Integer> [] g = new LinkedList[n];
-		for (int i = 0; i < g.length; i++) {
-			g[i] = new LinkedList<Integer>();
+		LinkedList<Integer> [] adj = new LinkedList[n];
+		for (int i = 0; i < n; i++) {
+			adj[i] = new LinkedList<Integer>();
 		}
 		
 		for(Edge e : edges) {
-			g[e.u].add(e.v);
-			g[e.v].add(e.u);
+			adj[e.u].add(e.v);
+			adj[e.v].add(e.u);
 		}
 		
-		return g;
+		return adj;
 	}
 	
 	class MISPState implements StateRepresentation {
@@ -146,12 +153,34 @@ public class MISP implements Problem {
 			this.bs.flip(0, size);
 		}
 		
+		public MISPState(BitSet bitSet) {
+			this.size = bitSet.size();
+			this.bs = (BitSet) bitSet.clone();
+		}
+		
 		public int hashCode() {
 			return this.bs.hashCode();
 		}
 		
 		public boolean equals(Object o) {
-			return Integer.compare(this.hashCode(), o.hashCode()) == 0;
+			if(!(o instanceof MISPState)) {
+				return false;
+			}
+			
+			MISPState other = (MISPState) o;
+			if(this.bs.cardinality() != other.bs.cardinality()) {
+				return false;
+			}
+			
+			int j = -1;
+			for(int i = this.bs.nextSetBit(0); i >= 0; i = this.bs.nextSetBit(i+1)) {
+				j = other.bs.nextSetBit(j+1);
+				if(i != j) {
+					return false;
+				}
+			}
+			
+			return true;
 		}
 		
 		public boolean isFree(int u) {
@@ -159,13 +188,15 @@ public class MISP implements Problem {
 		}
 		
 		public MISPState copy() {
-			MISPState next = new MISPState(this.size);
-			next.bs.and(this.bs);
-			return next;
+			return new MISPState(this.bs);
 		}
 
 		public double rank(State state) {
 			return state.value();
+		}
+		
+		public String toString() {
+			return this.bs.toString();
 		}
 	}
 	

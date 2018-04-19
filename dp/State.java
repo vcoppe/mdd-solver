@@ -11,6 +11,7 @@ import utils.InconsistencyException;
 public class State implements Comparable<State> {
 	
 	private double value;
+	private double relaxedValue;
 	private boolean exact;
 	private int layerNumber;
 	private StateRepresentation stateRepresentation;
@@ -34,12 +35,13 @@ public class State implements Comparable<State> {
 	 * @param exact a boolean telling if the state is exact or not
 	 */
 	public State(StateRepresentation stateRepresentation, Variable [] variables, double value, boolean exact) {
-		this.stateRepresentation = stateRepresentation;
+		this.stateRepresentation = stateRepresentation.copy();
 		this.value = value;
 		this.exact = exact;
 		this.layerNumber = 0;
 		this.nVariables = variables.length;
 		this.variables = new Variable[this.nVariables];
+		this.relaxedValue = Double.MAX_VALUE;
 		
 		for (int i = 0; i < this.nVariables; i++) {
 			this.variables[i] = variables[i].copy();
@@ -152,6 +154,14 @@ public class State implements Comparable<State> {
 
 	public int compareTo(State o) {
 		return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
+	}
+
+	public double relaxedValue() {
+		return relaxedValue;
+	}
+
+	public void setRelaxedValue(double relaxedValue) {
+		this.relaxedValue = relaxedValue;
 	}
 
 }

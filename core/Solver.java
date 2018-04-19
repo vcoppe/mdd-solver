@@ -39,7 +39,9 @@ public class Solver {
 	 * Solves the given problem with the given heuristics and returns the optimal solution if it exists.
 	 * @return an object {@code State} containing the optimal value and assignment
 	 */
-	public State solve() {
+	public State solve(int timeOut) {
+		long startTime = System.currentTimeMillis();
+		
 		State best = null;
 		double lowerBound = Double.MIN_VALUE;
 		
@@ -47,36 +49,54 @@ public class Solver {
 		q.add(this.problem.root());
 		
 		while(!q.isEmpty()) {
-			State state = q.poll();		
+			State state = q.poll();
+			if(state.relaxedValue() <= lowerBound) {
+				continue;
+			}
 
 			this.dp.setInitialState(state);
-			State result = this.dp.solveRestricted(Math.min(maxWidth, problem.nVariables()-state.layerNumber())); 	// the width of the DD is equal to the number
-																								// of variables not bound
+			State result = this.dp.solveRestricted(Math.min(maxWidth, problem.nVariables()-state.layerNumber()),// the width of the DD is equal to the number
+					startTime, timeOut); 																		// of variables not bound
+																								
 
 			if(best == null || result.value() > best.value()) {
 				best = result.copy();
 				lowerBound = best.value();
-				if(print) System.out.println("Improved solution : " + best.value());
+				if(print) {
+					System.out.println("Improved solution : " + best.value());
+				}
+			}
+			
+			if(System.currentTimeMillis()-startTime > timeOut * 1000) {
+				return best;
 			}
 
 			if(!this.dp.isExact()) {
 				this.dp.setInitialState(state);
-				result = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables()-state.layerNumber())); 	
+				result = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables()-state.layerNumber()), startTime, timeOut);
 
 				if(result.value() > lowerBound) {
-					q.addAll(this.dp.lastExactLayer().states());
+					for(State s : this.dp.lastExactLayer().states()) {
+						s.setRelaxedValue(result.value());
+						q.add(s);
+					}
+				}
+				
+				if(System.currentTimeMillis()-startTime > timeOut * 1000) {
+					return best;
 				}
 			}
 		}
 		
 		if(print) {
 			if(best == null) {
-				System.out.println("No solution found");
+				System.out.println("No solution found.");
 			} else {
+				System.out.println("====== Search completed ======");
 				System.out.println("Optimal solution : " + best.value());
 				System.out.print("Assignment       : ");
 				for(Variable var : best.variables()) {
-					System.out.print(var.value() + " ");
+					if(var.value() == 1) System.out.print(var.id() + " ");
 				}
 				System.out.println();
 			}
@@ -85,4 +105,7 @@ public class Solver {
 		return best;
 	}
 	
+	public State solve() {
+		return this.solve(Integer.MAX_VALUE/1000);
+	}
 }

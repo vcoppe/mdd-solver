@@ -253,6 +253,10 @@ public class MAX2SAT implements Problem {
 			
 			return rank;
 		}
+
+		public MAX2SATState copy() {
+			return new MAX2SATState(this.benefits.clone());
+		}
 	}
 	
 	public static class MAX2SATVariableSelector implements VariableSelector {

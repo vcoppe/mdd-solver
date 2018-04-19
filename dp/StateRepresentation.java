@@ -14,4 +14,6 @@ public interface StateRepresentation {
 	
 	double rank(State state);
 	
+	StateRepresentation copy();
+	
 }

@@ -16,6 +16,7 @@ import heuristics.SimpleMergeSelector;
 import heuristics.SimpleVariableSelector;
 import heuristics.VariableSelector;
 
+@SuppressWarnings("unused")
 public class TestMCP {
 	
 	static Random random = new Random(12);
