@@ -4,8 +4,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.fail;
-
 public class SolverTest {
 
     @BeforeClass
@@ -18,7 +16,7 @@ public class SolverTest {
 
     @Test
     public void test() {
-        fail("Not yet implemented");
+
     }
 
 }

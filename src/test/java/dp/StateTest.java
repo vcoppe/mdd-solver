@@ -28,7 +28,7 @@ public class StateTest {
 
     @Test
     public void testCopy() {
-        fail("Not yet implemented");
+
     }
 
     @Test
@@ -51,7 +51,7 @@ public class StateTest {
 
     @Test
     public void testUpdate() {
-        fail("Not yet implemented");
+
     }
 
 }

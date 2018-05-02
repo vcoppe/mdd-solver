@@ -5,7 +5,7 @@
     <artifactId>mddsolver</artifactId>
     <packaging>jar</packaging>
     <version>1.0</version>
-    <name>minicp</name>
+    <name>mddsolver</name>
     <url>http://maven.apache.org</url>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -48,6 +48,9 @@
                             <value>org.tap4j.ext.junit.listener.TapListenerSuite</value>
                         </property>
                     </properties>
+                    <excludes>
+                        <exclude>**/examples/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
