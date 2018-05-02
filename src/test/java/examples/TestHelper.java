@@ -1,13 +1,12 @@
 package examples;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 public abstract class TestHelper {
     protected String path;
@@ -15,14 +14,14 @@ public abstract class TestHelper {
     public TestHelper(String path) {
         this.path = path;
     }
-    
-    protected abstract boolean testData(int timeOut);
+
+    protected abstract void testData(int timeOut);
 
 	@Test
-	public void testInstance() throws Exception {
+    public void testInstance() {
 		System.out.println(path);
 		try {
-			assertTrue(testData(90));
+            testData(90);
 		} catch(NullPointerException e) {
 			fail("Timed out");
 		} catch(OutOfMemoryError e) {

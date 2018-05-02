@@ -1,13 +1,13 @@
 package core;
 
-import java.util.PriorityQueue;
-import java.util.Queue;
-
 import dp.DP;
 import dp.State;
 import heuristics.DeleteSelector;
 import heuristics.MergeSelector;
 import heuristics.VariableSelector;
+
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  * Implementation of the branch and bound algorithm for MDDs.
@@ -17,7 +17,7 @@ import heuristics.VariableSelector;
 public class Solver {
 
     private boolean print = true;
-    private int maxWidth = 5;
+    private int maxWidth = 50;
 
     private Problem problem;
     private DP dp;
@@ -29,7 +29,6 @@ public class Solver {
      * @param mergeSelector    heuristic to select nodes to merge (to build relaxed MDDs)
      * @param deleteSelector   heuristic to select nodes to delete (to build restricted MDDs)
      * @param variableSelector heuristic to select the next variable to be assigned
-     * @return the {@code Solver} object ready to solve the problem
      */
     public Solver(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         this.problem = problem;
@@ -47,7 +46,7 @@ public class Solver {
         State best = null;
         double bestBound = Double.MIN_VALUE;
 
-        Queue<State> q = new PriorityQueue<State>(); // nodes are popped starting with the one with least value
+        Queue<State> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
         q.add(this.problem.root());
 
         while (!q.isEmpty()) {

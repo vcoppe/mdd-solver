@@ -1,21 +1,13 @@
 package examples;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.Random;
-import java.util.Scanner;
-
+import core.Problem;
+import core.Solver;
+import heuristics.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import core.Problem;
-import core.Solver;
-import heuristics.DeleteSelector;
-import heuristics.MergeSelector;
-import heuristics.MinLPDeleteSelector;
-import heuristics.MinLPMergeSelector;
-import heuristics.SimpleVariableSelector;
-import heuristics.VariableSelector;
+import java.util.LinkedList;
+import java.util.Random;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
@@ -25,10 +17,10 @@ public class TestMAX2SAT extends TestHelper {
 		super(path);
 	}
 
-	static Random random = new Random(12);
-	
-	public static Problem generate(int n) {
-		LinkedList<Clause> clauses = new LinkedList<Clause>();
+    private static Random random = new Random(12);
+
+    private static Problem generate(int n) {
+        LinkedList<Clause> clauses = new LinkedList<>();
 		
 		for(int i = 0; i < n; i++) {
 			for(int j = 0; j < 1+random.nextInt(5); j++) {
@@ -83,74 +75,9 @@ public class TestMAX2SAT extends TestHelper {
 		System.out.println("With MinLP merging & deleting : " + conf4/times);
 		System.out.println("With MinLP merging & deleting + MAX2SAT variable selection : " + conf5/times);
 	}
-	
-	/**
-	 * Instances can be found on <a href=http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
-	 * @param path path to an input file in DIMACS wcnf format
-	 */
-	protected boolean testData(int timeOut) {
-		int n = 0, m = 0, i = 0;
-		double opt = -1;
-		Clause [] clauses = null;
-		
-		try {
-			Scanner scan = new Scanner(new File(path));
-			
-			while(scan.hasNextLine()) {
-				String line = scan.nextLine();
-				String [] tokens = line.split("\\s+");
-				
-				if(tokens.length > 0) {
-					if(tokens[0].equals("c")) {
-						if(tokens.length > 2 && tokens[1].equals("opt")) {
-							opt = Double.valueOf(tokens[2]);
-						}
-						continue;
-					}
-					if(tokens[0].equals("p")) {
-						assert(tokens.length == 4);
-						assert(tokens[1].equals("wcnf"));
-						n = Integer.valueOf(tokens[2]);
-						m = Integer.valueOf(tokens[3]);
-						clauses = new Clause[m];
-					} else {
-						int u, v, tu = 1, tv = 1;
-						double w;
-						if(tokens.length == 3) {
-							w = Double.valueOf(tokens[0]);
-							u = Integer.valueOf(tokens[1]);
-							if(u < 0) {
-								u = -u;
-								tu = 0;
-							}
-							clauses[i++] = new Clause(u-1, u-1, tu, tu, w);
-						} else if(tokens.length == 4) {
-							w = Double.valueOf(tokens[0]);
-							u = Integer.valueOf(tokens[1]);
-							v = Integer.valueOf(tokens[2]);
-							if(u < 0) {
-								u = -u;
-								tu = 0;
-							}
-							if(v < 0) {
-								v = -v;
-								tv = 0;
-							}
-							clauses[i++] = new Clause(u-1, v-1, tu, tv, w);
-						}
-					}
-				}
-			}
-			
-			scan.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		if(opt != -1) {
-			System.out.println("Value to reach : " + opt);
-		}
-		return opt == run(new MAX2SAT(n, clauses), timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+
+    protected void testData(int timeOut) {
+        run(MAX2SAT.readDIMACS(path), timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
 	}
 	
 	@Parameterized.Parameters
