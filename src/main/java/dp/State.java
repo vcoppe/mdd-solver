@@ -1,10 +1,10 @@
 package dp;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import core.Variable;
 import utils.InconsistencyException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a particular state of the MDD.
@@ -158,42 +158,64 @@ public class State implements Comparable<State> {
 		return this.nVariables;
 	}
 
-	public int compareTo(State o) {
-		return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
-	}
-
+    /**
+     * @return the best value of the relaxed DD
+     */
 	public double relaxedValue() {
 		return relaxedValue;
 	}
 
-	public void setRelaxedValue(double relaxedValue) {
-		this.relaxedValue = relaxedValue;
-	}
-	
+    /**
+     * @param relaxedValue the best value of the relaxed DD
+     */
+    public void setRelaxedValue(double relaxedValue) {
+        this.relaxedValue = relaxedValue;
+    }
+
+    /**
+     * Adds an exact parent to the state
+     *
+     * @param s an exact parent of this state
+     */
+    public void addParent(State s) {
+        this.parents.add(s);
+    }
+
+    /**
+     * @return the set of all exact parents of this state
+     */
+    public Set<State> exactParents() {
+        return this.parents;
+    }
+
 	public int hashCode() {
 		return this.stateRepresentation.hashCode();
-	}
-	
-	public boolean equals(State other) {
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof State)) {
+            return false;
+        }
+
+        State other = (State) o;
+
 		if(this.layerNumber != other.layerNumber) {
 			return false;
 		}
 		if(this.hashCode() != other.hashCode()) {
 			return false;
-		}
-		
-		if(!this.stateRepresentation.equals(other.stateRepresentation)) {
-			return false;
-		}
-		
-		return true;
-	}
+        }
 
-	public void addParent(State s) {
-		this.parents.add(s);
-	}
-	
-	public Set<State> exactParents() {
-		return this.parents;
-	}
+        return this.stateRepresentation.equals(other.stateRepresentation);
+    }
+
+    /**
+     * Comparison based on the {@code StateRepresentation} rank.
+     *
+     * @param o an other state
+     * @return the same comparison as the corresponding state representations
+     */
+    public int compareTo(State o) {
+        return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
+    }
 }

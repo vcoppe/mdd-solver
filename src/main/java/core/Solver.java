@@ -106,6 +106,11 @@ public class Solver {
         return best;
     }
 
+    /**
+     * Solves the problem with no timeout.
+     *
+     * @return the state with optimal assignment
+     */
     public State solve() {
         return this.solve(Integer.MAX_VALUE / 1000);
     }

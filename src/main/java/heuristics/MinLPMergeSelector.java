@@ -1,11 +1,12 @@
 package heuristics;
 
+import dp.Layer;
+import dp.State;
+import utils.StateComparator;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import dp.Layer;
-import dp.State;
 
 /**
  * Merges the |L|-W+1 nodes with the least path values.
@@ -16,8 +17,8 @@ public class MinLPMergeSelector implements MergeSelector {
 	public Set<State> select(Layer layer, int number) {
 		State [] states = new State[layer.width()];
 		layer.states().toArray(states);
-		
-		Arrays.sort(states);
+
+		Arrays.sort(states, StateComparator.COMPARATOR);
 		Set<State> ret = new HashSet<State>();
 		
 		for(State s : states) {

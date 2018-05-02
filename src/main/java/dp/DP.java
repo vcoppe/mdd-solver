@@ -1,5 +1,6 @@
 package dp;
 
+import core.Problem;
 import heuristics.DeleteSelector;
 import heuristics.MergeSelector;
 import heuristics.VariableSelector;
@@ -7,8 +8,6 @@ import heuristics.VariableSelector;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-
-import core.Problem;
 
 /**
  * Represents the DP graph.
@@ -182,14 +181,26 @@ public class DP {
 	}
 	
 	public Set<State> exactCutset() {
-		return this.FC();
-	}
+        return this.frontierCutset();
+    }
 
-	public Set<State> LEL() {
+    /**
+     * Returns the last exact layer cutset.
+     *
+     * @return the states of the last exact layer
+     */
+    public Set<State> lastExactLayerCutset() {
 		return this.lastExactLayer.states();
-	}
-	
-	public Set<State> FC() {
+    }
+
+    /**
+     * Returns the frontier cutset.
+     * A state is in the frontier cutset if it is an exact state
+     * and if one of its successors is not.
+     *
+     * @return the states of the frontier cutset
+     */
+    public Set<State> frontierCutset() {
 		return this.frontier;
 	}
 }
