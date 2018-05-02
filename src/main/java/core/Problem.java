@@ -31,9 +31,9 @@ public interface Problem {
 	 * to the successors.
 	 * @param s a state
 	 * @param var a variable belonging to the state's variables and not assigned yet
-	 * @return a set of states resulting from a valid value assigned to the variable based on the given state
+     * @return an array of states resulting from a valid value assigned to the variable based on the given state
 	 */
-	Set<State> successors(State s, Variable var);
+    State[] successors(State s, Variable var);
 
 	/**
 	 * Given a set of states, returns a new state with the same {@code StateRepresentation} 

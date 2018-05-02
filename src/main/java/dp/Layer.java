@@ -68,9 +68,9 @@ public class Layer {
 	
 	/**
 	 * Adds a state to the layer or updates existing states in the layer with the same {@code StateRepresentation}.
-	 * @param states a {@code Set} of {@code State} objects to be added
+     * @param states an array of {@code State} objects to be added
 	 */
-	public void addStates(Set<State> states) {
+    public void addStates(State[] states) {
 		for(State state : states) {
 			this.addState(state);
 		}
@@ -120,8 +120,8 @@ public class Layer {
 			if(nextVar == null) {
 				nextVar = this.variableSelector.select(state.variables(), this);
 			}
-			
-			Set<State> succ = this.problem.successors(state, nextVar);
+
+            State[] succ = this.problem.successors(state, nextVar);
 			for(State s : succ) {
 				if(state.isExact()) {
 					s.addParent(state);

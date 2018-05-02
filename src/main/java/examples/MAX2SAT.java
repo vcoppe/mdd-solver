@@ -153,10 +153,9 @@ public class MAX2SAT implements Problem {
 
         return new MAX2SAT(toGraph(n, clauses));
     }
-	
-	public Set<State> successors(State s, Variable var) {
+
+	public State[] successors(State s, Variable var) {
 		int u = var.id();
-        Set<State> ret = new HashSet<>();
 
 		Variable [] variables = s.variables();
 		MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation());
@@ -197,8 +196,6 @@ public class MAX2SAT implements Problem {
 			System.err.println(e.getMessage());
 		}
 
-		ret.add(state0);
-
         // assigning var to 1
 		double [] benefits1 = new double[this.nVariables];
 		double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
@@ -235,11 +232,9 @@ public class MAX2SAT implements Problem {
 			System.err.println(e.getMessage());
 		}
 
-		if (ret.contains(state1)) {
-			state0.update(state1);
-		} else {
-			ret.add(state1);
-		}
+		State[] ret = new State[2];
+		ret[0] = state0;
+		ret[1] = state1;
 
         return ret;
 	}

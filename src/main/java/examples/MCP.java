@@ -10,7 +10,10 @@ import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
 import utils.InconsistencyException;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of the Maximum Cut Problem.
@@ -139,10 +142,9 @@ public class MCP implements Problem {
 
         return new State(new MCPState(benefits), variables, maxValue);
     }
-	
-	public Set<State> successors(State s, Variable var) {
+
+    public State[] successors(State s, Variable var) {
 		int u = var.id();
-        Set<State> ret = new HashSet<>();
 
 		Variable [] variables = s.variables();
 		MCPState mcpState = ((MCPState) s.stateRepresentation());
@@ -171,8 +173,6 @@ public class MCP implements Problem {
 			System.err.println(e.getMessage());
 		}
 
-        ret.add(state0);
-
         // assigning var to 1
 		double [] benefits1 = new double[this.nVariables];
 		double value1 = s.value() + Math.max(0, mcpState.benefits[u]);
@@ -197,11 +197,9 @@ public class MCP implements Problem {
 			System.err.println(e.getMessage());
 		}
 
-        if (ret.contains(state1)) {
-            state0.update(state1);
-        } else {
-            ret.add(state1);
-        }
+        State[] ret = new State[2];
+        ret[0] = state0;
+        ret[1] = state1;
 
 		return ret;
 	}

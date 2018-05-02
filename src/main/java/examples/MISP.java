@@ -12,7 +12,10 @@ import heuristics.VariableSelector;
 import utils.InconsistencyException;
 
 import java.io.File;
-import java.util.*;
+import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.util.Set;
 
 /**
  * Implementation of the Maximum Independent Set Problem.
@@ -251,9 +254,8 @@ public class MISP implements Problem {
 
     }
 
-    public Set<State> successors(State s, Variable var) {
+    public State[] successors(State s, Variable var) {
         int u = var.id();
-        Set<State> ret = new HashSet<>();
         MISPState mispState = ((MISPState) s.stateRepresentation());
         Variable[] variables = s.variables();
 
@@ -268,9 +270,9 @@ public class MISP implements Problem {
             e.printStackTrace();
         }
 
-        ret.add(dontTake);
-
         if (!mispState.isFree(u)) {
+            State[] ret = new State[1];
+            ret[0] = dontTake;
             return ret;
         }
 
@@ -290,11 +292,9 @@ public class MISP implements Problem {
             e.printStackTrace();
         }
 
-        if (ret.contains(take)) {
-            dontTake.update(take);
-        } else {
-            ret.add(take);
-        }
+        State[] ret = new State[2];
+        ret[0] = dontTake;
+        ret[1] = take;
 
         return ret;
     }

@@ -178,7 +178,12 @@ public class DP {
 	public State solveExact() {
 		return this.solveRelaxed(Integer.MAX_VALUE, Integer.MIN_VALUE, 0);
 	}
-	
+
+    /**
+     * Returns an exact cutset of the current DP tree.
+     *
+     * @return a set of exact states being an exact cutset
+     */
 	public Set<State> exactCutset() {
         return this.frontierCutset();
     }
