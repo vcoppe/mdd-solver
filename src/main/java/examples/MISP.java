@@ -165,68 +165,6 @@ public class MISP implements Problem {
         return new MISP(weights, complement);
     }
 
-    public static void main(String[] args) {
-	    /*
-		double [] weights = {3, 4, 2, 2, 7};
-		Edge [] edges = {new Edge(0, 1), new Edge(0, 2), new Edge(1, 2), new Edge(1, 3), new Edge(2, 3), new Edge(3, 4)};
-
-		Problem p = new MISP(5, weights, edges);
-
-		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
-		solver.solve();*/
-
-        Solver solver = new Solver(readDIMACS("data/misp/easy/johnson8-4-4.clq"), new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
-
-        long t0 = System.currentTimeMillis();
-        System.out.println(solver.solve(100).value());
-        System.out.println("time:" + (System.currentTimeMillis() - t0));
-
-    }
-
-    public Set<State> successors(State s, Variable var) {
-        int u = var.id();
-        Set<State> ret = new HashSet<>();
-        MISPState mispState = ((MISPState) s.stateRepresentation());
-        Variable[] variables = s.variables();
-
-        // assign 0
-        MISPState mispState0 = mispState.copy();
-        mispState0.bs.clear(u);
-        State dontTake = new State(mispState0, variables, s.value());
-
-        try {
-            dontTake.assign(u, 0);
-        } catch (InconsistencyException e) {
-            e.printStackTrace();
-        }
-
-        ret.add(dontTake);
-
-        if (!mispState.isFree(u)) {
-            return ret;
-        }
-
-        // assign 1
-        MISPState mispState1 = mispState.copy();
-        mispState1.bs.clear(u);
-
-        for (int v : g[u]) {
-            mispState1.bs.clear(v);
-        }
-
-        State take = new State(mispState1, variables, s.value() + this.weights[u]);
-
-        try {
-            take.assign(u, 1);
-        } catch (InconsistencyException e) {
-            e.printStackTrace();
-        }
-
-        ret.add(take);
-
-        return ret;
-    }
-
     public static class MISPVariableSelector implements VariableSelector {
 
         public Variable select(Variable[] vars, Layer layer) {
@@ -291,5 +229,73 @@ public class MISP implements Problem {
         public String toString() {
             return this.bs.toString();
         }
+    }
+
+    public static void main(String[] args) {
+
+        double[] weights = {3, 4, 2, 2, 7};
+        Edge[] edges = {new Edge(0, 1), new Edge(0, 2),
+                new Edge(1, 2), new Edge(1, 3),
+                new Edge(2, 3), new Edge(3, 4)};
+
+        Problem p = new MISP(5, weights, edges);
+
+        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
+        solver.solve();
+
+        /*Solver solver = new Solver(readDIMACS("data/misp/easy/johnson8-4-4.clq"), new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
+
+        long t0 = System.currentTimeMillis();
+        System.out.println(solver.solve(100).value());
+        System.out.println("time:" + (System.currentTimeMillis() - t0));*/
+
+    }
+
+    public Set<State> successors(State s, Variable var) {
+        int u = var.id();
+        Set<State> ret = new HashSet<>();
+        MISPState mispState = ((MISPState) s.stateRepresentation());
+        Variable[] variables = s.variables();
+
+        // assign 0
+        MISPState mispState0 = mispState.copy();
+        mispState0.bs.clear(u);
+        State dontTake = new State(mispState0, variables, s.value());
+
+        try {
+            dontTake.assign(u, 0);
+        } catch (InconsistencyException e) {
+            e.printStackTrace();
+        }
+
+        ret.add(dontTake);
+
+        if (!mispState.isFree(u)) {
+            return ret;
+        }
+
+        // assign 1
+        MISPState mispState1 = mispState.copy();
+        mispState1.bs.clear(u);
+
+        for (int v : g[u]) {
+            mispState1.bs.clear(v);
+        }
+
+        State take = new State(mispState1, variables, s.value() + this.weights[u]);
+
+        try {
+            take.assign(u, 1);
+        } catch (InconsistencyException e) {
+            e.printStackTrace();
+        }
+
+        if (ret.contains(take)) {
+            dontTake.update(take);
+        } else {
+            ret.add(take);
+        }
+
+        return ret;
     }
 }

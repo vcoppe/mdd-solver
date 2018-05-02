@@ -50,11 +50,11 @@ public class DP {
 	 */
 	public DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
 		this.problem = problem;
-		this.layers = new ArrayList<Layer>();
+        this.layers = new ArrayList<>();
 		this.root = new Layer(problem, variableSelector, initialState, initialState.layerNumber());
 		this.exact = true;
 		this.lastExactLayer = null;
-		this.frontier = new HashSet<State>();
+        this.frontier = new HashSet<>();
 		this.mergeSelector = mergeSelector;
 		this.deleteSelector = deleteSelector;
 		this.variableSelector = variableSelector;
@@ -92,13 +92,12 @@ public class DP {
 			while(lastLayer.width() > width) {
 				Set<State> toRemove = this.deleteSelector.select(lastLayer, lastLayer.width()-width);
 				lastLayer.removeStates(toRemove);
+                this.exact = false;
 			}
 			
 			this.layers.add(lastLayer);
-			
-			if(lastLayer.isExact()) {
-				this.lastExactLayer = lastLayer;
-			} else {
+
+            if (!lastLayer.isExact()) {
 				this.exact = false;
 			}
 		}

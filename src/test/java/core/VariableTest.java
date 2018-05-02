@@ -12,7 +12,10 @@ public class VariableTest {
         int n = 10;
         Variable var = new Variable(0, n);
 
+        assertEquals(var.id(), 0);
         assertEquals(var.domainSize(), n);
+
+        assertEquals(var.value(), -1);
 
         for (int i = 0; i < 10; i++) {
             assertTrue(var.contains(i));
@@ -40,6 +43,13 @@ public class VariableTest {
         int n = 10;
         Variable var = new Variable(0, n);
 
+        try {
+            var.remove(n);
+            fail("Should throw an error");
+        } catch (InconsistencyException e) {
+
+        }
+
         assertFalse(var.isAssigned());
 
         try {
@@ -59,6 +69,7 @@ public class VariableTest {
 
         assertEquals(var.domainSize(), 1);
         assertTrue(var.contains(2));
+        assertEquals(var.value(), 2);
         assertTrue(var.isAssigned());
 
         try {

@@ -21,7 +21,7 @@ public abstract class TestHelper {
     public void testInstance() {
 		System.out.println(path);
 		try {
-            testData(90);
+            testData(15);
 		} catch(NullPointerException e) {
 			fail("Timed out");
 		} catch(OutOfMemoryError e) {

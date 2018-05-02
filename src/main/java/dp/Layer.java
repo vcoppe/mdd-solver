@@ -29,7 +29,7 @@ public class Layer {
 	 * @param number the number of the layer
 	 */
 	public Layer(Problem problem, VariableSelector variableSelector, int number) {
-		this.states = new HashMap<StateRepresentation, State>();
+        this.states = new HashMap<>();
 		this.problem = problem;
 		this.variableSelector = variableSelector;
 		this.exact = true;
@@ -44,7 +44,7 @@ public class Layer {
 	 * @param number the number of the layer
 	 */
 	public Layer(Problem problem, VariableSelector variableSelector, State state, int number) {
-		this.states = new HashMap<StateRepresentation, State>();
+        this.states = new HashMap<>();
 		this.states.put(state.stateRepresentation(), state);
 		this.problem = problem;
 		this.variableSelector = variableSelector;
@@ -89,15 +89,21 @@ public class Layer {
 		this.exact = false;
 	}
 
-	public void removeStates(Set<State> states, Set<State> frontier) {
-		for(State state : states) {
-			if(this.states.containsKey(state.stateRepresentation())) {
-				this.states.remove(state.stateRepresentation());
-			}
-			frontier.addAll(state.exactParents());
-		}
-		this.exact = false;
-	}
+    /**
+     * Remove the states from the layer.
+     *
+     * @param states   the states to be removed
+     * @param frontier the frontier cutset in order to add exact parents
+     */
+    public void removeStates(Set<State> states, Set<State> frontier) {
+        for (State state : states) {
+            if (this.states.containsKey(state.stateRepresentation())) {
+                this.states.remove(state.stateRepresentation());
+            }
+            frontier.addAll(state.exactParents());
+        }
+        this.exact = false;
+    }
 	
 	/**
 	 * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
@@ -134,7 +140,7 @@ public class Layer {
 	 * @return a {@code Set} with all the states
 	 */
 	public Set<State> states() {
-		return new HashSet<State>(this.states.values());
+        return new HashSet<>(this.states.values());
 	}
 	
 	/**

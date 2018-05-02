@@ -235,7 +235,11 @@ public class MAX2SAT implements Problem {
 			System.err.println(e.getMessage());
 		}
 
-        ret.add(state1);
+		if (ret.contains(state1)) {
+			state0.update(state1);
+		} else {
+			ret.add(state1);
+		}
 
         return ret;
 	}
