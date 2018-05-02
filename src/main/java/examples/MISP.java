@@ -45,7 +45,7 @@ public class MISP implements Problem {
 	 * @param weights the weights of the vertices
 	 * @param g the adjacency lists
 	 */
-	public MISP(double [] weights, LinkedList<Integer> [] g) {
+    private MISP(double[] weights, LinkedList<Integer>[] g) {
 		this.nVariables = weights.length;
 		this.weights = weights;
 		this.g = g;
@@ -66,7 +66,7 @@ public class MISP implements Problem {
 		return this.nVariables;
 	}
 
-    public static LinkedList<Integer>[] toGraph(int n, Edge[] edges) {
+    private static LinkedList<Integer>[] toGraph(int n, Edge[] edges) {
         @SuppressWarnings("unchecked")
         LinkedList<Integer>[] adj = new LinkedList[n];
         for (int i = 0; i < n; i++) {

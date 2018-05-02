@@ -48,7 +48,7 @@ public class DP {
 	 * @param variableSelector heuristic to select the next variable to be assigned
 	 * @param initialState the state where to start the layers
 	 */
-	public DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
+    private DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
 		this.problem = problem;
         this.layers = new ArrayList<>();
 		this.root = new Layer(problem, variableSelector, initialState, initialState.layerNumber());
@@ -193,7 +193,7 @@ public class DP {
      *
      * @return the states of the last exact layer
      */
-    public Set<State> lastExactLayerCutset() {
+    private Set<State> lastExactLayerCutset() {
 		return this.lastExactLayer.states();
     }
 
@@ -204,7 +204,7 @@ public class DP {
      *
      * @return the states of the frontier cutset
      */
-    public Set<State> frontierCutset() {
+    private Set<State> frontierCutset() {
 		return this.frontier;
 	}
 }
