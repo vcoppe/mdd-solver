@@ -6,8 +6,8 @@ package examples;
  * @author Vianney Coppé
  */
 public class Edge {
-	
-	public int u, v;
+
+    public int u, v;
 	double w;
 	
 	/**
