@@ -47,7 +47,7 @@ public class StateTest {
             try {
                 s.assign(i, 0);
 
-                assertTrue(s.variables()[i].isAssigned());
+                assertTrue(s.variables()[i].isBound());
                 assertEquals(s.variables()[i].value(), 0);
             } catch (InconsistencyException e) {
                 fail("Should not happen");

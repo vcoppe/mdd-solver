@@ -47,7 +47,11 @@ public class MAX2SAT implements Problem {
 		
 		Variable [] variables = new Variable[this.nVariables];
 		for(int i = 0; i < this.nVariables; i++) {
-			variables[i] = new Variable(i, 2);
+			try {
+				variables[i] = new Variable(i, 2);
+			} catch (InconsistencyException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		this.root = new State(new MAX2SATState(this.nVariables), variables, 0);
@@ -165,7 +169,7 @@ public class MAX2SAT implements Problem {
 		double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
 
 		for(int i = 0; i < this.nVariables; i++) {
-			if(!variables[i].isAssigned()) {
+			if (!variables[i].isBound()) {
 				if(u != i) benefits0[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
 					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
@@ -201,7 +205,7 @@ public class MAX2SAT implements Problem {
 		double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
 
         for(int i = 0; i < this.nVariables; i++) {
-			if(!variables[i].isAssigned()) {
+			if (!variables[i].isBound()) {
 				if(u != i) benefits1[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
 					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
@@ -316,7 +320,7 @@ public class MAX2SAT implements Problem {
 			}
 			
 			for(int index : order) {
-				if(!vars[index].isAssigned()) {
+				if (!vars[index].isBound()) {
 					return vars[index];
 				}
 			}

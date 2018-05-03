@@ -48,7 +48,11 @@ public class MCP implements Problem {
 		
 		Variable [] variables = new Variable[this.nVariables];
 		for(int i = 0; i < this.nVariables; i++) {
-			variables[i] = new Variable(i, 2);
+			try {
+				variables[i] = new Variable(i, 2);
+			} catch (InconsistencyException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		try {
@@ -154,7 +158,7 @@ public class MCP implements Problem {
 		double value0 = s.value() + Math.max(0, -mcpState.benefits[u]);
 
 		for(int i = 0; i < this.nVariables; i++) {
-			if(i != u && !variables[i].isAssigned()) {
+			if (i != u && !variables[i].isBound()) {
 				benefits0[i] = mcpState.benefits[i];
 				if(g[u].containsKey(i)) {
 					if(mcpState.benefits[i] * g[u].get(i) <= 0) {
@@ -178,7 +182,7 @@ public class MCP implements Problem {
 		double value1 = s.value() + Math.max(0, mcpState.benefits[u]);
 
         for(int i = 0; i < this.nVariables; i++) {
-			if(i != u && !variables[i].isAssigned()) {
+			if (i != u && !variables[i].isBound()) {
 				benefits1[i] = mcpState.benefits[i];
 				if(g[u].containsKey(i)) {
 					if(mcpState.benefits[i] * g[u].get(i) >= 0) {

@@ -52,8 +52,12 @@ public class MISP implements Problem {
 		
 		Variable [] variables = new Variable[this.nVariables];
 		for(int i = 0; i < this.nVariables; i++) {
-			variables[i] = new Variable(i, 2);
-		}
+            try {
+                variables[i] = new Variable(i, 2);
+            } catch (InconsistencyException e) {
+                e.printStackTrace();
+            }
+        }
 
 		this.root = new State(new MISPState(this.nVariables), variables, 0);
 	}
@@ -176,7 +180,7 @@ public class MISP implements Problem {
 
             for (State state : layer.states()) {
                 for (int i = 0; i < vars.length; i++)
-                    if (!vars[i].isAssigned()) {
+                    if (!vars[i].isBound()) {
                         if (((MISPState) state.stateRepresentation()).isFree(i)) {
                             count[i]++;
                         }

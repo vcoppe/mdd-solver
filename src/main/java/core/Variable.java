@@ -12,6 +12,8 @@ public class Variable {
 	
 	private int id;
 	private Set<Integer> domain;
+    private boolean bound;
+    private int value;
 	
 	/**
 	 * Returns a variable with the domain [min, max].
@@ -19,8 +21,14 @@ public class Variable {
 	 * @param min the minimum value of the domain
 	 * @param max the maximum value of the domain
 	 */
-	public Variable(int id, int min, int max) {
+    public Variable(int id, int min, int max) throws InconsistencyException {
+        if (min > max) {
+            throw new InconsistencyException("Variable with empty domain");
+        }
+
 		this.id = id;
+        this.bound = false;
+        this.value = -1;
 		this.domain = new HashSet<Integer>();
 		for(int i = min; i <= max; i++) {
 			this.domain.add(i);
@@ -32,7 +40,7 @@ public class Variable {
 	 * @param id the id of the variable in the problem
 	 * @param n the size of the domain
 	 */
-	public Variable(int id, int n) {
+    public Variable(int id, int n) throws InconsistencyException {
 		this(id, 0, n-1);
 	}
 	
@@ -41,28 +49,47 @@ public class Variable {
 	 * @param id the id of the variable in the problem
 	 * @param domain the possible values of the variable
 	 */
-	public Variable(int id, Set<Integer> domain) {
+    public Variable(int id, Set<Integer> domain) throws InconsistencyException {
 		this.id = id;
-		this.domain = new HashSet<Integer>();
+        this.bound = false;
+        this.value = -1;
+		/*this.domain = new HashSet<Integer>();
 		for(Integer i : domain) {
 			this.domain.add(i);
-		}
-	}
+		}*/
+        this.domain = domain;
+        if (this.domain.size() == 0) {
+            throw new InconsistencyException("Variable with empty domain");
+        }
+    }
+
+    /**
+     * Returns a variable with the given domain.
+     *
+     * @param id     the id of the variable in the problem
+     * @param domain the possible values of the variable
+     */
+    public Variable(int id, Set<Integer> domain, boolean bound, int value) {
+        this.id = id;
+        this.domain = domain;
+        this.bound = bound;
+        this.value = value;
+    }
 	
 	/**
 	 * Returns a copy of the variable.
 	 * @return an different object {@code Variable} with the same domain
 	 */
 	public Variable copy() {
-		return new Variable(this.id, this.domain);
+        return new Variable(this.id, this.domain, this.bound, this.value);
 	}
 	
 	/**
 	 * Returns {@code true} <==> the variable is assigned.
 	 * @return a {@code boolean} with the status of the variable 
-	 */
-	public boolean isAssigned() {
-		return this.domainSize() == 1;
+     */
+    public boolean isBound() {
+        return this.bound;
 	}
 	
 	/**
@@ -94,14 +121,7 @@ public class Variable {
 	 * @return the value of the variable of {@code -1} if it is not assigned
 	 */
 	public int value() {
-		if(!this.isAssigned()) {
-			return -1;
-		}
-		
-		for(int v : this.domain) {
-			return v;
-		}
-		return -1;
+        return this.value;
 	}
 	
 	/**
@@ -110,14 +130,18 @@ public class Variable {
 	 * @throws InconsistencyException if the variable is already assigned or if the value is
 	 * not in the domain
 	 */
-	public void assign(int value) throws InconsistencyException {
-		if(!this.contains(value)) {
-			throw new InconsistencyException("Assigning incorrect value to variable : " + value + ".");
-		}
-		
-		this.domain.clear();
-		this.domain.add(value);
-	}
+    public void assign(int value) throws InconsistencyException {
+        if (this.bound) {
+            throw new InconsistencyException("Variable already bound");
+        }
+
+        if(!this.contains(value)) {
+            throw new InconsistencyException("Assigning incorrect value to variable : " + value + ".");
+        }
+
+        this.bound = true;
+        this.value = value;
+    }
 	
 	/**
 	 * Returns a boolean telling if a value is in the domain of the variable.
@@ -125,24 +149,28 @@ public class Variable {
 	 * @return a {@code boolean}, {@code true} <==> value is a possible value of the variable
 	 */
 	public boolean contains(int value) {
-		return this.domain.contains(value);
+        if (this.bound) {
+            return this.value == value;
+        } else {
+            return this.domain.contains(value);
+        }
 	}
-	
+
 	/**
 	 * Removes a value from the domain of the variable.
 	 * @param value an integer to be removed from the domain
 	 * @throws InconsistencyException if the variable is already assigned or if the value is
 	 * not in the domain
-	 */
-	public void remove(int value) throws InconsistencyException {
-		if(this.isAssigned()) {
+     */
+	/*public void remove(int value) throws InconsistencyException {
+		if(this.bound) {
 			throw new InconsistencyException("Removing value from assigned variable.");
 		}
-		
+
 		if(!this.contains(value)) {
 			throw new InconsistencyException("Removing incorrect value from variable.");
 		}
-		
+
 		this.domain.remove(value);
-	}
+	}*/
 }
