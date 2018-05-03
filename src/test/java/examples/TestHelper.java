@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public abstract class TestHelper {
@@ -15,13 +16,13 @@ public abstract class TestHelper {
         this.path = path;
     }
 
-    protected abstract void testData(int timeOut);
+    protected abstract boolean testData(int timeOut);
 
 	@Test
     public void testInstance() {
 		System.out.println(path);
 		try {
-            testData(15);
+            assertTrue(testData(15));
 		} catch(NullPointerException e) {
 			fail("Timed out");
 		} catch(OutOfMemoryError e) {

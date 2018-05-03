@@ -11,9 +11,9 @@ import java.util.Random;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
-public class TestMAX2SAT extends TestHelper {
-	
-	public TestMAX2SAT(String path) {
+public class TestMAX2SATAll extends TestHelper {
+
+    public TestMAX2SATAll(String path) {
 		super(path);
 	}
 
@@ -76,8 +76,10 @@ public class TestMAX2SAT extends TestHelper {
 		System.out.println("With MinLP merging & deleting + MAX2SAT variable selection : " + conf5/times);
 	}
 
-    protected void testData(int timeOut) {
-        run(MAX2SAT.readDIMACS(path), timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+    protected boolean testData(int timeOut) {
+        MAX2SAT p = MAX2SAT.readDIMACS(path);
+        double found = run(p, timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+        return p.opt == found;
 	}
 	
 	@Parameterized.Parameters

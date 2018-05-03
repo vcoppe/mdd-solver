@@ -21,6 +21,8 @@ public class MAX2SAT implements Problem {
 
     private int nVariables;
     private State root;
+
+    public double opt;
 	
 	/**
 	 * Returns the representation of the MAX2SAT problem.
@@ -155,7 +157,9 @@ public class MAX2SAT implements Problem {
             System.out.println("Value to reach : " + opt);
         }
 
-        return new MAX2SAT(toGraph(n, clauses));
+        MAX2SAT p = new MAX2SAT(toGraph(n, clauses));
+        p.opt = opt;
+        return p;
     }
 
 	public State[] successors(State s, Variable var) {

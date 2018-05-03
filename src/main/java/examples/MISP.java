@@ -29,6 +29,8 @@ public class MISP implements Problem {
 
     private int nVariables;
     private State root;
+
+    public double opt;
 	
 	/**
 	 * Creates the representation of the MISP problem.
@@ -169,7 +171,9 @@ public class MISP implements Problem {
             System.out.println("Value to reach : " + opt);
         }
 
-        return new MISP(weights, complement);
+        MISP p = new MISP(weights, complement);
+        p.opt = opt;
+        return p;
     }
 
     public static class MISPVariableSelector implements VariableSelector {

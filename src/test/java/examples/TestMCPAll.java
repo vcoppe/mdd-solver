@@ -1,28 +1,19 @@
 package examples;
 
+import core.Problem;
+import core.Solver;
+import heuristics.*;
+
 import java.util.LinkedList;
 import java.util.Random;
 
-import core.Problem;
-import core.Solver;
-import examples.Edge;
-import examples.MCP;
-import heuristics.DeleteSelector;
-import heuristics.MergeSelector;
-import heuristics.MinLPDeleteSelector;
-import heuristics.MinLPMergeSelector;
-import heuristics.SimpleDeleteSelector;
-import heuristics.SimpleMergeSelector;
-import heuristics.SimpleVariableSelector;
-import heuristics.VariableSelector;
-
 @SuppressWarnings("unused")
-public class TestMCP {
+public class TestMCPAll {
 	
 	static Random random = new Random(12);
-	
-	public static Problem generate(int n) {
-		LinkedList<Edge> edges = new LinkedList<Edge>();
+
+	private static Problem generate(int n) {
+		LinkedList<Edge> edges = new LinkedList<>();
 		
 		Random random = new Random(12);
 		
