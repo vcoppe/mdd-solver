@@ -7,6 +7,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import utils.InconsistencyException;
 
+import java.util.BitSet;
+
 import static org.junit.Assert.*;
 
 public class StateTest {
@@ -110,5 +112,31 @@ public class StateTest {
 
         s.setRelaxedValue(20);
         assertEquals(Double.compare(s.relaxedValue(), 20), 0);
+    }
+
+    @Test
+    public void testEquals() {
+        StateRepresentation sr = p.new MISPState(n);
+        State s = new State(sr, vars, 10);
+
+        assertFalse(s.equals(new Integer(0)));
+
+        BitSet bs = new BitSet(n);
+        bs.flip(0, n);
+        StateRepresentation sr2 = p.new MISPState(bs);
+        State s2 = new State(sr2, vars, 10);
+
+        assertTrue(s.equals(s2));
+
+        s2.setLayerNumber(1);
+        assertFalse(s.equals(s2));
+
+        bs.clear(1);
+
+        StateRepresentation sr3 = p.new MISPState(bs);
+        State s3 = new State(sr3, vars, 10);
+
+        assertFalse(s.equals(s3));
+
     }
 }
