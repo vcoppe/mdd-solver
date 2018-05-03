@@ -30,12 +30,18 @@ public class StateTest {
     public void testCopy() {
         StateRepresentation sr = p.new MISPState(n);
         State s = new State(sr, vars, 10);
+
+        assertEquals(s.nVariables(), n);
+
         State s2 = s.copy();
 
         assertEquals(Double.compare(s.value(), s2.value()), 0);
         assertEquals(s.stateRepresentation(), s2.stateRepresentation());
         assertEquals(s.isExact(), s2.isExact());
         assertEquals(s.hashCode(), s2.hashCode());
+
+        assertTrue(s.equals(s2));
+        assertEquals(s.compareTo(s2), 0);
     }
 
     @Test
@@ -80,4 +86,29 @@ public class StateTest {
         assertEquals(s1.exactParents().size(), 1);
     }
 
+    @Test
+    public void testSettersGetters() {
+        StateRepresentation sr = p.new MISPState(n);
+        State s = new State(sr, vars, 10);
+
+        s.setExact(true);
+        assertTrue(s.isExact());
+
+        s.setExact(false);
+        assertFalse(s.isExact());
+
+        s.setLayerNumber(1);
+        assertEquals(s.layerNumber(), 1);
+        assertFalse(s.isFinal());
+
+        s.setLayerNumber(n);
+        assertEquals(s.layerNumber(), n);
+        assertTrue(s.isFinal());
+
+        s.setRelaxedValue(10);
+        assertEquals(Double.compare(s.relaxedValue(), 10), 0);
+
+        s.setRelaxedValue(20);
+        assertEquals(Double.compare(s.relaxedValue(), 20), 0);
+    }
 }
