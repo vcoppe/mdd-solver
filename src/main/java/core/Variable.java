@@ -29,7 +29,7 @@ public class Variable {
 		this.id = id;
         this.bound = false;
         this.value = -1;
-		this.domain = new HashSet<Integer>();
+        this.domain = new HashSet<>();
 		for(int i = min; i <= max; i++) {
 			this.domain.add(i);
 		}
@@ -53,10 +53,6 @@ public class Variable {
 		this.id = id;
         this.bound = false;
         this.value = -1;
-		/*this.domain = new HashSet<Integer>();
-		for(Integer i : domain) {
-			this.domain.add(i);
-		}*/
         this.domain = domain;
         if (this.domain.size() == 0) {
             throw new InconsistencyException("Variable with empty domain");
@@ -155,22 +151,4 @@ public class Variable {
             return this.domain.contains(value);
         }
 	}
-
-	/**
-	 * Removes a value from the domain of the variable.
-	 * @param value an integer to be removed from the domain
-	 * @throws InconsistencyException if the variable is already assigned or if the value is
-	 * not in the domain
-     */
-	/*public void remove(int value) throws InconsistencyException {
-		if(this.bound) {
-			throw new InconsistencyException("Removing value from assigned variable.");
-		}
-
-		if(!this.contains(value)) {
-			throw new InconsistencyException("Removing incorrect value from variable.");
-		}
-
-		this.domain.remove(value);
-	}*/
 }

@@ -3,6 +3,8 @@ package core;
 import org.junit.Test;
 import utils.InconsistencyException;
 
+import java.util.HashSet;
+
 import static org.junit.Assert.*;
 
 public class VariableTest {
@@ -46,6 +48,38 @@ public class VariableTest {
         }
 
         assertFalse(var.isBound());
+
+        try {
+            var = new Variable(0, 2, 1);
+            fail("Should throw an exception");
+        } catch (InconsistencyException e) {
+
+        }
+    }
+
+    @Test
+    public void testConstructor3() {
+        HashSet<Integer> domain = new HashSet<>();
+        Variable var = null;
+        try {
+            var = new Variable(0, domain);
+            fail("Should throw an exception");
+        } catch (InconsistencyException e) {
+
+        }
+
+        domain.add(0);
+        domain.add(1);
+        try {
+            var = new Variable(0, domain);
+        } catch (InconsistencyException e) {
+            fail("Should not happen");
+        }
+
+        assertFalse(var.isBound());
+        assertEquals(var.id(), 0);
+        assertEquals(var.value(), -1);
+        assertEquals(var.domain(), domain); // pass the reference
     }
 
     @Test
@@ -58,23 +92,14 @@ public class VariableTest {
             fail("Should not happen");
         }
 
-        /*try {
-            var.remove(n);
-            fail("Should throw an error");
+        try {
+            var.assign(n);
+            fail("Should throw an exception");
         } catch (InconsistencyException e) {
 
-        }*/
-
-        assertFalse(var.isBound());
-
-        /*try {
-            var.remove(n - 1);
-        } catch (InconsistencyException e) {
-            fail("Should not happen");
         }
 
-        assertEquals(var.domainSize(), n - 1);
-        assertFalse(var.contains(n - 1));*/
+        assertFalse(var.isBound());
 
         try {
             var.assign(2);
@@ -82,7 +107,6 @@ public class VariableTest {
             fail("Should not happen");
         }
 
-        //assertEquals(var.domainSize(), 1);
         assertTrue(var.contains(2));
         assertEquals(var.value(), 2);
         assertTrue(var.isBound());
@@ -93,12 +117,5 @@ public class VariableTest {
         } catch (InconsistencyException e) {
 
         }
-
-        /*try {
-            var.remove(2);
-            fail("Should throw an error");
-        } catch (InconsistencyException e) {
-
-        }*/
     }
 }
