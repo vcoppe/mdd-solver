@@ -13,7 +13,10 @@ import javafx.util.Pair;
 import utils.InconsistencyException;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 public class MAX2SAT implements Problem {
 
@@ -43,7 +46,7 @@ public class MAX2SAT implements Problem {
 	 * 3 = 11 -> TT
 	 * where the first bit corresponds to the smallest variable id.
 	 */
-	public MAX2SAT(Map<Integer, double[]>[] g) {
+	private MAX2SAT(Map<Integer, double[]>[] g) {
 		this.nVariables = g.length;
 		MAX2SAT.g = g;
 		
@@ -247,12 +250,12 @@ public class MAX2SAT implements Problem {
         return ret;
 	}
 
-    public State merge(Set<State> states) {
+	public State merge(State[] states) {
 		Variable [] variables = null;
 		double maxValue = Double.MIN_VALUE;
 		double [] benefits = new double[nVariables];
-		double [] newValues = new double[states.size()];
-		MAX2SATState [] statesRep = new MAX2SATState[states.size()];
+		double[] newValues = new double[states.length];
+		MAX2SATState[] statesRep = new MAX2SATState[states.length];
 
         int i = 0;
 		for(State state : states) {

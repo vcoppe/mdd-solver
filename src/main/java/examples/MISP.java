@@ -15,7 +15,6 @@ import java.io.File;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.Scanner;
-import java.util.Set;
 
 /**
  * Implementation of the Maximum Independent Set Problem.
@@ -87,7 +86,7 @@ public class MISP implements Problem {
         return adj;
 	}
 
-	public State merge(Set<State> states) {
+    public State merge(State[] states) {
 		Variable [] variables = null;
 		double maxValue = Double.MIN_VALUE;
 		MISPState mispState = null;

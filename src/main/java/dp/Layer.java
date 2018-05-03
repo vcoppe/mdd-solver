@@ -4,8 +4,8 @@ import core.Problem;
 import core.Variable;
 import heuristics.VariableSelector;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,12 +44,9 @@ public class Layer {
 	 * @param number the number of the layer
 	 */
 	public Layer(Problem problem, VariableSelector variableSelector, State state, int number) {
-        this.states = new HashMap<>();
+        this(problem, variableSelector, number);
 		this.states.put(state.stateRepresentation(), state);
-		this.problem = problem;
-		this.variableSelector = variableSelector;
 		this.exact = state.isExact();
-		this.number = number;
 	}
 	
 	/**
@@ -70,7 +67,7 @@ public class Layer {
 	 * Adds a state to the layer or updates existing states in the layer with the same {@code StateRepresentation}.
      * @param states an array of {@code State} objects to be added
 	 */
-    public void addStates(State[] states) {
+    private void addStates(State[] states) {
 		for(State state : states) {
 			this.addState(state);
 		}
@@ -78,11 +75,12 @@ public class Layer {
 
 	/**
 	 * Remove the states from the layer.
-	 * @param states the states to be removed
+     *
+     * @param states   the states to be removed
 	 */
-	public void removeStates(Set<State> states) {
-		for(State state : states) {
-			if(this.states.containsKey(state.stateRepresentation())) {
+    public void removeStates(State[] states) {
+        for (State state : states) {
+            if (this.states.containsKey(state.stateRepresentation())) {
 				this.states.remove(state.stateRepresentation());
 			}
 		}
@@ -95,7 +93,7 @@ public class Layer {
      * @param states   the states to be removed
      * @param frontier the frontier cutset in order to add exact parents
      */
-    public void removeStates(Set<State> states, Set<State> frontier) {
+    public void removeStates(State[] states, Set<State> frontier) {
         for (State state : states) {
             if (this.states.containsKey(state.stateRepresentation())) {
                 this.states.remove(state.stateRepresentation());
@@ -139,8 +137,8 @@ public class Layer {
 	 * Returns a {@code Set} of all states contained in the layer.
 	 * @return a {@code Set} with all the states
 	 */
-	public Set<State> states() {
-        return new HashSet<>(this.states.values());
+    public Collection<State> states() {
+        return this.states.values();
 	}
 	
 	/**
@@ -177,7 +175,7 @@ public class Layer {
 	 * Help function to set the exact property of the layer.
 	 * @param exact a {@code boolean} telling if the layer is exact or not
 	 */
-	public void setExact(boolean exact) {
+    private void setExact(boolean exact) {
 		this.exact = exact;
 	}
 	

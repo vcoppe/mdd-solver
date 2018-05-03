@@ -1,19 +1,19 @@
 package heuristics;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import dp.Layer;
 import dp.State;
 
 public class SimpleMergeSelector implements MergeSelector {
 
-	public Set<State> select(Layer layer, int number) {
-		Set<State> ret = new HashSet<State>();
+    public State[] select(Layer layer, int number) {
+        State[] ret = new State[number];
+        int i = 0;
+
 		for(State s : layer.states()) {
-			ret.add(s);
-			if(ret.size() == number) break;
-		}
+            ret[i++] = s;
+            if (i == number) break;
+        }
+
 		return ret;
 	}
 

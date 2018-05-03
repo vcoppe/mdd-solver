@@ -46,7 +46,7 @@ public class State implements Comparable<State> {
 		this.nVariables = variables.length;
 		this.variables = new Variable[this.nVariables];
 		this.relaxedValue = Double.MAX_VALUE;
-		this.parents = new HashSet<State>();
+        this.parents = new HashSet<>();
 		
 		for (int i = 0; i < this.nVariables; i++) {
 			this.variables[i] = variables[i].copy();
@@ -202,7 +202,8 @@ public class State implements Comparable<State> {
 		if(this.layerNumber != other.layerNumber) {
 			return false;
 		}
-		if(this.hashCode() != other.hashCode()) {
+
+        if(this.hashCode() != other.hashCode()) {
 			return false;
         }
 

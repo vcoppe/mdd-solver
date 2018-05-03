@@ -83,8 +83,8 @@ public class TestMAX2SATAll extends TestHelper {
 	}
 	
 	@Parameterized.Parameters
-    public static Object[] data() { 
-		return dataFromFolder("data/max2sat"); 
+	public static Object[] data() {
+		return dataFromFolder("data/max2sat");
 	}
 	
 }

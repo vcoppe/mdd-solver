@@ -5,7 +5,7 @@ import heuristics.DeleteSelector;
 import heuristics.MergeSelector;
 import heuristics.VariableSelector;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +23,6 @@ public class DP {
 	private Layer lastExactLayer;
 	private Set<State> frontier;
 	private boolean exact;
-	private ArrayList<Layer> layers;
 	private Problem problem;
 	private MergeSelector mergeSelector;
 	private DeleteSelector deleteSelector;
@@ -50,7 +49,6 @@ public class DP {
 	 */
     private DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
 		this.problem = problem;
-        this.layers = new ArrayList<>();
 		this.root = new Layer(problem, variableSelector, initialState, initialState.layerNumber());
 		this.exact = true;
 		this.lastExactLayer = null;
@@ -77,8 +75,6 @@ public class DP {
 	 * @return the {@code State} object representing the best solution found
 	 */
 	public State solveRestricted(int width, long startTime, int timeOut) {
-		this.layers.clear();
-		this.layers.add(root);
 		this.lastExactLayer = null;
 		Layer lastLayer = root;
 		
@@ -90,12 +86,10 @@ public class DP {
 			lastLayer = lastLayer.nextLayer();
 
 			while(lastLayer.width() > width) {
-				Set<State> toRemove = this.deleteSelector.select(lastLayer, lastLayer.width()-width);
+                State[] toRemove = this.deleteSelector.select(lastLayer, lastLayer.width() - width);
 				lastLayer.removeStates(toRemove);
                 this.exact = false;
 			}
-			
-			this.layers.add(lastLayer);
 
             if (!lastLayer.isExact()) {
 				this.exact = false;
@@ -112,8 +106,6 @@ public class DP {
 	 * @return the {@code State} object representing the best solution found
 	 */
 	public State solveRelaxed(int width, long startTime, int timeOut) {
-		this.layers.clear();
-		this.layers.add(root);
 		this.lastExactLayer = null;
 		this.frontier.clear();
 		Layer lastLayer = root;
@@ -126,7 +118,7 @@ public class DP {
 			lastLayer = lastLayer.nextLayer();
 			
 			while(lastLayer.width() > width) {
-				Set<State> toMerge = this.mergeSelector.select(lastLayer, lastLayer.width()-width+1);
+                State[] toMerge = this.mergeSelector.select(lastLayer, lastLayer.width() - width + 1);
 				lastLayer.removeStates(toMerge, this.frontier);
 				
 				State mergedState = this.problem.merge(toMerge);
@@ -135,8 +127,6 @@ public class DP {
 				lastLayer.addState(mergedState);
 				this.exact = false;
 			}
-			
-			this.layers.add(lastLayer);
 			
 			if(lastLayer.isExact()) {
 				this.lastExactLayer = lastLayer;
@@ -193,7 +183,7 @@ public class DP {
      *
      * @return the states of the last exact layer
      */
-    private Set<State> lastExactLayerCutset() {
+    private Collection<State> lastExactLayerCutset() {
 		return this.lastExactLayer.states();
     }
 

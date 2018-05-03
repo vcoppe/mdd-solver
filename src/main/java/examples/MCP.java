@@ -13,7 +13,6 @@ import utils.InconsistencyException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation of the Maximum Cut Problem.
@@ -42,7 +41,7 @@ public class MCP implements Problem {
 	 * {@code g[i]} contains the key {@code j} if the vertices{@code i} and {@code j} 
 	 * are connected with an edge and {@code g[i].get(j)} is the weight of this edge
 	 */
-	public MCP(Map<Integer, Double> [] g) {
+	private MCP(Map<Integer, Double>[] g) {
 		this.nVariables = g.length;
 		this.g = g;
 		
@@ -104,12 +103,12 @@ public class MCP implements Problem {
         return g;
     }
 
-    public State merge(Set<State> states) {
+	public State merge(State[] states) {
         Variable[] variables = null;
         double maxValue = Double.MIN_VALUE;
         double[] benefits = new double[nVariables];
-        double[] newValues = new double[states.size()];
-        MCPState[] statesRep = new MCPState[states.size()];
+		double[] newValues = new double[states.length];
+		MCPState[] statesRep = new MCPState[states.length];
 
         int i = 0;
         for (State state : states) {

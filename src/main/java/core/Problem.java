@@ -2,8 +2,6 @@ package core;
 
 import dp.State;
 
-import java.util.Set;
-
 /**
  * Enables solving new problems by implementing the successors and merge functions.
  * The interface {@code StateRepresentation} should also be implemented.
@@ -11,7 +9,7 @@ import java.util.Set;
  * @author Vianney Coppé
  */
 public interface Problem {
-	
+
 	/**
 	 * Returns the initial state of the problem i. e. the empty assignment.
 	 * @return an object {@code State} representing the root.
@@ -41,6 +39,6 @@ public interface Problem {
 	 * @param states a set of states
 	 * @return the resulting merged state
 	 */
-	State merge(Set<State> states);
+    State merge(State[] states);
 	
 }

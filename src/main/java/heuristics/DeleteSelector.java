@@ -1,7 +1,5 @@
 package heuristics;
 
-import java.util.Set;
-
 import dp.Layer;
 import dp.State;
 
@@ -16,8 +14,8 @@ public interface DeleteSelector {
 	 * Selects the states to be deleted in order to restrict the MDD.
 	 * @param layer the layer from which we need to remove states
 	 * @param number the number of states to be removed
-	 * @return a {@code Set} of {@code State} objects to be deleted from the layer
+	 * @return an array of {@code State} objects to be deleted from the layer
 	 */
-	Set<State> select(Layer layer, int number);
+	State[] select(Layer layer, int number);
 	
 }

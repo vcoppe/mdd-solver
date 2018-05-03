@@ -5,24 +5,21 @@ import dp.State;
 import utils.StateComparator;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class MinLPDeleteSelector implements DeleteSelector {
 
 	@Override
-	public Set<State> select(Layer layer, int number) {
-		State [] states = new State[layer.width()];
+    public State[] select(Layer layer, int number) {
+        State[] states = new State[layer.width()];
 		layer.states().toArray(states);
 
 		Arrays.sort(states, StateComparator.COMPARATOR);
-		Set<State> ret = new HashSet<State>();
-		
+        State[] ret = new State[number];
+        int i = 0;
+
 		for(State s : states) {
-			ret.add(s);
-			if(ret.size() == number) {
-				return ret;
-			}
+            ret[i++] = s;
+            if (i == number) break;
 		}
 		
 		return ret;

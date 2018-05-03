@@ -60,7 +60,7 @@ public class Solver {
                     startTime, timeOut);                                                                        // of variables not bound
 
 
-            if (best == null || result.value() > best.value()) {
+            if (best == null || result.value() > bestBound) {
                 best = result.copy();
                 bestBound = best.value();
                 if (print) {
