@@ -8,7 +8,6 @@ import dp.StateRepresentation;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
-import utils.InconsistencyException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,18 +46,10 @@ public class MCP implements Problem {
 		
 		Variable [] variables = new Variable[this.nVariables];
 		for(int i = 0; i < this.nVariables; i++) {
-			try {
-				variables[i] = new Variable(i, 2);
-			} catch (InconsistencyException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		try {
-			variables[0].assign(0); // arbitrarily assign first vertex to one side
-		} catch (InconsistencyException e) {
-			System.out.println("Should not happen");
-		}
+            variables[i] = new Variable(i, 2);
+        }
+
+        variables[0].assign(0); // arbitrarily assign first vertex to one side
 		
 		double rootValue = 0;
 		for(Map<Integer, Double> adj : g) {
@@ -115,7 +106,7 @@ public class MCP implements Problem {
             if (variables == null) {
                 variables = state.variables();
             }
-            statesRep[i++] = (MCPState) state.stateRepresentation();
+            statesRep[i++] = (MCPState) state.stateRepresentation;
             maxValue = Math.max(maxValue, state.value());
         }
 
@@ -147,17 +138,17 @@ public class MCP implements Problem {
     }
 
     public State[] successors(State s, Variable var) {
-		int u = var.id();
+        int u = var.id;
 
 		Variable [] variables = s.variables();
-		MCPState mcpState = ((MCPState) s.stateRepresentation());
+        MCPState mcpState = ((MCPState) s.stateRepresentation);
 
 		// assigning var to 0
 		double [] benefits0 = new double[this.nVariables];
 		double value0 = s.value() + Math.max(0, -mcpState.benefits[u]);
 
 		for(int i = 0; i < this.nVariables; i++) {
-			if (i != u && !variables[i].isBound()) {
+            if (i != u && !s.isBound(i)) {
 				benefits0[i] = mcpState.benefits[i];
 				if(g[u].containsKey(i)) {
 					if(mcpState.benefits[i] * g[u].get(i) <= 0) {
@@ -168,20 +159,14 @@ public class MCP implements Problem {
 			}
 		}
 
-        State state0 = new State(new MCPState(benefits0), variables, value0);
-
-        try {
-			state0.assign(u, 0);
-		} catch (InconsistencyException e) {
-			System.err.println(e.getMessage());
-		}
+        State state0 = s.getSuccessor(new MCPState(benefits0), value0, u, 0);
 
         // assigning var to 1
 		double [] benefits1 = new double[this.nVariables];
 		double value1 = s.value() + Math.max(0, mcpState.benefits[u]);
 
         for(int i = 0; i < this.nVariables; i++) {
-			if (i != u && !variables[i].isBound()) {
+            if (i != u && !s.isBound(i)) {
 				benefits1[i] = mcpState.benefits[i];
 				if(g[u].containsKey(i)) {
 					if(mcpState.benefits[i] * g[u].get(i) >= 0) {
@@ -192,17 +177,9 @@ public class MCP implements Problem {
 			}
 		}
 
-        State state1 = new State(new MCPState(benefits1), variables, value1);
+        State state1 = s.getSuccessor(new MCPState(benefits1), value1, u, 1);
 
-        try {
-			state1.assign(u, 1);
-		} catch (InconsistencyException e) {
-			System.err.println(e.getMessage());
-		}
-
-        State[] ret = new State[2];
-        ret[0] = state0;
-        ret[1] = state1;
+        State[] ret = {state0, state1};
 
 		return ret;
 	}

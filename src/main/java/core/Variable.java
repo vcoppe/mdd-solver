@@ -1,7 +1,5 @@
 package core;
 
-import utils.InconsistencyException;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,10 +7,9 @@ import java.util.Set;
  * Represents a variable that can take integer values.
  */
 public class Variable {
-	
-	private int id;
+
+	public int id;
 	private Set<Integer> domain;
-    private boolean bound;
     private int value;
 	
 	/**
@@ -21,13 +18,8 @@ public class Variable {
 	 * @param min the minimum value of the domain
 	 * @param max the maximum value of the domain
 	 */
-    public Variable(int id, int min, int max) throws InconsistencyException {
-        if (min > max) {
-            throw new InconsistencyException("Variable with empty domain");
-        }
-
+	public Variable(int id, int min, int max) {
 		this.id = id;
-        this.bound = false;
         this.value = -1;
         this.domain = new HashSet<>();
 		for(int i = min; i <= max; i++) {
@@ -40,7 +32,7 @@ public class Variable {
 	 * @param id the id of the variable in the problem
 	 * @param n the size of the domain
 	 */
-    public Variable(int id, int n) throws InconsistencyException {
+	public Variable(int id, int n) {
 		this(id, 0, n-1);
 	}
 	
@@ -49,14 +41,10 @@ public class Variable {
 	 * @param id the id of the variable in the problem
 	 * @param domain the possible values of the variable
 	 */
-    public Variable(int id, Set<Integer> domain) throws InconsistencyException {
+	public Variable(int id, Set<Integer> domain) {
 		this.id = id;
-        this.bound = false;
         this.value = -1;
         this.domain = domain;
-        if (this.domain.size() == 0) {
-            throw new InconsistencyException("Variable with empty domain");
-        }
     }
 
     /**
@@ -65,11 +53,10 @@ public class Variable {
      * @param id     the id of the variable in the problem
      * @param domain the possible values of the variable
      */
-    public Variable(int id, Set<Integer> domain, boolean bound, int value) {
+	public Variable(int id, Set<Integer> domain, int value) {
         this.id = id;
-        this.domain = domain;
-        this.bound = bound;
         this.value = value;
+		this.domain = domain;
     }
 	
 	/**
@@ -77,15 +64,7 @@ public class Variable {
 	 * @return an different object {@code Variable} with the same domain
 	 */
 	public Variable copy() {
-        return new Variable(this.id, this.domain, this.bound, this.value);
-	}
-	
-	/**
-	 * Returns {@code true} <==> the variable is assigned.
-	 * @return a {@code boolean} with the status of the variable 
-     */
-    public boolean isBound() {
-        return this.bound;
+		return new Variable(this.id, this.domain, this.value);
 	}
 	
 	/**
@@ -105,14 +84,6 @@ public class Variable {
 	}
 	
 	/**
-	 * Returns the id of the variable.
-	 * @return an integer identifying the variable
-	 */
-	public int id() {
-		return this.id;
-	}
-	
-	/**
 	 * Returns the value of the variable if it is assigned.
 	 * @return the value of the variable of {@code -1} if it is not assigned
 	 */
@@ -122,33 +93,9 @@ public class Variable {
 	
 	/**
 	 * Assigns the variable to a value.
-	 * @param value the value to be assigned
-	 * @throws InconsistencyException if the variable is already assigned or if the value is
-	 * not in the domain
+	 * @param value the value to be assigned which should be in the domain
 	 */
-    public void assign(int value) throws InconsistencyException {
-        if (this.bound) {
-            throw new InconsistencyException("Variable already bound");
-        }
-
-        if(!this.contains(value)) {
-            throw new InconsistencyException("Assigning incorrect value to variable : " + value + ".");
-        }
-
-        this.bound = true;
+	public void assign(int value) {
         this.value = value;
     }
-	
-	/**
-	 * Returns a boolean telling if a value is in the domain of the variable.
-	 * @param value an integer
-	 * @return a {@code boolean}, {@code true} <==> value is a possible value of the variable
-	 */
-	public boolean contains(int value) {
-        if (this.bound) {
-            return this.value == value;
-        } else {
-            return this.domain.contains(value);
-        }
-	}
 }

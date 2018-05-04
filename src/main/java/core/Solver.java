@@ -17,7 +17,7 @@ import java.util.Queue;
 public class Solver {
 
     private boolean print = true;
-    private int maxWidth = 50;
+    private int maxWidth = Integer.MAX_VALUE;
 
     private Problem problem;
     private DP dp;
@@ -56,12 +56,11 @@ public class Solver {
             }
 
             this.dp.setInitialState(state);
-            State result = this.dp.solveRestricted(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),// the width of the DD is equal to the number
+            State resultRestricted = this.dp.solveRestricted(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),// the width of the DD is equal to the number
                     startTime, timeOut);                                                                        // of variables not bound
 
-
-            if (best == null || result.value() > bestBound) {
-                best = result.copy();
+            if (best == null || resultRestricted.value() > bestBound) {
+                best = resultRestricted;
                 bestBound = best.value();
                 if (print) {
                     System.out.println("Improved solution : " + best.value());
@@ -74,11 +73,11 @@ public class Solver {
 
             if (!this.dp.isExact()) {
                 this.dp.setInitialState(state);
-                result = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()), startTime, timeOut);
+                State resultRelaxed = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()), startTime, timeOut);
 
-                if (result.value() > bestBound) {
+                if (resultRelaxed.value() > bestBound) {
                     for (State s : this.dp.exactCutset()) {
-                        s.setRelaxedValue(result.value());
+                        s.setRelaxedValue(resultRelaxed.value());
                         q.add(s);
                     }
                 }
@@ -97,7 +96,7 @@ public class Solver {
                 System.out.println("Optimal solution : " + best.value());
                 System.out.print("Assignment       : ");
                 for (Variable var : best.variables()) {
-                    if (var.value() == 1) System.out.print(var.id() + " ");
+                    if (var.value() == 1) System.out.print(var.id + " ");
                 }
                 System.out.println();
             }

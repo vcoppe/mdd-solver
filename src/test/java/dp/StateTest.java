@@ -5,7 +5,6 @@ import examples.Edge;
 import examples.MISP;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import utils.InconsistencyException;
 
 import java.util.BitSet;
 
@@ -38,7 +37,7 @@ public class StateTest {
         State s2 = s.copy();
 
         assertEquals(Double.compare(s.value(), s2.value()), 0);
-        assertEquals(s.stateRepresentation(), s2.stateRepresentation());
+        assertEquals(s.stateRepresentation, s2.stateRepresentation);
         assertEquals(s.isExact(), s2.isExact());
         assertEquals(s.hashCode(), s2.hashCode());
 
@@ -52,14 +51,10 @@ public class StateTest {
         State s = new State(sr, vars, 0);
 
         for (int i = 0; i < n; i++) {
-            try {
-                s.assign(i, 0);
-
-                assertTrue(s.variables()[i].isBound());
-                assertEquals(s.variables()[i].value(), 0);
-            } catch (InconsistencyException e) {
-                fail("Should not happen");
-            }
+            s.setLayerNumber(1);
+            s.assign(i, 0);
+            assertEquals(s.getVariable(i).value(), 0);
+            assertTrue(s.isBound(i));
         }
     }
 
@@ -118,8 +113,6 @@ public class StateTest {
     public void testEquals() {
         StateRepresentation sr = p.new MISPState(n);
         State s = new State(sr, vars, 10);
-
-        assertFalse(s.equals(new Integer(0)));
 
         BitSet bs = new BitSet(n);
         bs.flip(0, n);

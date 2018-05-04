@@ -9,7 +9,6 @@ import dp.StateRepresentation;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.VariableSelector;
-import utils.InconsistencyException;
 
 import java.io.File;
 import java.util.BitSet;
@@ -53,11 +52,7 @@ public class MISP implements Problem {
 		
 		Variable [] variables = new Variable[this.nVariables];
 		for(int i = 0; i < this.nVariables; i++) {
-            try {
-                variables[i] = new Variable(i, 2);
-            } catch (InconsistencyException e) {
-                e.printStackTrace();
-            }
+            variables[i] = new Variable(i, 2);
         }
 
 		this.root = new State(new MISPState(this.nVariables), variables, 0);
@@ -94,10 +89,10 @@ public class MISP implements Problem {
 		for(State state : states) {
 			if(mispState == null) {
 				variables = state.variables();
-				mispState = ((MISPState) state.stateRepresentation()).copy();
+                mispState = ((MISPState) state.stateRepresentation).copy();
 			}
-			
-			mispState.bs.or(((MISPState) state.stateRepresentation()).bs);
+
+            mispState.bs.or(((MISPState) state.stateRepresentation).bs);
 			maxValue = Math.max(maxValue, state.value());
 		}
 		
@@ -175,29 +170,33 @@ public class MISP implements Problem {
         return p;
     }
 
-    public static class MISPVariableSelector implements VariableSelector {
+    public State[] successors(State s, Variable var) {
+        int u = var.id;
+        MISPState mispState = ((MISPState) s.stateRepresentation);
 
-        public Variable select(Variable[] vars, Layer layer) {
-            int minCount = Integer.MAX_VALUE, index = -1;
-            int[] count = new int[vars.length];
+        // assign 0
+        MISPState mispState0 = mispState.copy();
+        mispState0.bs.clear(u);
+        State dontTake = s.getSuccessor(mispState0, s.value(), u, 0);
 
-            for (State state : layer.states()) {
-                for (int i = 0; i < vars.length; i++)
-                    if (!vars[i].isBound()) {
-                        if (((MISPState) state.stateRepresentation()).isFree(i)) {
-                            count[i]++;
-                        }
-
-                        if (count[i] < minCount) {
-                            minCount = count[i];
-                            index = i;
-                        }
-                    }
-            }
-
-            return vars[index];
+        if (!mispState.isFree(u)) {
+            State[] ret = {dontTake};
+            return ret;
         }
 
+        // assign 1
+        MISPState mispState1 = mispState.copy();
+        mispState1.bs.clear(u);
+
+        for (int v : g[u]) {
+            mispState1.bs.clear(v);
+        }
+
+        State take = s.getSuccessor(mispState1, s.value() + this.weights[u], u, 1);
+
+        State[] ret = {dontTake, take};
+
+        return ret;
     }
 
     public class MISPState implements StateRepresentation {
@@ -261,48 +260,27 @@ public class MISP implements Problem {
 
     }
 
-    public State[] successors(State s, Variable var) {
-        int u = var.id();
-        MISPState mispState = ((MISPState) s.stateRepresentation());
-        Variable[] variables = s.variables();
+    public static class MISPVariableSelector implements VariableSelector {
 
-        // assign 0
-        MISPState mispState0 = mispState.copy();
-        mispState0.bs.clear(u);
-        State dontTake = new State(mispState0, variables, s.value());
+        public Variable select(Variable[] vars, Layer layer) {
+            int minCount = Integer.MAX_VALUE, index = -1;
+            int[] count = new int[vars.length];
 
-        try {
-            dontTake.assign(u, 0);
-        } catch (InconsistencyException e) {
-            e.printStackTrace();
+            for (State state : layer.states()) {
+                for (int i = 0; i < vars.length; i++) {
+                    if (((MISPState) state.stateRepresentation).isFree(vars[i].id)) {
+                        count[i]++;
+                    }
+
+                    if (count[i] < minCount) {
+                        minCount = count[i];
+                        index = i;
+                    }
+                }
+            }
+
+            return vars[index];
         }
 
-        if (!mispState.isFree(u)) {
-            State[] ret = new State[1];
-            ret[0] = dontTake;
-            return ret;
-        }
-
-        // assign 1
-        MISPState mispState1 = mispState.copy();
-        mispState1.bs.clear(u);
-
-        for (int v : g[u]) {
-            mispState1.bs.clear(v);
-        }
-
-        State take = new State(mispState1, variables, s.value() + this.weights[u]);
-
-        try {
-            take.assign(u, 1);
-        } catch (InconsistencyException e) {
-            e.printStackTrace();
-        }
-
-        State[] ret = new State[2];
-        ret[0] = dontTake;
-        ret[1] = take;
-
-        return ret;
     }
 }

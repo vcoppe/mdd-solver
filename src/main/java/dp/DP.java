@@ -85,7 +85,7 @@ public class DP {
 			
 			lastLayer = lastLayer.nextLayer();
 
-			while(lastLayer.width() > width) {
+            if (lastLayer.width() > width) {
                 State[] toRemove = this.deleteSelector.select(lastLayer, lastLayer.width() - width);
 				lastLayer.removeStates(toRemove);
                 this.exact = false;
@@ -116,8 +116,8 @@ public class DP {
 			}
 			
 			lastLayer = lastLayer.nextLayer();
-			
-			while(lastLayer.width() > width) {
+
+            if (lastLayer.width() > width) {
                 State[] toMerge = this.mergeSelector.select(lastLayer, lastLayer.width() - width + 1);
 				lastLayer.removeStates(toMerge, this.frontier);
 				
@@ -137,7 +137,6 @@ public class DP {
 		
 		for(State s : lastLayer.states()) {
 			if(s.isExact()) {
-				System.out.println(s.stateRepresentation());
 				this.frontier.add(s);
 			}
 		}

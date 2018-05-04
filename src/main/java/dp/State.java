@@ -1,8 +1,8 @@
 package dp;
 
 import core.Variable;
-import utils.InconsistencyException;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,11 +17,12 @@ public class State implements Comparable<State> {
 	private double relaxedValue;
 	private boolean exact;
 	private int layerNumber;
-	private StateRepresentation stateRepresentation;
+    public StateRepresentation stateRepresentation;
 	private Set<State> parents;
 	
 	private int nVariables;
 	private Variable [] variables;
+    private int[] indexes;
 	
 	/**
 	 * @param stateRepresentation the state representation in the dynamic programming approach
@@ -39,44 +40,88 @@ public class State implements Comparable<State> {
 	 * @param exact a boolean telling if the state is exact or not
 	 */
 	public State(StateRepresentation stateRepresentation, Variable [] variables, double value, boolean exact) {
-		this.stateRepresentation = stateRepresentation.copy();
-		this.value = value;
-		this.exact = exact;
-		this.layerNumber = 0;
-		this.nVariables = variables.length;
-		this.variables = new Variable[this.nVariables];
-		this.relaxedValue = Double.MAX_VALUE;
+        this(stateRepresentation, variables, new int[variables.length], value, exact);
+        for (int i = 0; i < nVariables; i++) {
+            this.indexes[i] = i;
+        }
+    }
+
+    /**
+     * @param stateRepresentation the state representation in the dynamic programming approach
+     * @param variables           the variables of this state
+     * @param indexes             the index of each variable indexed by their id
+     * @param value               the value of the objective function at this point
+     * @param exact               a boolean telling if the state is exact or not
+     */
+    public State(StateRepresentation stateRepresentation, Variable[] variables, int[] indexes, double value, boolean exact) {
+        this.stateRepresentation = stateRepresentation.copy();
+        this.value = value;
+        this.exact = exact;
+        this.layerNumber = 0;
+        this.nVariables = variables.length;
+        this.relaxedValue = Double.MAX_VALUE;
         this.parents = new HashSet<>();
-		
-		for (int i = 0; i < this.nVariables; i++) {
-			this.variables[i] = variables[i].copy();
-		}
-	}
-	
+
+        this.variables = new Variable[this.nVariables];
+        this.indexes = new int[this.nVariables];
+        for (int i = 0; i < nVariables; i++) {
+            this.variables[i] = variables[i];
+            this.indexes[i] = indexes[i];
+        }
+    }
+
 	/**
 	 * Returns a copy of the state.
 	 * @return a different {@code State} object with the same properties
-	 */
-	public State copy() {
-		return new State(this.stateRepresentation, this.variables, this.value, this.exact);
+     */
+    public State copy() {
+        return new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
 	}
 	
 	/**
 	 * Help function to get the variables of the state.
 	 * @return an array with the variables of the state
 	 */
-	public Variable [] variables() {
-		return this.variables;
-	}
+    public Variable[] variables() {
+        return this.variables;
+    }
+
+    /**
+     * Help function to get the free variables of the state.
+     *
+     * @return an array with the free variables of the state
+     */
+    public Variable[] freeVariables() {
+        return Arrays.copyOfRange(this.variables, this.layerNumber, this.nVariables);
+    }
+
+    public Variable getVariable(int i) {
+        return this.variables[this.indexes[i]];
+    }
+
+    public boolean isBound(int i) {
+        return this.indexes[i] < this.layerNumber;
+    }
 	
 	/**
 	 * Assigns a variable of the problem to the given value.
 	 * @param id the identifier of the variable to be assigned
-	 * @param value the value to be assigned
-	 * @throws InconsistencyException if the value can not be assigned to the given variable
-	 */
-	public void assign(int id, int value) throws InconsistencyException {
-		this.variables[id].assign(value);
+     * @param value the value to be assigned
+     */
+    public void assign(int id, int value) {
+        this.variables[indexes[id]] = this.variables[indexes[id]].copy();
+        this.variables[indexes[id]].assign(value);
+
+        int i1 = indexes[id];
+        int i2 = this.layerNumber - 1;
+        Variable v1 = this.variables[i1];
+        Variable v2 = this.variables[i2];
+
+        this.variables[i1] = v2;
+        this.variables[i2] = v1;
+
+        this.indexes[v1.id] = i2;
+        this.indexes[v2.id] = i1;
 	}
 	
 	/**
@@ -85,10 +130,8 @@ public class State implements Comparable<State> {
 	 */
 	public void update(State other) {
 		if(this.value < other.value()) {
-			for (int i = 0; i < this.nVariables; i++) {
-				this.variables[i] = other.variables[i].copy();
-			}
-			this.value = other.value();
+            System.arraycopy(other.variables, 0, this.variables, 0, this.nVariables);
+            this.value = other.value;
 		}
 		this.exact &= other.exact;
 		this.parents.addAll(other.parents);
@@ -140,14 +183,6 @@ public class State implements Comparable<State> {
 	 */
 	public boolean isFinal() {
 		return this.layerNumber == this.nVariables;
-	}
-	
-	/**
-	 * Help function to get the {@code StateRepresentation} of the state.
-	 * @return the {@code StateRepresentation} object corresponding to the state
-	 */
-	public StateRepresentation stateRepresentation() {
-		return this.stateRepresentation;
 	}
 
 	/**
@@ -218,5 +253,12 @@ public class State implements Comparable<State> {
      */
     public int compareTo(State o) {
         return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
+    }
+
+    public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
+        State succ = new State(stateRepresentation, variables, indexes, value, exact);
+        succ.setLayerNumber(this.layerNumber + 1);
+        succ.assign(id, val);
+        return succ;
     }
 }

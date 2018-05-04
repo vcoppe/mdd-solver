@@ -45,7 +45,7 @@ public class Layer {
 	 */
 	public Layer(Problem problem, VariableSelector variableSelector, State state, int number) {
         this(problem, variableSelector, number);
-		this.states.put(state.stateRepresentation(), state);
+        this.states.put(state.stateRepresentation, state);
 		this.exact = state.isExact();
 	}
 	
@@ -56,20 +56,10 @@ public class Layer {
 	public void addState(State state) {
 		this.exact &= state.isExact();
 		state.setLayerNumber(this.number);
-		if(this.states.containsKey(state.stateRepresentation())) {
-			this.states.get(state.stateRepresentation()).update(state);
+        if (this.states.containsKey(state.stateRepresentation)) {
+            this.states.get(state.stateRepresentation).update(state);
 		} else {
-			this.states.put(state.stateRepresentation(), state);
-		}
-	}
-	
-	/**
-	 * Adds a state to the layer or updates existing states in the layer with the same {@code StateRepresentation}.
-     * @param states an array of {@code State} objects to be added
-	 */
-    private void addStates(State[] states) {
-		for(State state : states) {
-			this.addState(state);
+            this.states.put(state.stateRepresentation, state);
 		}
 	}
 
@@ -80,8 +70,8 @@ public class Layer {
 	 */
     public void removeStates(State[] states) {
         for (State state : states) {
-            if (this.states.containsKey(state.stateRepresentation())) {
-				this.states.remove(state.stateRepresentation());
+            if (this.states.containsKey(state.stateRepresentation)) {
+                this.states.remove(state.stateRepresentation);
 			}
 		}
 		this.exact = false;
@@ -95,8 +85,8 @@ public class Layer {
      */
     public void removeStates(State[] states, Set<State> frontier) {
         for (State state : states) {
-            if (this.states.containsKey(state.stateRepresentation())) {
-                this.states.remove(state.stateRepresentation());
+            if (this.states.containsKey(state.stateRepresentation)) {
+                this.states.remove(state.stateRepresentation);
             }
             frontier.addAll(state.exactParents());
         }
@@ -115,19 +105,23 @@ public class Layer {
 
 		next.setExact(this.exact);
 		for(State state : this.states.values()) {
+            if (state.isExact()) {
+                state.exactParents().clear(); // we do not need them anymore -> garbage collection
+            }
+
 			if(nextVar == null) {
-				nextVar = this.variableSelector.select(state.variables(), this);
+                nextVar = this.variableSelector.select(state.freeVariables(), this);
 			}
 
-            State[] succ = this.problem.successors(state, nextVar);
-			for(State s : succ) {
+            State[] successors = this.problem.successors(state, nextVar);
+            for (State s : successors) {
 				if(state.isExact()) {
 					s.addParent(state);
 				} else {
 					s.setExact(false);
 				}
+                next.addState(s);
 			}
-			next.addStates(succ);
 		}
 		
 		return next;
@@ -189,4 +183,18 @@ public class Layer {
 		}
 		return false;
 	}
+
+    public boolean isBound(int i) {
+        for (State state : states.values()) {
+            return state.isBound(i);
+        }
+        return false;
+    }
+
+    public Variable getVariable(int i) {
+        for (State state : states.values()) {
+            return state.getVariable(i);
+        }
+        return null;
+    }
 }

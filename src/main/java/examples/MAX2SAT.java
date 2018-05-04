@@ -10,7 +10,6 @@ import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.VariableSelector;
 import javafx.util.Pair;
-import utils.InconsistencyException;
 
 import java.io.File;
 import java.util.Arrays;
@@ -22,7 +21,7 @@ public class MAX2SAT implements Problem {
 
     private static Map<Integer, double[]>[] g;
 
-    private int nVariables;
+    private static int nVariables;
     private State root;
 
     public double opt;
@@ -47,19 +46,15 @@ public class MAX2SAT implements Problem {
 	 * where the first bit corresponds to the smallest variable id.
 	 */
 	private MAX2SAT(Map<Integer, double[]>[] g) {
-		this.nVariables = g.length;
+        nVariables = g.length;
 		MAX2SAT.g = g;
-		
-		Variable [] variables = new Variable[this.nVariables];
-		for(int i = 0; i < this.nVariables; i++) {
-			try {
-				variables[i] = new Variable(i, 2);
-			} catch (InconsistencyException e) {
-				e.printStackTrace();
-			}
+
+        Variable[] variables = new Variable[nVariables];
+        for (int i = 0; i < nVariables; i++) {
+            variables[i] = new Variable(i, 2);
 		}
-		
-		this.root = new State(new MAX2SATState(this.nVariables), variables, 0);
+
+        this.root = new State(new MAX2SATState(nVariables), variables, 0);
 	}
 
 	public State root() {
@@ -67,7 +62,7 @@ public class MAX2SAT implements Problem {
 	}
 
 	public int nVariables() {
-		return this.nVariables;
+        return nVariables;
 	}
 
     private static Map<Integer, double[]>[] toGraph(int n, Clause[] clauses) {
@@ -166,17 +161,17 @@ public class MAX2SAT implements Problem {
     }
 
 	public State[] successors(State s, Variable var) {
-		int u = var.id();
+        int u = var.id;
 
 		Variable [] variables = s.variables();
-		MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation());
+        MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation);
 
 		// assigning var to 0
-		double [] benefits0 = new double[this.nVariables];
+        double[] benefits0 = new double[nVariables];
 		double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
 
-		for(int i = 0; i < this.nVariables; i++) {
-			if (!variables[i].isBound()) {
+        for (int i = 0; i < nVariables; i++) {
+            if (!s.isBound(i)) {
 				if(u != i) benefits0[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
 					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
@@ -199,20 +194,14 @@ public class MAX2SAT implements Problem {
 			}
 		}
 
-		State state0 = new State(new MAX2SATState(benefits0), variables, value0);
-
-		try {
-			state0.assign(u, 0);
-		} catch (InconsistencyException e) {
-			System.err.println(e.getMessage());
-		}
+        State state0 = s.getSuccessor(new MAX2SATState(benefits0), value0, u, 0);
 
         // assigning var to 1
-		double [] benefits1 = new double[this.nVariables];
+        double[] benefits1 = new double[nVariables];
 		double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
 
-        for(int i = 0; i < this.nVariables; i++) {
-			if (!variables[i].isBound()) {
+        for (int i = 0; i < nVariables; i++) {
+            if (!s.isBound(i)) {
 				if(u != i) benefits1[i] = max2satState.benefits[i];
 				if(g[u].containsKey(i)) {
 					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
@@ -235,17 +224,9 @@ public class MAX2SAT implements Problem {
 			}
 		}
 
-        State state1 = new State(new MAX2SATState(benefits1), variables, value1);
+        State state1 = s.getSuccessor(new MAX2SATState(benefits1), value1, u, 1);
 
-        try {
-			state1.assign(u, 1);
-		} catch (InconsistencyException e) {
-			System.err.println(e.getMessage());
-		}
-
-		State[] ret = new State[2];
-		ret[0] = state0;
-		ret[1] = state1;
+        State[] ret = {state0, state1};
 
         return ret;
 	}
@@ -263,7 +244,7 @@ public class MAX2SAT implements Problem {
 				variables = state.variables();
 			}
 			newValues[i] = state.value();
-			statesRep[i++] = (MAX2SATState) state.stateRepresentation();
+            statesRep[i++] = (MAX2SATState) state.stateRepresentation;
 		}
 
         for(i = 0; i < nVariables; i++) {
@@ -304,11 +285,11 @@ public class MAX2SAT implements Problem {
 		
 		public Variable select(Variable[] vars, Layer layer) {
 			if(!done) {
-				order = new int[vars.length];
+                order = new int[nVariables];
 				@SuppressWarnings("unchecked")
-				Pair<Double, Integer>[] l = new Pair[vars.length];
-				
-				for(int i = 0; i < vars.length; i++) {
+                Pair<Double, Integer>[] l = new Pair[nVariables];
+
+                for (int i = 0; i < nVariables; i++) {
 					double sum = 0;
 					for(double [] weights : g[i].values()) {
 						for(double w : weights) {
@@ -319,7 +300,7 @@ public class MAX2SAT implements Problem {
 				}
 				
 				Arrays.sort(l, (a, b) -> b.getKey().compareTo(a.getKey()));
-				for(int i = 0; i < vars.length; i++) {
+                for (int i = 0; i < nVariables; i++) {
 					order[i] = l[i].getValue();
 				}
 				
@@ -327,8 +308,8 @@ public class MAX2SAT implements Problem {
 			}
 			
 			for(int index : order) {
-				if (!vars[index].isBound()) {
-					return vars[index];
+                if (!layer.isBound(index)) {
+                    return layer.getVariable(index);
 				}
 			}
 			
