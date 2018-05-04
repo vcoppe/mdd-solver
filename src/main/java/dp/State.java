@@ -8,38 +8,38 @@ import java.util.Set;
 
 /**
  * Represents a particular state of the MDD.
- * 
+ *
  * @author Vianney Coppé
  */
 public class State implements Comparable<State> {
-	
-	private double value;
-	private double relaxedValue;
-	private boolean exact;
-	private int layerNumber;
+
+    private double value;
+    private double relaxedValue;
+    private boolean exact;
+    private int layerNumber;
     public StateRepresentation stateRepresentation;
-	private Set<State> parents;
-	
-	private int nVariables;
-	private Variable [] variables;
+    private Set<State> parents;
+
+    private int nVariables;
+    private Variable[] variables;
     private int[] indexes;
-	
-	/**
-	 * @param stateRepresentation the state representation in the dynamic programming approach
-	 * @param variables the variables of this state
-	 * @param value the value of the objective function at this point
-	 */
-	public State(StateRepresentation stateRepresentation, Variable [] variables, double value) {
-		this(stateRepresentation, variables, value, true);
-	}
-	
-	/**
-	 * @param stateRepresentation the state representation in the dynamic programming approach
-	 * @param variables the variables of this state
-	 * @param value the value of the objective function at this point
-	 * @param exact a boolean telling if the state is exact or not
-	 */
-	public State(StateRepresentation stateRepresentation, Variable [] variables, double value, boolean exact) {
+
+    /**
+     * @param stateRepresentation the state representation in the dynamic programming approach
+     * @param variables           the variables of this state
+     * @param value               the value of the objective function at this point
+     */
+    public State(StateRepresentation stateRepresentation, Variable[] variables, double value) {
+        this(stateRepresentation, variables, value, true);
+    }
+
+    /**
+     * @param stateRepresentation the state representation in the dynamic programming approach
+     * @param variables           the variables of this state
+     * @param value               the value of the objective function at this point
+     * @param exact               a boolean telling if the state is exact or not
+     */
+    public State(StateRepresentation stateRepresentation, Variable[] variables, double value, boolean exact) {
         this(stateRepresentation, variables, new int[variables.length], value, exact);
         for (int i = 0; i < nVariables; i++) {
             this.indexes[i] = i;
@@ -70,18 +70,20 @@ public class State implements Comparable<State> {
         }
     }
 
-	/**
-	 * Returns a copy of the state.
-	 * @return a different {@code State} object with the same properties
+    /**
+     * Returns a copy of the state.
+     *
+     * @return a different {@code State} object with the same properties
      */
     public State copy() {
         return new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
-	}
-	
-	/**
-	 * Help function to get the variables of the state.
-	 * @return an array with the variables of the state
-	 */
+    }
+
+    /**
+     * Help function to get the variables of the state.
+     *
+     * @return an array with the variables of the state
+     */
     public Variable[] variables() {
         return this.variables;
     }
@@ -95,17 +97,30 @@ public class State implements Comparable<State> {
         return Arrays.copyOfRange(this.variables, this.layerNumber, this.nVariables);
     }
 
+    /**
+     * Help function to get the variable with id i.
+     *
+     * @param i the if of a variable
+     * @return the variable with id i
+     */
     public Variable getVariable(int i) {
         return this.variables[this.indexes[i]];
     }
 
+    /**
+     * Returns a {@code boolean} telling if the variable {@code i} is bound.
+     *
+     * @param i the id of a variable
+     * @return {@code true} <==> the variable {@code i} is bound
+     */
     public boolean isBound(int i) {
         return this.indexes[i] < this.layerNumber;
     }
-	
-	/**
-	 * Assigns a variable of the problem to the given value.
-	 * @param id the identifier of the variable to be assigned
+
+    /**
+     * Assigns a variable of the problem to the given value.
+     *
+     * @param id    the identifier of the variable to be assigned
      * @param value the value to be assigned
      */
     public void assign(int id, int value) {
@@ -122,83 +137,91 @@ public class State implements Comparable<State> {
 
         this.indexes[v1.id] = i2;
         this.indexes[v2.id] = i1;
-	}
-	
-	/**
-	 * Updates the state given another state with the same {@code StateRepresentation}.
-	 * @param other another state with the same {@code StateRepresentation}
-	 */
-	public void update(State other) {
-		if(this.value < other.value()) {
+    }
+
+    /**
+     * Updates the state given another state with the same {@code StateRepresentation}.
+     *
+     * @param other another state with the same {@code StateRepresentation}
+     */
+    public void update(State other) {
+        if (this.value < other.value()) {
             System.arraycopy(other.variables, 0, this.variables, 0, this.nVariables);
             this.value = other.value;
-		}
-		this.exact &= other.exact;
-		this.parents.addAll(other.parents);
-	}
-	
-	/**
-	 * Help function to get the value of the objective function in the state.
-	 * @return the value of the objective function in the state
-	 */
-	public double value() {
-		return this.value;
-	}
-	
-	/**
-	 * Help function to get the number of the layer this state belongs to.
-	 * @return the number of the layer the state is in
-	 */
-	public int layerNumber() {
-		return this.layerNumber;
-	}
-	
-	/**
-	 * Help function to set the exact property of the state.
-	 * @param exact a {@code boolean} telling if the state is exact or not
-	 */
-	public void setExact(boolean exact) {
-		this.exact = exact;
-	}
-	
-	/**
-	 * Help function to set the number of the layer the state belongs to.
-	 * @param layerNumber the number of the layer the state is in
-	 */
-	public void setLayerNumber(int layerNumber) {
-		this.layerNumber = layerNumber;
-	}
-	
-	/**
-	 * Returns a {@code boolean} telling if the state is exact.
-	 * @return {@code true} <==> the state is exact
-	 */
-	public boolean isExact() {
-		return this.exact;
-	}
-	
-	/**
-	 * Returns a {@code boolean} telling if the state belongs to the final layer i. e. all the variables are assigned.
-	 * @return {@code true} <==> the state is a final one
-	 */
-	public boolean isFinal() {
-		return this.layerNumber == this.nVariables;
-	}
+        }
+        this.exact &= other.exact;
+        this.parents.addAll(other.parents);
+    }
 
-	/**
-	 * Help function to get the number of variables of the state.
-	 * @return the number of variables of the state
-	 */
-	public int nVariables() {
-		return this.nVariables;
-	}
+    /**
+     * Help function to get the value of the objective function in the state.
+     *
+     * @return the value of the objective function in the state
+     */
+    public double value() {
+        return this.value;
+    }
+
+    /**
+     * Help function to get the number of the layer this state belongs to.
+     *
+     * @return the number of the layer the state is in
+     */
+    public int layerNumber() {
+        return this.layerNumber;
+    }
+
+    /**
+     * Help function to set the number of the layer the state belongs to.
+     *
+     * @param layerNumber the number of the layer the state is in
+     */
+    public void setLayerNumber(int layerNumber) {
+        this.layerNumber = layerNumber;
+    }
+
+    /**
+     * Returns a {@code boolean} telling if the state is exact.
+     *
+     * @return {@code true} <==> the state is exact
+     */
+    public boolean isExact() {
+        return this.exact;
+    }
+
+    /**
+     * Help function to set the exact property of the state.
+     *
+     * @param exact a {@code boolean} telling if the state is exact or not
+     */
+    public void setExact(boolean exact) {
+        this.exact = exact;
+    }
+
+    /**
+     * Returns a {@code boolean} telling if the state belongs to the final layer i. e. all the variables are assigned.
+     *
+     * @return {@code true} <==> the state is a final one
+     */
+    public boolean isFinal() {
+        return this.layerNumber == this.nVariables;
+    }
+
+    /**
+     * Help function to get the number of variables of the state.
+     *
+     * @return the number of variables of the state
+     */
+    public int nVariables() {
+        return this.nVariables;
+    }
 
     /**
      * @return the best value of the relaxed DD
      */
-	public double relaxedValue() {
-		return relaxedValue;
-	}
+    public double relaxedValue() {
+        return relaxedValue;
+    }
 
     /**
      * @param relaxedValue the best value of the relaxed DD
@@ -223,8 +246,8 @@ public class State implements Comparable<State> {
         return this.parents;
     }
 
-	public int hashCode() {
-		return this.stateRepresentation.hashCode();
+    public int hashCode() {
+        return this.stateRepresentation.hashCode();
     }
 
     public boolean equals(Object o) {
@@ -234,12 +257,12 @@ public class State implements Comparable<State> {
 
         State other = (State) o;
 
-		if(this.layerNumber != other.layerNumber) {
-			return false;
-		}
+        if (this.layerNumber != other.layerNumber) {
+            return false;
+        }
 
-        if(this.hashCode() != other.hashCode()) {
-			return false;
+        if (this.hashCode() != other.hashCode()) {
+            return false;
         }
 
         return this.stateRepresentation.equals(other.stateRepresentation);
@@ -255,6 +278,15 @@ public class State implements Comparable<State> {
         return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
     }
 
+    /**
+     * Utility function to build a new state from this one, with one more variable bound.
+     *
+     * @param stateRepresentation the {@code StateRepresentation} for the successor state
+     * @param value               the value for the successor state
+     * @param id                  the id of the variable to bind
+     * @param val                 the value to bind to the varible chosen
+     * @return a new state with the internal properties required to be the successor of this state
+     */
     public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
         State succ = new State(stateRepresentation, variables, indexes, value, exact);
         succ.setLayerNumber(this.layerNumber + 1);

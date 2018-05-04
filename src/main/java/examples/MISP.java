@@ -17,7 +17,7 @@ import java.util.Scanner;
 
 /**
  * Implementation of the Maximum Independent Set Problem.
- * 
+ *
  * @author Vianney Coppé
  */
 public class MISP implements Problem {
@@ -29,42 +29,36 @@ public class MISP implements Problem {
     private State root;
 
     public double opt;
-	
-	/**
-	 * Creates the representation of the MISP problem.
-	 * @param n the number of vertices
-	 * @param weights the weights of the vertices
-	 * @param edges an array of {@code Edge} objects with vertices in [0,n-1]
-	 */
-	public MISP(int n, double [] weights, Edge [] edges) {
-		this(weights, toGraph(n, edges));
-	}
-	
-	/**
-	 * Creates the representation of the MISP problem.
-	 * @param weights the weights of the vertices
-	 * @param g the adjacency lists
-	 */
+
+    /**
+     * Creates the representation of the MISP problem.
+     *
+     * @param n       the number of vertices
+     * @param weights the weights of the vertices
+     * @param edges   an array of {@code Edge} objects with vertices in [0,n-1]
+     */
+    public MISP(int n, double[] weights, Edge[] edges) {
+        this(weights, toGraph(n, edges));
+    }
+
+    /**
+     * Creates the representation of the MISP problem.
+     *
+     * @param weights the weights of the vertices
+     * @param g       the adjacency lists
+     */
     private MISP(double[] weights, LinkedList<Integer>[] g) {
-		this.nVariables = weights.length;
-		this.weights = weights;
-		this.g = g;
-		
-		Variable [] variables = new Variable[this.nVariables];
-		for(int i = 0; i < this.nVariables; i++) {
+        this.nVariables = weights.length;
+        this.weights = weights;
+        this.g = g;
+
+        Variable[] variables = new Variable[this.nVariables];
+        for (int i = 0; i < this.nVariables; i++) {
             variables[i] = new Variable(i, 2);
         }
 
-		this.root = new State(new MISPState(this.nVariables), variables, 0);
-	}
-
-	public State root() {
-		return this.root;
-	}
-
-	public int nVariables() {
-		return this.nVariables;
-	}
+        this.root = new State(new MISPState(this.nVariables), variables, 0);
+    }
 
     private static LinkedList<Integer>[] toGraph(int n, Edge[] edges) {
         @SuppressWarnings("unchecked")
@@ -76,28 +70,36 @@ public class MISP implements Problem {
         for (Edge e : edges) {
             adj[e.u].add(e.v);
             adj[e.v].add(e.u);
-		}
+        }
 
         return adj;
-	}
+    }
+
+    public State root() {
+        return this.root;
+    }
+
+    public int nVariables() {
+        return this.nVariables;
+    }
 
     public State merge(State[] states) {
-		Variable [] variables = null;
-		double maxValue = Double.MIN_VALUE;
-		MISPState mispState = null;
-		
-		for(State state : states) {
-			if(mispState == null) {
-				variables = state.variables();
+        Variable[] variables = null;
+        double maxValue = Double.MIN_VALUE;
+        MISPState mispState = null;
+
+        for (State state : states) {
+            if (mispState == null) {
+                variables = state.variables();
                 mispState = ((MISPState) state.stateRepresentation).copy();
-			}
+            }
 
             mispState.bs.or(((MISPState) state.stateRepresentation).bs);
-			maxValue = Math.max(maxValue, state.value());
-		}
-		
-		return new State(mispState, variables, maxValue);
-	}
+            maxValue = Math.max(maxValue, state.value());
+        }
+
+        return new State(mispState, variables, maxValue);
+    }
 
     /**
      * Instances can be found on <a href="https://turing.cs.hbg.psu.edu/txn131/clique.html#DIMACS_cliques">this website</a>.

@@ -18,18 +18,6 @@ public abstract class TestHelper {
 
     protected abstract boolean testData(int timeOut);
 
-	@Test
-    public void testInstance() {
-		System.out.println(path);
-		try {
-            assertTrue(testData(60));
-		} catch(NullPointerException e) {
-			fail("Timed out");
-		} catch(OutOfMemoryError e) {
-			fail("Not enough memory");
-		}
-	}
-
     public static Object[] dataFromFolder(String path) {
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();
@@ -39,12 +27,24 @@ public abstract class TestHelper {
         for (File listOfFile : listOfFiles) {
             if (listOfFile.isFile()) {
                 String name = listOfFile.getAbsolutePath();
-                if(name.endsWith(".clq") || name.endsWith(".wcnf")) {
-                	out.add(name);
+                if (name.endsWith(".clq") || name.endsWith(".wcnf")) {
+                    out.add(name);
                 }
             }
         }
         return out.toArray();
     }
-    
+
+    @Test
+    public void testInstance() {
+        System.out.println(path);
+        try {
+            assertTrue(testData(60));
+        } catch (NullPointerException e) {
+            fail("Timed out");
+        } catch (OutOfMemoryError e) {
+            fail("Not enough memory");
+        }
+    }
+
 }

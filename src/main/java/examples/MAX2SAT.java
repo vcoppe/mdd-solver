@@ -25,45 +25,56 @@ public class MAX2SAT implements Problem {
     private State root;
 
     public double opt;
-	
-	/**
-	 * Returns the representation of the MAX2SAT problem.
-	 * @param n the number of boolean variables
-	 * @param clauses an array of {@code Clause} objects with variables indexes in [0,n-1]
-	 */
-	public MAX2SAT(int n, Clause [] clauses) {
-		this(toGraph(n, clauses));
-	}
-	
-	/**
-	 * Returns the representation of the MAX2SAT problem.
-	 * @param g an array of maps where {@code g[i].get(j)} contains an array with the weight
-	 * of the clauses with the variables {@code i} and {@code j} with
-	 * 0 = 00 -> FF
-	 * 1 = 01 -> FT
-	 * 2 = 10 -> TF
-	 * 3 = 11 -> TT
-	 * where the first bit corresponds to the smallest variable id.
-	 */
-	private MAX2SAT(Map<Integer, double[]>[] g) {
+
+    /**
+     * Returns the representation of the MAX2SAT problem.
+     *
+     * @param n       the number of boolean variables
+     * @param clauses an array of {@code Clause} objects with variables indexes in [0,n-1]
+     */
+    public MAX2SAT(int n, Clause[] clauses) {
+        this(toGraph(n, clauses));
+    }
+
+    /**
+     * Returns the representation of the MAX2SAT problem.
+     *
+     * @param g an array of maps where {@code g[i].get(j)} contains an array with the weight
+     *          of the clauses with the variables {@code i} and {@code j} with
+     *          0 = 00 -> FF
+     *          1 = 01 -> FT
+     *          2 = 10 -> TF
+     *          3 = 11 -> TT
+     *          where the first bit corresponds to the smallest variable id.
+     */
+    private MAX2SAT(Map<Integer, double[]>[] g) {
         nVariables = g.length;
-		MAX2SAT.g = g;
+        MAX2SAT.g = g;
 
         Variable[] variables = new Variable[nVariables];
         for (int i = 0; i < nVariables; i++) {
             variables[i] = new Variable(i, 2);
-		}
+        }
 
         this.root = new State(new MAX2SATState(nVariables), variables, 0);
-	}
+    }
 
-	public State root() {
-		return this.root;
-	}
+    public static void main(String[] args) {
+        Clause[] clauses = {
+                new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
+                new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2),
+                new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
+        };
 
-	public int nVariables() {
-        return nVariables;
-	}
+        Problem p = new MAX2SAT(3, clauses);
+
+        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
+        solver.solve();
+    }
+
+    public State root() {
+        return this.root;
+    }
 
     private static Map<Integer, double[]>[] toGraph(int n, Clause[] clauses) {
         @SuppressWarnings("unchecked")
@@ -160,163 +171,126 @@ public class MAX2SAT implements Problem {
         return p;
     }
 
-	public State[] successors(State s, Variable var) {
+    public int nVariables() {
+        return nVariables;
+    }
+
+    public State[] successors(State s, Variable var) {
         int u = var.id;
 
-		Variable [] variables = s.variables();
         MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation);
 
-		// assigning var to 0
+        // assigning var to 0
         double[] benefits0 = new double[nVariables];
-		double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
+        double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
 
         for (int i = 0; i < nVariables; i++) {
             if (!s.isBound(i)) {
-				if(u != i) benefits0[i] = max2satState.benefits[i];
-				if(g[u].containsKey(i)) {
-					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
-					if(u > i) {
-						numTF = 1;
-						numFT = 2;
-					}
+                if (u != i) benefits0[i] = max2satState.benefits[i];
+                if (g[u].containsKey(i)) {
+                    int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
+                    if (u > i) {
+                        numTF = 1;
+                        numFT = 2;
+                    }
 
-					if(u != i) {
+                    if (u != i) {
                         value0 += g[u].get(i)[numFF] + g[u].get(i)[numFT]
-								+ Math.min(
-										Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numTT],
-										Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numTF]
-										);
-						benefits0[i] += g[u].get(i)[numTT] - g[u].get(i)[numTF];
-					} else {
-						value0 += g[u].get(i)[numFF];
-					}
-				}
-			}
-		}
+                                + Math.min(
+                                Math.max(0, max2satState.benefits[i]) + g[u].get(i)[numTT],
+                                Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numTF]
+                        );
+                        benefits0[i] += g[u].get(i)[numTT] - g[u].get(i)[numTF];
+                    } else {
+                        value0 += g[u].get(i)[numFF];
+                    }
+                }
+            }
+        }
 
         State state0 = s.getSuccessor(new MAX2SATState(benefits0), value0, u, 0);
 
         // assigning var to 1
         double[] benefits1 = new double[nVariables];
-		double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
+        double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
 
         for (int i = 0; i < nVariables; i++) {
             if (!s.isBound(i)) {
-				if(u != i) benefits1[i] = max2satState.benefits[i];
-				if(g[u].containsKey(i)) {
-					int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
-					if(u > i) {
-						numTF = 1;
-						numFT = 2;
-					}
+                if (u != i) benefits1[i] = max2satState.benefits[i];
+                if (g[u].containsKey(i)) {
+                    int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
+                    if (u > i) {
+                        numTF = 1;
+                        numFT = 2;
+                    }
 
-					if(u != i) {
+                    if (u != i) {
                         value1 += g[u].get(i)[numTF] + g[u].get(i)[numTT]
-								+ Math.min(
-										Math.max(0,  max2satState.benefits[i]) + g[u].get(i)[numFT],
-										Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numFF]
-										);
-						benefits1[i] += g[u].get(i)[numFT] - g[u].get(i)[numFF];
-					} else {
-						value1 += g[u].get(i)[numTT];
-					}
-				}
-			}
-		}
+                                + Math.min(
+                                Math.max(0, max2satState.benefits[i]) + g[u].get(i)[numFT],
+                                Math.max(0, -max2satState.benefits[i]) + g[u].get(i)[numFF]
+                        );
+                        benefits1[i] += g[u].get(i)[numFT] - g[u].get(i)[numFF];
+                    } else {
+                        value1 += g[u].get(i)[numTT];
+                    }
+                }
+            }
+        }
 
         State state1 = s.getSuccessor(new MAX2SATState(benefits1), value1, u, 1);
 
         State[] ret = {state0, state1};
 
         return ret;
-	}
+    }
 
-	public State merge(State[] states) {
-		Variable [] variables = null;
-		double maxValue = Double.MIN_VALUE;
-		double [] benefits = new double[nVariables];
-		double[] newValues = new double[states.length];
-		MAX2SATState[] statesRep = new MAX2SATState[states.length];
+    public State merge(State[] states) {
+        Variable[] variables = null;
+        double maxValue = Double.MIN_VALUE;
+        double[] benefits = new double[nVariables];
+        double[] newValues = new double[states.length];
+        MAX2SATState[] statesRep = new MAX2SATState[states.length];
 
         int i = 0;
-		for(State state : states) {
-			if(variables == null) {
-				variables = state.variables();
-			}
-			newValues[i] = state.value();
+        for (State state : states) {
+            if (variables == null) {
+                variables = state.variables();
+            }
+            newValues[i] = state.value();
             statesRep[i++] = (MAX2SATState) state.stateRepresentation;
-		}
+        }
 
-        for(i = 0; i < nVariables; i++) {
-			double sign = 0;
-			double minValue = Double.MAX_VALUE;
-			boolean same = true;
+        for (i = 0; i < nVariables; i++) {
+            double sign = 0;
+            double minValue = Double.MAX_VALUE;
+            boolean same = true;
 
-            for(MAX2SATState state : statesRep) {
-				minValue = Math.min(minValue, Math.abs(state.benefits[i]));
-				if(sign == 0 && state.benefits[i] != 0) {
-					sign = state.benefits[i]/state.benefits[i]; // +/- 1
-				} else if(sign * state.benefits[i] < 0) {
-					same = false;
-					break;
-				}
-			}
+            for (MAX2SATState state : statesRep) {
+                minValue = Math.min(minValue, Math.abs(state.benefits[i]));
+                if (sign == 0 && state.benefits[i] != 0) {
+                    sign = state.benefits[i] / state.benefits[i]; // +/- 1
+                } else if (sign * state.benefits[i] < 0) {
+                    same = false;
+                    break;
+                }
+            }
 
-            if(same) {
-				benefits[i] = sign * minValue;
-			}
+            if (same) {
+                benefits[i] = sign * minValue;
+            }
 
-            for(int j = 0; j < newValues.length; j++) {
-				newValues[j] += Math.abs(statesRep[j].benefits[i]) - Math.abs(benefits[i]);
-			}
-		}
+            for (int j = 0; j < newValues.length; j++) {
+                newValues[j] += Math.abs(statesRep[j].benefits[i]) - Math.abs(benefits[i]);
+            }
+        }
 
         for (double newValue : newValues) {
             maxValue = Math.max(maxValue, newValue);
         }
 
-		return new State(new MAX2SATState(benefits), variables, maxValue);
-	}
-	
-	public static class MAX2SATVariableSelector implements VariableSelector {
-
-		boolean done = false;
-		int [] order;
-		
-		public Variable select(Variable[] vars, Layer layer) {
-			if(!done) {
-                order = new int[nVariables];
-				@SuppressWarnings("unchecked")
-                Pair<Double, Integer>[] l = new Pair[nVariables];
-
-                for (int i = 0; i < nVariables; i++) {
-					double sum = 0;
-					for(double [] weights : g[i].values()) {
-						for(double w : weights) {
-							sum += w;
-						}
-					}
-                    l[i] = new Pair<>(sum, i);
-				}
-				
-				Arrays.sort(l, (a, b) -> b.getKey().compareTo(a.getKey()));
-                for (int i = 0; i < nVariables; i++) {
-					order[i] = l[i].getValue();
-				}
-				
-				done = true;
-			}
-			
-			for(int index : order) {
-                if (!layer.isBound(index)) {
-                    return layer.getVariable(index);
-				}
-			}
-			
-			return null;
-		}
-		
-	}
+        return new State(new MAX2SATState(benefits), variables, maxValue);
+    }
 
     class MAX2SATState implements StateRepresentation {
 
@@ -357,18 +331,45 @@ public class MAX2SAT implements Problem {
             return new MAX2SATState(this.benefits.clone());
         }
     }
-	
-	public static void main(String[] args) {
-		Clause [] clauses = {
-				new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
-				new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2), 
-				new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
-				};
-		
-		Problem p = new MAX2SAT(3, clauses);
-		
-		Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
-		solver.solve();
-	}
+
+    public static class MAX2SATVariableSelector implements VariableSelector {
+
+        boolean done = false;
+        int[] order;
+
+        public Variable select(Variable[] vars, Layer layer) {
+            if (!done) {
+                order = new int[nVariables];
+                @SuppressWarnings("unchecked")
+                Pair<Double, Integer>[] l = new Pair[nVariables];
+
+                for (int i = 0; i < nVariables; i++) {
+                    double sum = 0;
+                    for (double[] weights : g[i].values()) {
+                        for (double w : weights) {
+                            sum += w;
+                        }
+                    }
+                    l[i] = new Pair<>(sum, i);
+                }
+
+                Arrays.sort(l, (a, b) -> b.getKey().compareTo(a.getKey()));
+                for (int i = 0; i < nVariables; i++) {
+                    order[i] = l[i].getValue();
+                }
+
+                done = true;
+            }
+
+            for (int index : order) {
+                if (!layer.isBound(index)) {
+                    return layer.getVariable(index);
+                }
+            }
+
+            return null;
+        }
+
+    }
 
 }

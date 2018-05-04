@@ -8,21 +8,21 @@ import java.util.Arrays;
 
 public class MinLPDeleteSelector implements DeleteSelector {
 
-	@Override
+    @Override
     public State[] select(Layer layer, int number) {
         State[] states = new State[layer.width()];
-		layer.states().toArray(states);
+        layer.states().toArray(states);
 
-		Arrays.sort(states, StateComparator.COMPARATOR);
+        Arrays.sort(states, StateComparator.COMPARATOR);
         State[] ret = new State[number];
         int i = 0;
 
-		for(State s : states) {
+        for (State s : states) {
             ret[i++] = s;
             if (i == number) break;
-		}
-		
-		return ret;
-	}
+        }
+
+        return ret;
+    }
 
 }

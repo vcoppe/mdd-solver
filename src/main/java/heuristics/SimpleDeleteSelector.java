@@ -9,12 +9,12 @@ public class SimpleDeleteSelector implements DeleteSelector {
         State[] ret = new State[number];
         int i = 0;
 
-		for(State s : layer.states()) {
+        for (State s : layer.states()) {
             ret[i++] = s;
             if (i == number) break;
         }
 
-		return ret;
-	}
+        return ret;
+    }
 
 }
