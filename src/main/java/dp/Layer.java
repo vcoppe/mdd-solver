@@ -189,12 +189,4 @@ public class Layer {
 		}
 		return false;
 	}
-	
-	/**
-	 * Help function to get the number of the layer in the MDD.
-	 * @return the number of the layer
-	 */
-	public int number() {
-		return this.number;
-	}
 }
