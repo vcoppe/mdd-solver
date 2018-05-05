@@ -19,7 +19,7 @@ public class TestMCPAll {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < 1 + random.nextInt(5); j++) {
-                Edge e = new Edge(i, random.nextInt(n), random.nextDouble() * 100 - 50);
+                Edge e = new Edge(i, random.nextInt(n), random.nextInt(100) - 50);
                 if (e.v != i) {
                     edges.add(e);
                 }
