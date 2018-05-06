@@ -52,6 +52,41 @@ public class Layer {
     }
 
     /**
+     * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
+     * to assign and the {@code problem} implementation to provide the successors of all the states of
+     * the layer.
+     *
+     * @return the next layer of the MDD
+     */
+    public Layer nextLayer() {
+        Layer next = new Layer(this.problem, this.variableSelector, this.number + 1);
+        Variable nextVar = null;
+
+        next.setExact(this.exact);
+        for (State state : this.states.values()) {
+            if (state.isExact()) {
+                state.exactParents().clear(); // we do not need them anymore -> garbage collection
+            }
+
+            if (nextVar == null) {
+                nextVar = this.variableSelector.select(state.freeVariables(), this);
+            }
+
+            State[] successors = this.problem.successors(state, nextVar);
+            for (State s : successors) {
+                if (state.isExact()) {
+                    s.addParent(state);
+                } else {
+                    s.setExact(false);
+                }
+                next.addState(s);
+            }
+        }
+
+        return next;
+    }
+
+    /**
      * Adds states to the layer or updates an existing state in the layer with the same {@code StateRepresentation}.
      *
      * @param state the state to be added
@@ -94,41 +129,6 @@ public class Layer {
             frontier.addAll(state.exactParents());
         }
         this.exact = false;
-    }
-
-    /**
-     * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
-     * to assign and the {@code problem} implementation to provide the successors of all the states of
-     * the layer.
-     *
-     * @return the next layer of the MDD
-     */
-    public Layer nextLayer() {
-        Layer next = new Layer(this.problem, this.variableSelector, this.number + 1);
-        Variable nextVar = null;
-
-        next.setExact(this.exact);
-        for (State state : this.states.values()) {
-            if (state.isExact()) {
-                state.exactParents().clear(); // we do not need them anymore -> garbage collection
-            }
-
-            if (nextVar == null) {
-                nextVar = this.variableSelector.select(state.freeVariables(), this);
-            }
-
-            State[] successors = this.problem.successors(state, nextVar);
-            for (State s : successors) {
-                if (state.isExact()) {
-                    s.addParent(state);
-                } else {
-                    s.setExact(false);
-                }
-                next.addState(s);
-            }
-        }
-
-        return next;
     }
 
     /**

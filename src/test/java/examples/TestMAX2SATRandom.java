@@ -42,7 +42,8 @@ public class TestMAX2SATRandom {
     public void testRandom() {
         MergeSelector ms = new MinLPMergeSelector();
         DeleteSelector ds = new MinLPDeleteSelector();
-        VariableSelector vs = new SimpleVariableSelector();
+        VariableSelector vs = new MAX2SAT.MAX2SATVariableSelector();
+        //vs = new SimpleVariableSelector();
 
         assertEquals(Double.compare(run(generate(5), ms, ds, vs), 56), 0);
         assertEquals(Double.compare(run(generate(10), ms, ds, vs), 107), 0);

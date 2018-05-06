@@ -44,7 +44,7 @@ public class Solver {
         long startTime = System.currentTimeMillis();
 
         State best = null;
-        double bestBound = Double.MIN_VALUE;
+        double bestBound = -Double.MAX_VALUE;
 
         Queue<State> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
         q.add(this.problem.root());
@@ -95,7 +95,7 @@ public class Solver {
                 System.out.println("====== Search completed ======");
                 System.out.println("Optimal solution : " + best.value());
                 System.out.print("Assignment       : ");
-                for (Variable var : best.variables()) {
+                for (Variable var : best.variables) {
                     if (var.value() == 1) System.out.print(var.id + " ");
                 }
                 System.out.println();

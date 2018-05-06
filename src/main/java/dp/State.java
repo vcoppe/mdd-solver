@@ -21,8 +21,8 @@ public class State implements Comparable<State> {
     private Set<State> parents;
 
     private int nVariables;
-    private Variable[] variables;
-    private int[] indexes;
+    public Variable[] variables;
+    public int[] indexes;
 
     /**
      * @param stateRepresentation the state representation in the dynamic programming approach
@@ -80,12 +80,57 @@ public class State implements Comparable<State> {
     }
 
     /**
-     * Help function to get the variables of the state.
+     * Assigns a variable of the problem to the given value.
      *
-     * @return an array with the variables of the state
+     * @param id    the identifier of the variable to be assigned
+     * @param value the value to be assigned
      */
-    public Variable[] variables() {
-        return this.variables;
+    public void assign(int id, int value) {
+        this.variables[indexes[id]] = this.variables[indexes[id]].copy();
+        this.variables[indexes[id]].assign(value);
+
+        int i1 = indexes[id];
+        int i2 = this.layerNumber - 1;
+
+        Variable v1 = this.variables[i1];
+        Variable v2 = this.variables[i2];
+
+        this.variables[i1] = v2;
+        this.variables[i2] = v1;
+
+        this.indexes[v1.id] = i2;
+        this.indexes[v2.id] = i1;
+    }
+
+    /**
+     * Updates the state given another state with the same {@code StateRepresentation}.
+     *
+     * @param other another state with the same {@code StateRepresentation}
+     */
+    public void update(State other) {
+        if (this.value < other.value()) {
+            System.arraycopy(other.variables, 0, this.variables, 0, this.nVariables);
+            System.arraycopy(other.indexes, 0, this.indexes, 0, this.nVariables);
+            this.value = other.value;
+        }
+        this.exact &= other.exact;
+        this.parents.addAll(other.parents);
+    }
+
+    /**
+     * Utility function to build a new state from this one, with one more variable bound.
+     *
+     * @param stateRepresentation the {@code StateRepresentation} for the successor state
+     * @param value               the value for the successor state
+     * @param id                  the id of the variable to bind
+     * @param val                 the value to bind to the varible chosen
+     * @return a new state with the internal properties required to be the successor of this state
+     */
+    public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
+        State succ = new State(stateRepresentation, variables, indexes, value, exact);
+        succ.setLayerNumber(this.layerNumber + 1);
+        succ.assign(id, val);
+        return succ;
     }
 
     /**
@@ -115,42 +160,6 @@ public class State implements Comparable<State> {
      */
     public boolean isBound(int i) {
         return this.indexes[i] < this.layerNumber;
-    }
-
-    /**
-     * Assigns a variable of the problem to the given value.
-     *
-     * @param id    the identifier of the variable to be assigned
-     * @param value the value to be assigned
-     */
-    public void assign(int id, int value) {
-        this.variables[indexes[id]] = this.variables[indexes[id]].copy();
-        this.variables[indexes[id]].assign(value);
-
-        int i1 = indexes[id];
-        int i2 = this.layerNumber - 1;
-        Variable v1 = this.variables[i1];
-        Variable v2 = this.variables[i2];
-
-        this.variables[i1] = v2;
-        this.variables[i2] = v1;
-
-        this.indexes[v1.id] = i2;
-        this.indexes[v2.id] = i1;
-    }
-
-    /**
-     * Updates the state given another state with the same {@code StateRepresentation}.
-     *
-     * @param other another state with the same {@code StateRepresentation}
-     */
-    public void update(State other) {
-        if (this.value < other.value()) {
-            System.arraycopy(other.variables, 0, this.variables, 0, this.nVariables);
-            this.value = other.value;
-        }
-        this.exact &= other.exact;
-        this.parents.addAll(other.parents);
     }
 
     /**
@@ -276,21 +285,5 @@ public class State implements Comparable<State> {
      */
     public int compareTo(State o) {
         return Double.compare(this.stateRepresentation.rank(this), o.stateRepresentation.rank(o));
-    }
-
-    /**
-     * Utility function to build a new state from this one, with one more variable bound.
-     *
-     * @param stateRepresentation the {@code StateRepresentation} for the successor state
-     * @param value               the value for the successor state
-     * @param id                  the id of the variable to bind
-     * @param val                 the value to bind to the varible chosen
-     * @return a new state with the internal properties required to be the successor of this state
-     */
-    public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
-        State succ = new State(stateRepresentation, variables, indexes, value, exact);
-        succ.setLayerNumber(this.layerNumber + 1);
-        succ.assign(id, val);
-        return succ;
     }
 }

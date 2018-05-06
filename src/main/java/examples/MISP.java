@@ -60,6 +60,66 @@ public class MISP implements Problem {
         this.root = new State(new MISPState(this.nVariables), variables, 0);
     }
 
+    public State root() {
+        return this.root;
+    }
+
+    public int nVariables() {
+        return this.nVariables;
+    }
+
+    public State merge(State[] states) {
+        Variable[] variables = null;
+        int[] indexes = null;
+        double maxValue = -Double.MAX_VALUE;
+        MISPState mispState = null;
+
+        for (State state : states) {
+            if (mispState == null) {
+                mispState = (MISPState) state.stateRepresentation;
+            } else {
+                mispState.bs.or(((MISPState) state.stateRepresentation).bs);
+            }
+
+            if (state.value() > maxValue) {
+                maxValue = state.value();
+                variables = state.variables;
+                indexes = state.indexes;
+            }
+        }
+
+        return new State(mispState, variables, indexes, maxValue, false);
+    }
+
+    public State[] successors(State s, Variable var) {
+        int u = var.id;
+        MISPState mispState = ((MISPState) s.stateRepresentation);
+
+        // assign 0
+        MISPState mispState0 = mispState.copy();
+        mispState0.bs.clear(u);
+        State dontTake = s.getSuccessor(mispState0, s.value(), u, 0);
+
+        if (!mispState.isFree(u)) {
+            State[] ret = {dontTake};
+            return ret;
+        }
+
+        // assign 1
+        MISPState mispState1 = mispState.copy();
+        mispState1.bs.clear(u);
+
+        for (int v : g[u]) {
+            mispState1.bs.clear(v);
+        }
+
+        State take = s.getSuccessor(mispState1, s.value() + this.weights[u], u, 1);
+
+        State[] ret = {dontTake, take};
+
+        return ret;
+    }
+
     private static LinkedList<Integer>[] toGraph(int n, Edge[] edges) {
         @SuppressWarnings("unchecked")
         LinkedList<Integer>[] adj = new LinkedList[n];
@@ -75,30 +135,68 @@ public class MISP implements Problem {
         return adj;
     }
 
-    public State root() {
-        return this.root;
-    }
+    public class MISPState implements StateRepresentation {
 
-    public int nVariables() {
-        return this.nVariables;
-    }
+        int size;
+        BitSet bs;
 
-    public State merge(State[] states) {
-        Variable[] variables = null;
-        double maxValue = Double.MIN_VALUE;
-        MISPState mispState = null;
-
-        for (State state : states) {
-            if (mispState == null) {
-                variables = state.variables();
-                mispState = ((MISPState) state.stateRepresentation).copy();
-            }
-
-            mispState.bs.or(((MISPState) state.stateRepresentation).bs);
-            maxValue = Math.max(maxValue, state.value());
+        public MISPState(int size) {
+            this.size = size;
+            this.bs = new BitSet(size);
+            this.bs.flip(0, size);
         }
 
-        return new State(mispState, variables, maxValue);
+        public MISPState(BitSet bitSet) {
+            this.size = bitSet.size();
+            this.bs = (BitSet) bitSet.clone();
+        }
+
+        public int hashCode() {
+            return this.bs.hashCode();
+        }
+
+        public boolean equals(Object o) {
+            return o instanceof MISPState && this.bs.equals(((MISPState) o).bs);
+        }
+
+        public boolean isFree(int u) {
+            return this.bs.get(u);
+        }
+
+        public MISPState copy() {
+            return new MISPState(this.bs);
+        }
+
+        public double rank(State state) {
+            return state.value();
+        }
+
+        public String toString() {
+            return this.bs.toString();
+        }
+    }
+
+    public static class MISPVariableSelector implements VariableSelector {
+
+        public Variable select(Variable[] vars, Layer layer) {
+            int minCount = Integer.MAX_VALUE, index = -1;
+            int[] count = new int[vars.length];
+
+            for (State state : layer.states()) {
+                for (int i = 0; i < vars.length; i++) {
+                    if (((MISPState) state.stateRepresentation).isFree(vars[i].id)) {
+                        count[i]++;
+                    }
+
+                    if (count[i] < minCount) {
+                        minCount = count[i];
+                        index = i;
+                    }
+                }
+            }
+
+            return vars[index];
+        }
     }
 
     /**
@@ -172,76 +270,6 @@ public class MISP implements Problem {
         return p;
     }
 
-    public State[] successors(State s, Variable var) {
-        int u = var.id;
-        MISPState mispState = ((MISPState) s.stateRepresentation);
-
-        // assign 0
-        MISPState mispState0 = mispState.copy();
-        mispState0.bs.clear(u);
-        State dontTake = s.getSuccessor(mispState0, s.value(), u, 0);
-
-        if (!mispState.isFree(u)) {
-            State[] ret = {dontTake};
-            return ret;
-        }
-
-        // assign 1
-        MISPState mispState1 = mispState.copy();
-        mispState1.bs.clear(u);
-
-        for (int v : g[u]) {
-            mispState1.bs.clear(v);
-        }
-
-        State take = s.getSuccessor(mispState1, s.value() + this.weights[u], u, 1);
-
-        State[] ret = {dontTake, take};
-
-        return ret;
-    }
-
-    public class MISPState implements StateRepresentation {
-
-        int size;
-        BitSet bs;
-
-        public MISPState(int size) {
-            this.size = size;
-            this.bs = new BitSet(size);
-            this.bs.flip(0, size);
-        }
-
-        public MISPState(BitSet bitSet) {
-            this.size = bitSet.size();
-            this.bs = (BitSet) bitSet.clone();
-        }
-
-        public int hashCode() {
-            return this.bs.hashCode();
-        }
-
-        public boolean equals(Object o) {
-            return o instanceof MISPState && this.bs.equals(((MISPState) o).bs);
-        }
-
-        public boolean isFree(int u) {
-            return this.bs.get(u);
-        }
-
-        public MISPState copy() {
-            return new MISPState(this.bs);
-        }
-
-        public double rank(State state) {
-            return state.value();
-        }
-
-        public String toString() {
-            return this.bs.toString();
-        }
-    }
-
     public static void main(String[] args) {
 
         double[] weights = {3, 4, 2, 2, 7};
@@ -259,30 +287,6 @@ public class MISP implements Problem {
         long t0 = System.currentTimeMillis();
         System.out.println(solver.solve(100).value());
         System.out.println("time:" + (System.currentTimeMillis() - t0));*/
-
-    }
-
-    public static class MISPVariableSelector implements VariableSelector {
-
-        public Variable select(Variable[] vars, Layer layer) {
-            int minCount = Integer.MAX_VALUE, index = -1;
-            int[] count = new int[vars.length];
-
-            for (State state : layer.states()) {
-                for (int i = 0; i < vars.length; i++) {
-                    if (((MISPState) state.stateRepresentation).isFree(vars[i].id)) {
-                        count[i]++;
-                    }
-
-                    if (count[i] < minCount) {
-                        minCount = count[i];
-                        index = i;
-                    }
-                }
-            }
-
-            return vars[index];
-        }
 
     }
 }

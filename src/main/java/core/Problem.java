@@ -37,11 +37,12 @@ public interface Problem {
     State[] successors(State s, Variable var);
 
     /**
-     * Given a set of states, returns a new state with the same {@code StateRepresentation}
+     * Given a set of states, returns a new state with a {@code StateRepresentation}
      * and a value leading to a relaxed MDD.
      *
      * @param states a set of states
-     * @return the resulting merged state
+     * @return the resulting merged state,
+     * should have consistent {@code variables} and {@code indexes} arrays
      */
     State merge(State[] states);
 

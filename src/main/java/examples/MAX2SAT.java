@@ -23,6 +23,7 @@ public class MAX2SAT implements Problem {
 
     private static int nVariables;
     private State root;
+    private static boolean done = false;
 
     public double opt;
 
@@ -49,6 +50,7 @@ public class MAX2SAT implements Problem {
      */
     private MAX2SAT(Map<Integer, double[]>[] g) {
         nVariables = g.length;
+        done = false;
         MAX2SAT.g = g;
 
         Variable[] variables = new Variable[nVariables];
@@ -59,116 +61,8 @@ public class MAX2SAT implements Problem {
         this.root = new State(new MAX2SATState(nVariables), variables, 0);
     }
 
-    public static void main(String[] args) {
-        Clause[] clauses = {
-                new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
-                new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2),
-                new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
-        };
-
-        Problem p = new MAX2SAT(3, clauses);
-
-        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
-        solver.solve();
-    }
-
     public State root() {
         return this.root;
-    }
-
-    private static Map<Integer, double[]>[] toGraph(int n, Clause[] clauses) {
-        @SuppressWarnings("unchecked")
-        Map<Integer, double[]>[] g = new Map[n];
-        for (int i = 0; i < g.length; i++) {
-            g[i] = new HashMap<>();
-        }
-
-        for (Clause clause : clauses) {
-            if (!g[clause.u].containsKey(clause.v)) {
-                g[clause.u].put(clause.v, new double[4]);
-            }
-            g[clause.u].get(clause.v)[clause.num] = clause.w;
-
-            if (!g[clause.v].containsKey(clause.u)) {
-                g[clause.v].put(clause.u, new double[4]);
-            }
-            g[clause.v].get(clause.u)[clause.num] = clause.w;
-        }
-
-        return g;
-    }
-
-    /**
-     * Instances can be found on <a href=http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
-     *
-     * @param path path to an input file in DIMACS wcnf format
-     */
-    public static MAX2SAT readDIMACS(String path) {
-        int n = 0, m, i = 0;
-        double opt = -1;
-        Clause[] clauses = null;
-
-        try {
-            Scanner scan = new Scanner(new File(path));
-
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine();
-                String[] tokens = line.split("\\s+");
-
-                if (tokens.length > 0) {
-                    if (tokens[0].equals("c")) {
-                        if (tokens.length > 2 && tokens[1].equals("opt")) {
-                            opt = Double.valueOf(tokens[2]);
-                        }
-                        continue;
-                    }
-                    if (tokens[0].equals("p")) {
-                        assert (tokens.length == 4);
-                        assert (tokens[1].equals("wcnf"));
-                        n = Integer.valueOf(tokens[2]);
-                        m = Integer.valueOf(tokens[3]);
-                        clauses = new Clause[m];
-                    } else {
-                        int u, v, tu = 1, tv = 1;
-                        double w;
-                        if (tokens.length == 3) {
-                            w = Double.valueOf(tokens[0]);
-                            u = Integer.valueOf(tokens[1]);
-                            if (u < 0) {
-                                u = -u;
-                                tu = 0;
-                            }
-                            clauses[i++] = new Clause(u - 1, u - 1, tu, tu, w);
-                        } else if (tokens.length == 4) {
-                            w = Double.valueOf(tokens[0]);
-                            u = Integer.valueOf(tokens[1]);
-                            v = Integer.valueOf(tokens[2]);
-                            if (u < 0) {
-                                u = -u;
-                                tu = 0;
-                            }
-                            if (v < 0) {
-                                v = -v;
-                                tv = 0;
-                            }
-                            clauses[i++] = new Clause(u - 1, v - 1, tu, tv, w);
-                        }
-                    }
-                }
-            }
-
-            scan.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (opt != -1) {
-            System.out.println("Value to reach : " + opt);
-        }
-
-        MAX2SAT p = new MAX2SAT(toGraph(n, clauses));
-        p.opt = opt;
-        return p;
     }
 
     public int nVariables() {
@@ -247,16 +141,14 @@ public class MAX2SAT implements Problem {
 
     public State merge(State[] states) {
         Variable[] variables = null;
-        double maxValue = Double.MIN_VALUE;
+        int[] indexes = null;
+        double maxValue = -Double.MAX_VALUE;
         double[] benefits = new double[nVariables];
         double[] newValues = new double[states.length];
         MAX2SATState[] statesRep = new MAX2SATState[states.length];
 
         int i = 0;
         for (State state : states) {
-            if (variables == null) {
-                variables = state.variables();
-            }
             newValues[i] = state.value();
             statesRep[i++] = (MAX2SATState) state.stateRepresentation;
         }
@@ -285,11 +177,37 @@ public class MAX2SAT implements Problem {
             }
         }
 
-        for (double newValue : newValues) {
-            maxValue = Math.max(maxValue, newValue);
+        for (i = 0; i < newValues.length; i++) {
+            if (newValues[i] > maxValue) {
+                maxValue = newValues[i];
+                variables = states[i].variables;
+                indexes = states[i].indexes;
+            }
         }
 
-        return new State(new MAX2SATState(benefits), variables, maxValue);
+        return new State(new MAX2SATState(benefits), variables, indexes, maxValue, false);
+    }
+
+    private static Map<Integer, double[]>[] toGraph(int n, Clause[] clauses) {
+        @SuppressWarnings("unchecked")
+        Map<Integer, double[]>[] g = new Map[n];
+        for (int i = 0; i < g.length; i++) {
+            g[i] = new HashMap<>();
+        }
+
+        for (Clause clause : clauses) {
+            if (!g[clause.u].containsKey(clause.v)) {
+                g[clause.u].put(clause.v, new double[4]);
+            }
+            g[clause.u].get(clause.v)[clause.num] = clause.w;
+
+            if (!g[clause.v].containsKey(clause.u)) {
+                g[clause.v].put(clause.u, new double[4]);
+            }
+            g[clause.v].get(clause.u)[clause.num] = clause.w;
+        }
+
+        return g;
     }
 
     class MAX2SATState implements StateRepresentation {
@@ -334,12 +252,11 @@ public class MAX2SAT implements Problem {
 
     public static class MAX2SATVariableSelector implements VariableSelector {
 
-        boolean done = false;
-        int[] order;
+        int[] index;
 
         public Variable select(Variable[] vars, Layer layer) {
             if (!done) {
-                order = new int[nVariables];
+                index = new int[nVariables];
                 @SuppressWarnings("unchecked")
                 Pair<Double, Integer>[] l = new Pair[nVariables];
 
@@ -355,21 +272,106 @@ public class MAX2SAT implements Problem {
 
                 Arrays.sort(l, (a, b) -> b.getKey().compareTo(a.getKey()));
                 for (int i = 0; i < nVariables; i++) {
-                    order[i] = l[i].getValue();
+                    index[l[i].getValue()] = i;
                 }
 
                 done = true;
             }
 
-            for (int index : order) {
-                if (!layer.isBound(index)) {
-                    return layer.getVariable(index);
+            Variable ret = null;
+            for (Variable var : vars) {
+                if (ret == null || index[var.id] < index[ret.id]) {
+                    ret = var;
                 }
             }
-
-            return null;
+            return ret;
         }
 
     }
 
+    /**
+     * Instances can be found on <a href=http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
+     *
+     * @param path path to an input file in DIMACS wcnf format
+     */
+    public static MAX2SAT readDIMACS(String path) {
+        int n = 0, m, i = 0;
+        double opt = -1;
+        Clause[] clauses = null;
+
+        try {
+            Scanner scan = new Scanner(new File(path));
+
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                String[] tokens = line.split("\\s+");
+
+                if (tokens.length > 0) {
+                    if (tokens[0].equals("c")) {
+                        if (tokens.length > 2 && tokens[1].equals("opt")) {
+                            opt = Double.valueOf(tokens[2]);
+                        }
+                        continue;
+                    }
+                    if (tokens[0].equals("p")) {
+                        assert (tokens.length == 4);
+                        assert (tokens[1].equals("wcnf"));
+                        n = Integer.valueOf(tokens[2]);
+                        m = Integer.valueOf(tokens[3]);
+                        clauses = new Clause[m];
+                    } else {
+                        int u, v, tu = 1, tv = 1;
+                        double w;
+                        if (tokens.length == 3) {
+                            w = Double.valueOf(tokens[0]);
+                            u = Integer.valueOf(tokens[1]);
+                            if (u < 0) {
+                                u = -u;
+                                tu = 0;
+                            }
+                            clauses[i++] = new Clause(u - 1, u - 1, tu, tu, w);
+                        } else if (tokens.length == 4) {
+                            w = Double.valueOf(tokens[0]);
+                            u = Integer.valueOf(tokens[1]);
+                            v = Integer.valueOf(tokens[2]);
+                            if (u < 0) {
+                                u = -u;
+                                tu = 0;
+                            }
+                            if (v < 0) {
+                                v = -v;
+                                tv = 0;
+                            }
+                            clauses[i++] = new Clause(u - 1, v - 1, tu, tv, w);
+                        }
+                    }
+                }
+            }
+
+            scan.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (opt != -1) {
+            System.out.println("Value to reach : " + opt);
+        }
+
+        MAX2SAT p = new MAX2SAT(toGraph(n, clauses));
+        p.opt = opt;
+        return p;
+    }
+
+    public static void main(String[] args) {
+        Clause[] clauses = {
+                new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
+                new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2),
+                new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
+        };
+
+        Problem p = new MAX2SAT(3, clauses);
+
+        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
+        solver.solve();
+    }
 }

@@ -150,15 +150,6 @@ public class DP {
     }
 
     /**
-     * Returns the deepest layer equal to the corresponding complete MDD layer.
-     *
-     * @return a {@code Layer} object representing the last exact layer
-     */
-    public Layer lastExactLayer() {
-        return this.lastExactLayer;
-    }
-
-    /**
      * Returns a {@code boolean} telling if this DP resolution was exact.
      *
      * @return {@code true} <==> all the layers are exact
@@ -186,7 +177,8 @@ public class DP {
     }
 
     /**
-     * Returns the last exact layer cutset.
+     * Returns the last exact layer cutset,
+     * which is the deepest layer equal to the corresponding complete MDD layer.
      *
      * @return the states of the last exact layer
      */

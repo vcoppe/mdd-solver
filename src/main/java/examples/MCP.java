@@ -72,34 +72,8 @@ public class MCP implements Problem {
         this.root.setLayerNumber(1); // already 1 variable assigned
     }
 
-    public static void main(String[] args) {
-        Edge[] edges = {new Edge(0, 1, 1), new Edge(0, 2, 2), new Edge(0, 3, -2),
-                new Edge(1, 2, 3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
-
-        Problem p = new MCP(4, edges);
-
-        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-        solver.solve();
-    }
-
     public State root() {
         return this.root;
-    }
-
-    private static Map<Integer, Double>[] toGraph(int n, Edge[] edges) {
-        @SuppressWarnings("unchecked")
-        Map<Integer, Double>[] g = new Map[n];
-
-        for (int i = 0; i < g.length; i++) {
-            g[i] = new HashMap<>();
-        }
-
-        for (Edge e : edges) {
-            g[e.u].put(e.v, e.w);
-            g[e.v].put(e.u, e.w);
-        }
-
-        return g;
     }
 
     public int nVariables() {
@@ -108,18 +82,16 @@ public class MCP implements Problem {
 
     public State merge(State[] states) {
         Variable[] variables = null;
-        double maxValue = Double.MIN_VALUE;
+        int[] indexes = null;
+        double maxValue = -Double.MAX_VALUE;
         double[] benefits = new double[nVariables];
         double[] newValues = new double[states.length];
         MCPState[] statesRep = new MCPState[states.length];
 
         int i = 0;
         for (State state : states) {
-            if (variables == null) {
-                variables = state.variables();
-            }
+            newValues[i] = state.value();
             statesRep[i++] = (MCPState) state.stateRepresentation;
-            maxValue = Math.max(maxValue, state.value());
         }
 
         for (i = 0; i < nVariables; i++) {
@@ -146,13 +118,21 @@ public class MCP implements Problem {
             }
         }
 
-        return new State(new MCPState(benefits), variables, maxValue);
+        for (i = 0; i < newValues.length; i++) {
+            if (newValues[i] > maxValue) {
+                maxValue = newValues[i];
+                variables = states[i].variables;
+                indexes = states[i].indexes;
+            }
+        }
+
+        return new State(new MCPState(benefits), variables, indexes, maxValue, false);
     }
 
     public State[] successors(State s, Variable var) {
         int u = var.id;
 
-        Variable[] variables = s.variables();
+        Variable[] variables = s.variables;
         MCPState mcpState = ((MCPState) s.stateRepresentation);
 
         // assigning var to 0
@@ -196,6 +176,22 @@ public class MCP implements Problem {
         return ret;
     }
 
+    private static Map<Integer, Double>[] toGraph(int n, Edge[] edges) {
+        @SuppressWarnings("unchecked")
+        Map<Integer, Double>[] g = new Map[n];
+
+        for (int i = 0; i < g.length; i++) {
+            g[i] = new HashMap<>();
+        }
+
+        for (Edge e : edges) {
+            g[e.u].put(e.v, e.w);
+            g[e.v].put(e.u, e.w);
+        }
+
+        return g;
+    }
+
     class MCPState implements StateRepresentation {
 
         double[] benefits;
@@ -236,4 +232,13 @@ public class MCP implements Problem {
         }
     }
 
+    public static void main(String[] args) {
+        Edge[] edges = {new Edge(0, 1, 1), new Edge(0, 2, 2), new Edge(0, 3, -2),
+                new Edge(1, 2, 3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
+
+        Problem p = new MCP(4, edges);
+
+        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+        solver.solve();
+    }
 }

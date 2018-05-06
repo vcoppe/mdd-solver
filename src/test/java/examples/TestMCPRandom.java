@@ -46,7 +46,7 @@ public class TestMCPRandom {
 
         assertEquals(Double.compare(run(generate(5), ms, ds, vs), 97), 0);
         assertEquals(Double.compare(run(generate(10), ms, ds, vs), 164), 0);
-        assertEquals(Double.compare(run(generate(20), ms, ds, vs), 328), 0);
-        assertEquals(Double.compare(run(generate(30), ms, ds, vs), 457), 0);
+        assertEquals(Double.compare(run(generate(20), ms, ds, vs), 330), 0);
+        assertEquals(Double.compare(run(generate(30), ms, ds, vs), 481), 0);
     }
 }
