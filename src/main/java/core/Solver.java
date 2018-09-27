@@ -94,9 +94,9 @@ public class Solver {
             } else {
                 System.out.println("====== Search completed ======");
                 System.out.println("Optimal solution : " + best.value());
-                System.out.print("Assignment       : ");
+                System.out.println("Assignment       : ");
                 for (Variable var : best.variables) {
-                    if (var.value() == 1) System.out.print(var.id + " ");
+                    System.out.println(var.id + " " + var.value());
                 }
                 System.out.println();
             }

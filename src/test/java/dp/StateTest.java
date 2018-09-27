@@ -1,10 +1,10 @@
 package dp;
 
 import core.Variable;
-import examples.Edge;
-import examples.MISP;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import problems.Edge;
+import problems.MISP;
 
 import java.util.BitSet;
 

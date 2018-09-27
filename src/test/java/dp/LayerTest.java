@@ -1,12 +1,12 @@
 package dp;
 
 import core.Variable;
-import examples.Edge;
-import examples.MISP;
 import heuristics.SimpleVariableSelector;
 import heuristics.VariableSelector;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import problems.Edge;
+import problems.MISP;
 
 import static org.junit.Assert.*;
 
