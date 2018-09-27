@@ -60,7 +60,7 @@
                 <configuration>
                     <append>true</append>
                     <excludes>
-                        <exclude>**/examples/*All.java</exclude>
+                        <exclude>**/problems/*All.java</exclude>
                     </excludes>
                 </configuration>
                 <executions>
