@@ -121,9 +121,6 @@ public class StateTest {
 
         assertTrue(s.equals(s2));
 
-        s2.setLayerNumber(1);
-        assertFalse(s.equals(s2));
-
         bs.clear(1);
 
         StateRepresentation sr3 = p.new MISPState(bs);
