@@ -21,6 +21,7 @@ public class Layer {
     private VariableSelector variableSelector;
     private boolean exact;
     private int number;
+    private Layer next;
 
     /**
      * Returns an empty layer of the problem.
@@ -35,6 +36,7 @@ public class Layer {
         this.variableSelector = variableSelector;
         this.exact = true;
         this.number = number;
+        this.next = null;
     }
 
     /**
@@ -52,6 +54,17 @@ public class Layer {
     }
 
     /**
+     * Clears the content of the layer in order to reuse the object.
+     *
+     * @param number the number of the layer
+     */
+    public void reset(int number) {
+        this.states.clear();
+        this.exact = true;
+        this.number = number;
+    }
+
+    /**
      * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
      * to assign and the {@code problem} implementation to provide the successors of all the states of
      * the layer.
@@ -59,7 +72,8 @@ public class Layer {
      * @return the next layer of the MDD
      */
     public Layer nextLayer() {
-        Layer next = new Layer(this.problem, this.variableSelector, this.number + 1);
+        if (next == null) next = new Layer(this.problem, this.variableSelector, this.number + 1);
+        else next.reset(this.number + 1);
         Variable nextVar = null;
 
         next.setExact(this.exact);
@@ -94,11 +108,9 @@ public class Layer {
     public void addState(State state) {
         this.exact &= state.isExact();
         state.setLayerNumber(this.number);
-        if (this.states.containsKey(state.stateRepresentation)) {
-            this.states.get(state.stateRepresentation).update(state);
-        } else {
-            this.states.put(state.stateRepresentation, state);
-        }
+        State existing = this.states.get(state.stateRepresentation);
+        if (existing == null) this.states.put(state.stateRepresentation, state);
+        else existing.update(state);
     }
 
     /**
@@ -108,9 +120,8 @@ public class Layer {
      */
     public void removeStates(State[] states) {
         for (State state : states) {
-            if (this.states.containsKey(state.stateRepresentation)) {
-                this.states.remove(state.stateRepresentation);
-            }
+            State removed = this.states.remove(state.stateRepresentation);
+            if (removed != null) State.freeStates.add(removed);
         }
         this.exact = false;
     }
@@ -123,9 +134,8 @@ public class Layer {
      */
     public void removeStates(State[] states, Set<State> frontier) {
         for (State state : states) {
-            if (this.states.containsKey(state.stateRepresentation)) {
-                this.states.remove(state.stateRepresentation);
-            }
+            State removed = this.states.remove(state.stateRepresentation);
+            if (removed != null) State.freeStates.add(removed);
             frontier.addAll(state.exactParents());
         }
         this.exact = false;

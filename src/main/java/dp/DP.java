@@ -66,7 +66,8 @@ public class DP {
      * @param initialState the state where to start the layers
      */
     public void setInitialState(State initialState) {
-        this.root = new Layer(this.problem, this.variableSelector, initialState, initialState.layerNumber());
+        this.root.reset(initialState.layerNumber());
+        this.root.addState(initialState);
         this.lastExactLayer = null;
         this.exact = true;
     }
@@ -172,7 +173,7 @@ public class DP {
      *
      * @return a set of exact states being an exact cutset
      */
-    public Set<State> exactCutset() {
+    public Collection<State> exactCutset() {
         return this.frontierCutset();
     }
 

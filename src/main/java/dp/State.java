@@ -2,9 +2,7 @@ package dp;
 
 import core.Variable;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a particular state of the MDD.
@@ -12,6 +10,8 @@ import java.util.Set;
  * @author Vianney Coppé
  */
 public class State implements Comparable<State> {
+
+    public static Queue<State> freeStates = new LinkedList<>();
 
     private double value;
     private double relaxedValue;
@@ -70,13 +70,36 @@ public class State implements Comparable<State> {
         }
     }
 
+    public void reset(StateRepresentation stateRepresentation, Variable[] variables, int[] indexes, double value, boolean exact) {
+        this.stateRepresentation = stateRepresentation.copy();
+        this.value = value;
+        this.exact = exact;
+        this.layerNumber = 0;
+        this.relaxedValue = Double.MAX_VALUE;
+        this.parents.clear();
+
+        if (this.nVariables != variables.length) {
+            this.nVariables = variables.length;
+            this.variables = new Variable[this.nVariables];
+            this.indexes = new int[this.nVariables];
+        }
+
+        for (int i = 0; i < nVariables; i++) {
+            this.variables[i] = variables[i];
+            this.indexes[i] = indexes[i];
+        }
+    }
+
     /**
      * Returns a copy of the state.
      *
      * @return a different {@code State} object with the same properties
      */
     public State copy() {
-        return new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
+        State s = freeStates.poll();
+        if (s == null) s = new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
+        else s.reset(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
+        return s;
     }
 
     /**
@@ -127,7 +150,9 @@ public class State implements Comparable<State> {
      * @return a new state with the internal properties required to be the successor of this state
      */
     public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
-        State succ = new State(stateRepresentation, variables, indexes, value, exact);
+        State succ = freeStates.poll();
+        if (succ == null) succ = new State(stateRepresentation, variables, indexes, value, exact);
+        else succ.reset(stateRepresentation, variables, indexes, value, exact);
         succ.setLayerNumber(this.layerNumber + 1);
         succ.assign(id, val);
         return succ;
@@ -266,9 +291,9 @@ public class State implements Comparable<State> {
 
         State other = (State) o;
 
-        if (this.layerNumber != other.layerNumber) {
+        /*if (this.layerNumber != other.layerNumber) {
             return false;
-        }
+        }*/
 
         if (this.hashCode() != other.hashCode()) {
             return false;
