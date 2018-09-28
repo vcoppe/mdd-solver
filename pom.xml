@@ -49,7 +49,7 @@
                         </property>
                     </properties>
                     <excludes>
-                        <exclude>**/examples/*All.java</exclude>
+                        <exclude>**/problems/*All.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
