@@ -27,7 +27,7 @@ public abstract class TestHelper {
         for (File listOfFile : listOfFiles) {
             if (listOfFile.isFile()) {
                 String name = listOfFile.getAbsolutePath();
-                if (name.endsWith(".clq") || name.endsWith(".wcnf")) {
+                if (name.endsWith(".clq") || name.endsWith(".wcnf") || name.endsWith(".gra")) {
                     out.add(name);
                 }
             }
@@ -40,8 +40,8 @@ public abstract class TestHelper {
         System.out.println(path);
         try {
             assertTrue(testData(60));
-        } catch (NullPointerException e) {
-            fail("Timed out");
+            //} catch (NullPointerException e) {
+            //    fail("Timed out");
         } catch (OutOfMemoryError e) {
             fail("Not enough memory");
         }

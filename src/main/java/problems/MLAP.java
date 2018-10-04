@@ -9,14 +9,16 @@ import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
 
+import java.io.File;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Scanner;
 
 import static problems.Edge.toWeightedGraph;
 
 /**
- * Implementation of the Minimun Linear Arrangement Problem.
+ * Implementation of the Minimum Linear Arrangement Problem.
  *
  * @author Vianney Coppé
  */
@@ -138,6 +140,46 @@ public class MLAP implements Problem {
         public String toString() {
             return this.bs.toString();
         }
+    }
+
+    /**
+     * Instances can be found on <a href=https://www.cs.upc.edu/~jpetit/MinLA/Experiments/</a>.
+     *
+     * @param path path to a .gra file
+     * @return a MLAP object encoding the problem
+     */
+    public static MLAP readGra(String path) {
+        int n = 0, m, deg[];
+        Edge[] edges = null;
+
+        try {
+            Scanner scan = new Scanner(new File(path));
+
+            n = scan.nextInt();
+            m = scan.nextInt();
+
+            deg = new int[n];
+            edges = new Edge[m * 2];
+
+            for (int i = 0; i < n; i++) {
+                deg[i] = scan.nextInt();
+            }
+
+            int cumul = 0, j;
+            for (int i = 0; i < n; i++) {
+                for (int k = cumul; k < cumul + deg[i]; k++) {
+                    j = scan.nextInt();
+                    edges[k] = new Edge(i, j, -1);
+                }
+                cumul += deg[i];
+            }
+
+            scan.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new MLAP(n, edges);
     }
 
     public static void main(String[] args) {

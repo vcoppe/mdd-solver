@@ -293,6 +293,7 @@ public class MAX2SAT implements Problem {
      * Instances can be found on <a href=http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
      *
      * @param path path to an input file in DIMACS wcnf format
+     * @return a MAX2SAT object encoding the problem
      */
     public static MAX2SAT readDIMACS(String path) {
         int n = 0, m, i = 0;
