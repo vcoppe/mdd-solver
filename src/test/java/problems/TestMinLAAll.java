@@ -8,9 +8,9 @@ import org.junit.runners.Parameterized;
 
 @SuppressWarnings("unused")
 @RunWith(Parameterized.class)
-public class TestMLAPAll extends TestHelper {
+public class TestMinLAAll extends TestHelper {
 
-    public TestMLAPAll(String path) {
+    public TestMinLAAll(String path) {
         super(path);
     }
 
@@ -21,12 +21,12 @@ public class TestMLAPAll extends TestHelper {
 
     @Parameterized.Parameters
     public static Object[] data() {
-        return dataFromFolder("data/mlap");
+        return dataFromFolder("data/minla/small");
     }
 
     @Override
     protected boolean testData(int timeOut) {
-        MLAP p = MLAP.readGra(path);
+        MinLA p = MinLA.readGra(path);
         run(p, timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
         return true;
     }

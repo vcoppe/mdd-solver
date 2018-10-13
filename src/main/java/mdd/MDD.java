@@ -1,4 +1,4 @@
-package dp;
+package mdd;
 
 import core.Problem;
 import heuristics.DeleteSelector;
@@ -10,38 +10,38 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents the DP graph.
+ * Represents the MDD graph.
  * Gives lower/upper bounds (or the exact solution)
  * by solving the MDD representation with the given width.
  * Solves a maximization problem by default.
  *
  * @author Vianney Coppé
  */
-public class DP {
+public class MDD {
 
+    public Set<State> frontier;
+    public MergeSelector mergeSelector;
+    public DeleteSelector deleteSelector;
+    public VariableSelector variableSelector;
     private Layer root;
     private Layer lastExactLayer;
-    private Set<State> frontier;
     private boolean exact;
     private Problem problem;
-    private MergeSelector mergeSelector;
-    private DeleteSelector deleteSelector;
-    private VariableSelector variableSelector;
 
     /**
-     * Returns the DP representation of the problem.
+     * Returns the MDD representation of the problem.
      *
      * @param problem          the implementation of a problem
      * @param mergeSelector    heuristic to select nodes to merge (to build relaxed MDDs)
      * @param deleteSelector   heuristic to select nodes to delete (to build restricted MDDs)
      * @param variableSelector heuristic to select the next variable to be assigned
      */
-    public DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
+    public MDD(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         this(problem, mergeSelector, deleteSelector, variableSelector, problem.root());
     }
 
     /**
-     * Returns the DP representation of the problem.
+     * Returns the MDD representation of the problem.
      *
      * @param problem          the implementation of a problem
      * @param mergeSelector    heuristic to select nodes to merge (to build relaxed MDDs)
@@ -49,9 +49,9 @@ public class DP {
      * @param variableSelector heuristic to select the next variable to be assigned
      * @param initialState     the state where to start the layers
      */
-    private DP(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
+    private MDD(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
         this.problem = problem;
-        this.root = new Layer(problem, variableSelector, initialState, initialState.layerNumber());
+        this.root = new Layer(problem, this, initialState, initialState.layerNumber());
         this.exact = true;
         this.lastExactLayer = null;
         this.frontier = new HashSet<>();
@@ -61,7 +61,7 @@ public class DP {
     }
 
     /**
-     * Sets the initial state of the DP representation.
+     * Sets the initial state of the MDD representation.
      *
      * @param initialState the state where to start the layers
      */
@@ -88,13 +88,7 @@ public class DP {
                 return lastLayer.best();
             }
 
-            lastLayer = lastLayer.nextLayer();
-
-            if (lastLayer.width() > width) {
-                State[] toRemove = this.deleteSelector.select(lastLayer, lastLayer.width() - width);
-                lastLayer.removeStates(toRemove);
-                this.exact = false;
-            }
+            lastLayer = lastLayer.nextLayer(width, false);
 
             if (!lastLayer.isExact()) {
                 this.exact = false;
@@ -121,18 +115,7 @@ public class DP {
                 return lastLayer.best();
             }
 
-            lastLayer = lastLayer.nextLayer();
-
-            if (lastLayer.width() > width) {
-                State[] toMerge = this.mergeSelector.select(lastLayer, lastLayer.width() - width + 1);
-                lastLayer.removeStates(toMerge, this.frontier);
-
-                State mergedState = this.problem.merge(toMerge);
-                mergedState.setExact(false);
-
-                lastLayer.addState(mergedState);
-                this.exact = false;
-            }
+            lastLayer = lastLayer.nextLayer(width, true);
 
             if (lastLayer.isExact()) {
                 this.lastExactLayer = lastLayer;
@@ -151,7 +134,7 @@ public class DP {
     }
 
     /**
-     * Returns a {@code boolean} telling if this DP resolution was exact.
+     * Returns a {@code boolean} telling if this MDD resolution was exact.
      *
      * @return {@code true} <==> all the layers are exact
      */
@@ -169,7 +152,7 @@ public class DP {
     }
 
     /**
-     * Returns an exact cutset of the current DP tree.
+     * Returns an exact cutset of the current MDD tree.
      *
      * @return a set of exact states being an exact cutset
      */

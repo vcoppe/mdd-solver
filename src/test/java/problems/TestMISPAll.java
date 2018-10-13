@@ -81,7 +81,7 @@ public class TestMISPAll extends TestHelper {
 
     @Parameterized.Parameters
     public static Object[] data() {
-        return dataFromFolder("data/misp/easy");
+        return dataFromFolder("data/misp/all");
     }
 
     protected boolean testData(int timeOut) {

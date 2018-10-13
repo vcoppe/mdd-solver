@@ -1,7 +1,7 @@
 package heuristics;
 
-import dp.Layer;
-import dp.State;
+import mdd.Layer;
+import mdd.State;
 
 public class SimpleMergeSelector implements MergeSelector {
 

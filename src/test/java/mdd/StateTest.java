@@ -1,4 +1,4 @@
-package dp;
+package mdd;
 
 import core.Variable;
 import org.junit.BeforeClass;

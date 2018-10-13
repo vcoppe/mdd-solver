@@ -1,8 +1,10 @@
-package dp;
+package mdd;
 
 import core.Variable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a particular state of the MDD.
@@ -11,18 +13,15 @@ import java.util.*;
  */
 public class State implements Comparable<State> {
 
-    public static Queue<State> freeStates = new LinkedList<>();
-
+    public StateRepresentation stateRepresentation;
+    public Variable[] variables;
+    public int[] indexes;
     private double value;
     private double relaxedValue;
     private boolean exact;
     private int layerNumber;
-    public StateRepresentation stateRepresentation;
     private Set<State> parents;
-
     private int nVariables;
-    public Variable[] variables;
-    public int[] indexes;
 
     /**
      * @param stateRepresentation the state representation in the dynamic programming approach
@@ -96,10 +95,7 @@ public class State implements Comparable<State> {
      * @return a different {@code State} object with the same properties
      */
     public State copy() {
-        State s = freeStates.poll();
-        if (s == null) s = new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
-        else s.reset(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
-        return s;
+        return new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
     }
 
     /**
@@ -150,9 +146,7 @@ public class State implements Comparable<State> {
      * @return a new state with the internal properties required to be the successor of this state
      */
     public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
-        State succ = freeStates.poll();
-        if (succ == null) succ = new State(stateRepresentation, variables, indexes, value, exact);
-        else succ.reset(stateRepresentation, variables, indexes, value, exact);
+        State succ = new State(stateRepresentation, variables, indexes, value, exact); //freeStates.poll();
         succ.setLayerNumber(this.layerNumber + 1);
         succ.assign(id, val);
         return succ;

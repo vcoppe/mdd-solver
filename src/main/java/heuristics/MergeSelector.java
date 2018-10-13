@@ -1,7 +1,7 @@
 package heuristics;
 
-import dp.Layer;
-import dp.State;
+import mdd.Layer;
+import mdd.State;
 
 /**
  * Enables defining heuristics to select nodes to be merged when building a relax MDD.

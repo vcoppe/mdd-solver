@@ -3,12 +3,12 @@ package problems;
 import core.Problem;
 import core.Solver;
 import core.Variable;
-import dp.Layer;
-import dp.State;
-import dp.StateRepresentation;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.VariableSelector;
+import mdd.Layer;
+import mdd.State;
+import mdd.StateRepresentation;
 
 import java.io.File;
 import java.util.BitSet;

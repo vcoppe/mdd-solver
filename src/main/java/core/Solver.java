@@ -1,10 +1,10 @@
 package core;
 
-import dp.DP;
-import dp.State;
 import heuristics.DeleteSelector;
 import heuristics.MergeSelector;
 import heuristics.VariableSelector;
+import mdd.MDD;
+import mdd.State;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -20,7 +20,7 @@ public class Solver {
     private int maxWidth = Integer.MAX_VALUE;
 
     private Problem problem;
-    private DP dp;
+    private MDD mdd;
 
     /**
      * Constructor of the solver : allows the user to choose heuristics.
@@ -32,7 +32,7 @@ public class Solver {
      */
     public Solver(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         this.problem = problem;
-        this.dp = new DP(problem, mergeSelector, deleteSelector, variableSelector);
+        this.mdd = new MDD(problem, mergeSelector, deleteSelector, variableSelector);
     }
 
     /**
@@ -55,8 +55,8 @@ public class Solver {
                 continue;
             }
 
-            this.dp.setInitialState(state);
-            State resultRestricted = this.dp.solveRestricted(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),// the width of the DD is equal to the number
+            this.mdd.setInitialState(state);
+            State resultRestricted = this.mdd.solveRestricted(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),// the width of the DD is equal to the number
                     startTime, timeOut);                                                                        // of variables not bound
 
             if (best == null || resultRestricted.value() > bestBound) {
@@ -71,12 +71,12 @@ public class Solver {
                 return best;
             }
 
-            if (!this.dp.isExact()) {
-                this.dp.setInitialState(state);
-                State resultRelaxed = this.dp.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()), startTime, timeOut);
+            if (!this.mdd.isExact()) {
+                this.mdd.setInitialState(state);
+                State resultRelaxed = this.mdd.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()), startTime, timeOut);
 
                 if (resultRelaxed.value() > bestBound) {
-                    for (State s : this.dp.exactCutset()) {
+                    for (State s : this.mdd.exactCutset()) {
                         s.setRelaxedValue(resultRelaxed.value());
                         q.add(s);
                     }
@@ -92,13 +92,14 @@ public class Solver {
             if (best == null) {
                 System.out.println("No solution found.");
             } else {
+                long endTime = System.currentTimeMillis();
                 System.out.println("====== Search completed ======");
                 System.out.println("Optimal solution : " + best.value());
                 System.out.println("Assignment       : ");
                 for (Variable var : best.variables) {
-                    System.out.println(var.id + " " + var.value());
+                    System.out.println("Var. " + var.id + " = " + var.value());
                 }
-                System.out.println();
+                System.out.println("Time elapsed : " + ((endTime - startTime) / 1000.0) + "s");
             }
         }
 

@@ -1,7 +1,7 @@
 package heuristics;
 
 import core.Variable;
-import dp.Layer;
+import mdd.Layer;
 
 /**
  * Enables defining heuristics to select the variable to be assigned next in the MDD and/or in the

@@ -3,11 +3,11 @@ package problems;
 import core.Problem;
 import core.Solver;
 import core.Variable;
-import dp.State;
-import dp.StateRepresentation;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
+import mdd.State;
+import mdd.StateRepresentation;
 
 import java.util.Arrays;
 import java.util.Map;

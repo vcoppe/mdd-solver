@@ -1,8 +1,7 @@
-package dp;
+package mdd;
 
 import core.Problem;
 import core.Variable;
-import heuristics.VariableSelector;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,37 +17,35 @@ public class Layer {
 
     private Map<StateRepresentation, State> states;
     private Problem problem;
-    private VariableSelector variableSelector;
+    private MDD mdd;
     private boolean exact;
     private int number;
-    private Layer next;
 
     /**
      * Returns an empty layer of the problem.
      *
-     * @param problem          the implementation of a problem
-     * @param variableSelector heuristic to select the next variable to be assigned
-     * @param number           the number of the layer
+     * @param problem the implementation of a problem
+     * @param mdd     the  associated decision diagram
+     * @param number  the number of the layer
      */
-    public Layer(Problem problem, VariableSelector variableSelector, int number) {
+    public Layer(Problem problem, MDD mdd, int number) {
         this.states = new HashMap<>();
         this.problem = problem;
-        this.variableSelector = variableSelector;
+        this.mdd = mdd;
         this.exact = true;
         this.number = number;
-        this.next = null;
     }
 
     /**
      * Returns a layer containing the given state.
      *
-     * @param problem          the implementation of a problem
-     * @param variableSelector heuristic to select the next variable to be assigned
-     * @param state            the state to be contained
-     * @param number           the number of the layer
+     * @param problem the implementation of a problem
+     * @param mdd     the  associated decision diagram
+     * @param state   the state to be contained
+     * @param number  the number of the layer
      */
-    public Layer(Problem problem, VariableSelector variableSelector, State state, int number) {
-        this(problem, variableSelector, number);
+    public Layer(Problem problem, MDD mdd, State state, int number) {
+        this(problem, mdd, number);
         this.states.put(state.stateRepresentation, state);
         this.exact = state.isExact();
     }
@@ -71,19 +68,19 @@ public class Layer {
      *
      * @return the next layer of the MDD
      */
-    public Layer nextLayer() {
-        if (next == null) next = new Layer(this.problem, this.variableSelector, this.number + 1);
-        else next.reset(this.number + 1);
+    public Layer nextLayer(int width, boolean relaxed) {
         Variable nextVar = null;
+        Layer next = new Layer(this.problem, this.mdd, this.number + 1);
 
         next.setExact(this.exact);
+        int count = 0;
         for (State state : this.states.values()) {
             if (state.isExact()) {
                 state.exactParents().clear(); // we do not need them anymore -> garbage collection
             }
 
             if (nextVar == null) {
-                nextVar = this.variableSelector.select(state.freeVariables(), this);
+                nextVar = this.mdd.variableSelector.select(state.freeVariables(), this);
             }
 
             State[] successors = this.problem.successors(state, nextVar);
@@ -94,6 +91,21 @@ public class Layer {
                     s.setExact(false);
                 }
                 next.addState(s);
+            }
+
+            if (next.width() > width) {
+                if (relaxed) {
+                    State[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
+                    next.removeStates(toMerge, this.mdd.frontier);
+
+                    State mergedState = this.problem.merge(toMerge);
+                    mergedState.setExact(false);
+
+                    next.addState(mergedState);
+                } else {
+                    State[] toRemove = this.mdd.deleteSelector.select(next, next.width() - width);
+                    next.removeStates(toRemove);
+                }
             }
         }
 
@@ -121,7 +133,7 @@ public class Layer {
     public void removeStates(State[] states) {
         for (State state : states) {
             State removed = this.states.remove(state.stateRepresentation);
-            if (removed != null) State.freeStates.add(removed);
+            //if (removed != null) State.freeStates.add(removed);
         }
         this.exact = false;
     }
@@ -135,7 +147,7 @@ public class Layer {
     public void removeStates(State[] states, Set<State> frontier) {
         for (State state : states) {
             State removed = this.states.remove(state.stateRepresentation);
-            if (removed != null) State.freeStates.add(removed);
+            //if (removed != null) State.freeStates.add(removed);
             frontier.addAll(state.exactParents());
         }
         this.exact = false;

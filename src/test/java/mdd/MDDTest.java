@@ -1,9 +1,9 @@
-package dp;
+package mdd;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DPTest {
+public class MDDTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

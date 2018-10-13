@@ -18,5 +18,6 @@
     <orderEntry type="library" name="Maven: org.xcsp:xcsp3-tools:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish:javax.json:1.1.2" level="project" />
+    <orderEntry type="library" name="gurobi-javadoc" level="project" />
   </component>
 </module>

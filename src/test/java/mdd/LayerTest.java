@@ -1,4 +1,4 @@
-package dp;
+package mdd;
 
 import core.Variable;
 import heuristics.SimpleVariableSelector;
@@ -16,6 +16,7 @@ public class LayerTest {
     private static Variable[] vars;
     private static MISP p;
     private static VariableSelector vs;
+    private static MDD mdd;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -28,11 +29,12 @@ public class LayerTest {
         }
         p = new MISP(n, weights, new Edge[0]);
         vs = new SimpleVariableSelector();
+        mdd = new MDD(p, null, null, vs);
     }
 
     @Test
     public void testConstructor() {
-        Layer layer = new Layer(p, vs, 0);
+        Layer layer = new Layer(p, mdd, 0);
 
         assertTrue(layer.isExact());
         assertFalse(layer.isFinal());
@@ -42,7 +44,7 @@ public class LayerTest {
 
     @Test
     public void testExact() {
-        Layer layer = new Layer(p, vs, 0);
+        Layer layer = new Layer(p, mdd, 0);
 
         assertTrue(layer.isExact());
 
@@ -55,7 +57,7 @@ public class LayerTest {
 
     @Test
     public void testRemove() {
-        Layer layer = new Layer(p, vs, 0);
+        Layer layer = new Layer(p, mdd, 0);
         State state = new State(p.new MISPState(0), new Variable[0], 0);
         layer.addState(state);
 
@@ -70,17 +72,17 @@ public class LayerTest {
 
     @Test
     public void testNextLayer() {
-        Layer layer = new Layer(p, vs, 0);
-        Layer layer2 = layer.nextLayer();
+        Layer layer = new Layer(p, mdd, 0);
+        Layer layer2 = layer.nextLayer(Integer.MAX_VALUE, false);
 
         assertTrue(layer.isExact());
         assertTrue(layer2.isExact());
 
-        layer = new Layer(p, vs, 0);
+        layer = new Layer(p, mdd, 0);
         State state = new State(p.new MISPState(n), vars, 0, false);
         layer.addState(state);
 
-        layer2 = layer.nextLayer();
+        layer2 = layer.nextLayer(Integer.MAX_VALUE, false);
 
         assertFalse(layer2.isExact());
         assertEquals(layer2.width(), 1); // no edges -> leads to same BitSet

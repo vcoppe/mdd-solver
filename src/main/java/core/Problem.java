@@ -1,6 +1,6 @@
 package core;
 
-import dp.State;
+import mdd.State;
 
 /**
  * Enables solving new problems by implementing the successors and merge functions.

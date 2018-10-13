@@ -1,7 +1,7 @@
 package heuristics;
 
 import core.Variable;
-import dp.Layer;
+import mdd.Layer;
 
 public class SimpleVariableSelector implements VariableSelector {
 

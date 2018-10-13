@@ -1,8 +1,7 @@
 package heuristics;
 
-import dp.Layer;
-import dp.State;
-import utils.StateComparator;
+import mdd.Layer;
+import mdd.State;
 
 import java.util.Arrays;
 
@@ -17,7 +16,7 @@ public class MinLPMergeSelector implements MergeSelector {
         State[] states = new State[layer.width()];
         layer.states().toArray(states);
 
-        Arrays.sort(states, StateComparator.COMPARATOR);
+        Arrays.sort(states);
         State[] ret = new State[number];
         int i = 0;
 
