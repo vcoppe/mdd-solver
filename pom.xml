@@ -34,6 +34,11 @@
             <artifactId>xcsp3-tools</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.gurobi</groupId>
+            <artifactId>gurobi-jar</artifactId>
+            <version>8.0.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
