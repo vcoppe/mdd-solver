@@ -6,6 +6,7 @@ import heuristics.VariableSelector;
 import mdd.MDD;
 import mdd.State;
 
+import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -18,6 +19,8 @@ public class Solver {
 
     private boolean print = true;
     private int maxWidth = Integer.MAX_VALUE;
+    private long startTime;
+    private double lowerBound, upperBound;
 
     private Problem problem;
     private MDD mdd;
@@ -41,17 +44,31 @@ public class Solver {
      * @return an object {@code State} containing the optimal value and assignment
      */
     public State solve(int timeOut) {
-        long startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
 
         State best = null;
-        double bestBound = -Double.MAX_VALUE;
+        lowerBound = -Double.MAX_VALUE;
+        upperBound = Double.MAX_VALUE;
+
+        double[] layerUpperBound = new double[this.problem.nVariables() + 1];
+        int[] layerCount = new int[this.problem.nVariables() + 1];
+        boolean[] layerComplete = new boolean[this.problem.nVariables() + 1];
+        boolean[] mddComplete = new boolean[this.problem.nVariables() + 1];
+
+        for (int i = 0; i < this.problem.nVariables() + 1; i++) {
+            layerUpperBound[i] = -Double.MAX_VALUE;
+            layerCount[i] = 0;
+            layerComplete[i] = false;
+            mddComplete[i] = false;
+        }
 
         Queue<State> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
         q.add(this.problem.root());
+        layerCount[0]++;
 
         while (!q.isEmpty()) {
             State state = q.poll();
-            if (state.relaxedValue() <= bestBound) {
+            if (state.relaxedValue() <= lowerBound) {
                 continue;
             }
 
@@ -59,11 +76,11 @@ public class Solver {
             State resultRestricted = this.mdd.solveRestricted(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),// the width of the DD is equal to the number
                     startTime, timeOut);                                                                        // of variables not bound
 
-            if (best == null || resultRestricted.value() > bestBound) {
+            if (best == null || resultRestricted.value() > lowerBound) {
                 best = resultRestricted;
-                bestBound = best.value();
+                lowerBound = best.value();
                 if (print) {
-                    System.out.println("Improved solution : " + best.value());
+                    printInfo(true);
                 }
             }
 
@@ -75,10 +92,35 @@ public class Solver {
                 this.mdd.setInitialState(state);
                 State resultRelaxed = this.mdd.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()), startTime, timeOut);
 
-                if (resultRelaxed.value() > bestBound) {
+                if (resultRelaxed.value() > lowerBound) {
                     for (State s : this.mdd.exactCutset()) {
                         s.setRelaxedValue(resultRelaxed.value());
                         q.add(s);
+                        layerCount[s.layerNumber()]++;
+                    }
+                }
+
+                int layerNumber = state.layerNumber();
+                layerUpperBound[layerNumber] = Math.max(layerUpperBound[layerNumber], resultRelaxed.value());
+                layerCount[layerNumber]--;
+                if (layerCount[layerNumber] == 0) {
+                    layerComplete[layerNumber] = true;
+                    if (layerNumber == 0) {
+                        mddComplete[layerNumber] = true;
+                        if (layerUpperBound[layerNumber] < upperBound) {
+                            upperBound = layerUpperBound[layerNumber];
+                            printInfo(false);
+                        }
+                    } else if (mddComplete[layerNumber - 1]) {
+                        int currLayer = layerNumber;
+                        while (currLayer < layerComplete.length && layerComplete[currLayer]) {
+                            mddComplete[currLayer] = true;
+                            if (layerUpperBound[currLayer] < upperBound) {
+                                upperBound = layerUpperBound[currLayer];
+                                printInfo(false);
+                            }
+                            currLayer++;
+                        }
                     }
                 }
 
@@ -93,17 +135,30 @@ public class Solver {
                 System.out.println("No solution found.");
             } else {
                 long endTime = System.currentTimeMillis();
-                System.out.println("====== Search completed ======");
+                System.out.println("\n====== Search completed ======");
                 System.out.println("Optimal solution : " + best.value());
                 System.out.println("Assignment       : ");
                 for (Variable var : best.variables) {
-                    System.out.println("Var. " + var.id + " = " + var.value());
+                    System.out.println("\tVar. " + var.id + " = " + var.value());
                 }
-                System.out.println("Time elapsed : " + ((endTime - startTime) / 1000.0) + "s");
+                System.out.println("Time elapsed : " + ((endTime - startTime) / 1000.0) + "s\n");
             }
         }
 
         return best;
+    }
+
+    private void printInfo(boolean newSolution) {
+        String sol = "";
+        if (newSolution) sol = "*";
+        double gap = 100 * Math.abs(upperBound - lowerBound) / Math.abs(lowerBound);
+        double timeElapsed = (System.currentTimeMillis() - startTime) / 1000.0;
+        if (upperBound == Double.MAX_VALUE) {
+            System.out.println("   |  Best sol.  Best bound |         Gap |        Time");
+            System.out.format(Locale.US, "%2s | %10.3f  %10s | %10.3f%% | %10.3fs%n", sol, lowerBound, "inf", gap, timeElapsed);
+        } else {
+            System.out.format(Locale.US, "%2s | %10.3f  %10.3f | %10.3f%% | %10.3fs%n", sol, lowerBound, upperBound, gap, timeElapsed);
+        }
     }
 
     /**

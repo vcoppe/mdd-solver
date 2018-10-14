@@ -113,15 +113,18 @@ public class MinLA {
     public void solve() throws GRBException {
         model.optimize();
 
-        System.out.println("Obj: " + model.get(GRB.DoubleAttr.ObjVal));
+        System.out.println("\nOptimal solution : " + model.get(GRB.DoubleAttr.ObjVal));
 
+        System.out.println("Assignment       :");
         for (int j = 0; j < g.length; j++) {
             for (int i = 0; i < g.length; i++) {
                 if (g[i][j].get(GRB.DoubleAttr.X) == 1) {
-                    System.out.println("Var. " + j + " = " + i);
+                    System.out.println("\tVar. " + j + " = " + i);
                 }
             }
         }
+
+        System.out.println();
 
         model.dispose();
         env.dispose();

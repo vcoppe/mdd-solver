@@ -35,9 +35,18 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.gurobi</groupId>
-            <artifactId>gurobi-jar</artifactId>
+            <groupId>gurobi</groupId>
+            <artifactId>gurobi</artifactId>
             <version>8.0.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/gurobi.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>gurobi-javadoc</groupId>
+            <artifactId>gurobi-javadoc</artifactId>
+            <version>8.0.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/gurobi-javadoc.jar</systemPath>
         </dependency>
     </dependencies>
     <build>

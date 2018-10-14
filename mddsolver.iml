@@ -19,6 +19,23 @@
     <orderEntry type="library" name="Maven: org.xcsp:xcsp3-tools:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish:javax.json:1.1.2" level="project" />
-    <orderEntry type="library" name="Maven: com.gurobi:gurobi-jar:8.0.1" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: gurobi:gurobi:8.0.1">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/gurobi.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: gurobi-javadoc:gurobi-javadoc:8.0.1">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/gurobi-javadoc.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

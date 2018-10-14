@@ -12,7 +12,7 @@ import java.util.Random;
 public class MinLA {
 
     public static void main(String[] args) {
-        int n = 12, m = 40;
+        int n = 12, m = 60;
         Edge[] edges = new Edge[m];
 
         Random random = new Random(12);
