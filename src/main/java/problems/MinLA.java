@@ -29,6 +29,8 @@ public class MinLA implements Problem {
     private int nVariables;
     private State root;
 
+    public double opt;
+
     public MinLA(int n, Edge[] edges) {
         this(toWeightedGraph(n, edges));
     }
@@ -62,12 +64,23 @@ public class MinLA implements Problem {
     public static MinLA readGra(String path) {
         int n = 0, m, deg[];
         Edge[] edges = null;
+        double opt = 0;
 
         try {
             Scanner scan = new Scanner(new File(path));
 
-            n = scan.nextInt();
-            m = scan.nextInt();
+            String line = scan.nextLine();
+            String[] tokens = line.split("\\s+");
+
+            if (tokens[0].equals("opt")) {
+                opt = Integer.valueOf(tokens[1]);
+
+                n = scan.nextInt();
+                m = scan.nextInt();
+            } else {
+                n = Integer.valueOf(tokens[0]);
+                m = Integer.valueOf(tokens[1]);
+            }
 
             deg = new int[n];
             edges = new Edge[m * 2];
@@ -90,7 +103,9 @@ public class MinLA implements Problem {
             e.printStackTrace();
         }
 
-        return new MinLA(n, edges);
+        MinLA p = new MinLA(n, edges);
+        p.opt = opt;
+        return p;
     }
 
     public static void main(String[] args) {
