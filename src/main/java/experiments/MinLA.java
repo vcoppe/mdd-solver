@@ -7,24 +7,40 @@ import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
 import problems.Edge;
 
+import java.util.LinkedList;
 import java.util.Random;
 
 public class MinLA {
 
-    public static void main(String[] args) {
-        int n = 12, m = 60;
-        Edge[] edges = new Edge[m];
+    static Random random;
 
-        Random random = new Random(12);
-        int u, v;
-        for (int i = 0; i < m; i++) {
-            do {
-                u = random.nextInt(n);
-                v = random.nextInt(n);
-            } while (u == v);
-            edges[i] = new Edge(u, v, -1);
+    /**
+     * Creates a random graph with n vertices. Each edge has a probability p to appear.
+     *
+     * @param n the number of vertices
+     * @param p the probability of each edge to appear
+     * @return an array of edges representing the graph
+     */
+    private static Edge[] randomGraph(int n, double p) {
+        LinkedList<Edge> edges = new LinkedList<>();
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (random.nextDouble() <= p) {
+                    edges.add(new Edge(i, j, -1));
+                }
+            }
         }
 
+        return edges.toArray(new Edge[0]);
+    }
+
+    public static void main(String[] args) {
+        random = new Random(12);
+
+        int n = 10;
+        double p = 0.4;
+        Edge[] edges = randomGraph(n, p);
 
         try {
             mip.MinLA mip = new mip.MinLA(n, edges);
