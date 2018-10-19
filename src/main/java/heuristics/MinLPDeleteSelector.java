@@ -9,6 +9,7 @@ public class MinLPDeleteSelector implements DeleteSelector {
 
     @Override
     public State[] select(Layer layer, int number) {
+        if (number <= 0) return new State[0];
         State[] states = new State[layer.width()];
         layer.states().toArray(states);
 

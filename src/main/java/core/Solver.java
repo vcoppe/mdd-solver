@@ -17,7 +17,6 @@ import java.util.Queue;
  */
 public class Solver {
 
-    private boolean print = true;
     private int maxWidth = Integer.MAX_VALUE;
     private long startTime;
     private double lowerBound, upperBound;
@@ -50,21 +49,8 @@ public class Solver {
         lowerBound = -Double.MAX_VALUE;
         upperBound = Double.MAX_VALUE;
 
-        double[] layerUpperBound = new double[this.problem.nVariables() + 1];
-        int[] layerCount = new int[this.problem.nVariables() + 1];
-        boolean[] layerComplete = new boolean[this.problem.nVariables() + 1];
-        boolean[] mddComplete = new boolean[this.problem.nVariables() + 1];
-
-        for (int i = 0; i < this.problem.nVariables() + 1; i++) {
-            layerUpperBound[i] = -Double.MAX_VALUE;
-            layerCount[i] = 0;
-            layerComplete[i] = false;
-            mddComplete[i] = false;
-        }
-
         Queue<State> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
         q.add(this.problem.root());
-        layerCount[0]++;
 
         while (!q.isEmpty()) {
             State state = q.poll();
@@ -79,9 +65,7 @@ public class Solver {
             if (best == null || resultRestricted.value() > lowerBound) {
                 best = resultRestricted;
                 lowerBound = best.value();
-                if (print) {
-                    printInfo(true);
-                }
+                printInfo(true);
             }
 
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
@@ -90,59 +74,44 @@ public class Solver {
 
             if (!this.mdd.isExact()) {
                 this.mdd.setInitialState(state);
-                State resultRelaxed = this.mdd.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()), startTime, timeOut);
+                State resultRelaxed = this.mdd.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),
+                        startTime, timeOut);
 
                 if (resultRelaxed.value() > lowerBound) {
                     for (State s : this.mdd.exactCutset()) {
                         s.setRelaxedValue(resultRelaxed.value());
                         q.add(s);
-                        layerCount[s.layerNumber()]++;
-                    }
-                }
-
-                int layerNumber = state.layerNumber();
-                layerUpperBound[layerNumber] = Math.max(layerUpperBound[layerNumber], resultRelaxed.value());
-                layerCount[layerNumber]--;
-                if (layerCount[layerNumber] == 0) {
-                    layerComplete[layerNumber] = true;
-                    if (layerNumber == 0) {
-                        mddComplete[layerNumber] = true;
-                        if (layerUpperBound[layerNumber] < upperBound) {
-                            upperBound = layerUpperBound[layerNumber];
-                            printInfo(false);
-                        }
-                    } else if (mddComplete[layerNumber - 1]) {
-                        int currLayer = layerNumber;
-                        while (currLayer < layerComplete.length && layerComplete[currLayer]) {
-                            mddComplete[currLayer] = true;
-                            if (layerUpperBound[currLayer] < upperBound) {
-                                upperBound = layerUpperBound[currLayer];
-                                printInfo(false);
-                            }
-                            currLayer++;
-                        }
                     }
                 }
 
                 if (System.currentTimeMillis() - startTime > timeOut * 1000) {
                     return best;
                 }
+
+                if (!q.isEmpty()) {
+                    double queueUpperBound = -Double.MAX_VALUE;
+                    for (State s : q) {
+                        queueUpperBound = Math.max(queueUpperBound, s.relaxedValue());
+                    }
+                    if (queueUpperBound < upperBound) {
+                        upperBound = queueUpperBound;
+                        printInfo(false);
+                    }
+                }
             }
         }
 
-        if (print) {
-            if (best == null) {
-                System.out.println("No solution found.");
-            } else {
-                long endTime = System.currentTimeMillis();
-                System.out.println("\n====== Search completed ======");
-                System.out.println("Optimal solution : " + best.value());
-                System.out.println("Assignment       : ");
-                for (Variable var : best.variables) {
-                    System.out.println("\tVar. " + var.id + " = " + var.value());
-                }
-                System.out.println("Time elapsed : " + ((endTime - startTime) / 1000.0) + "s\n");
+        if (best == null) {
+            System.out.println("No solution found.");
+        } else {
+            long endTime = System.currentTimeMillis();
+            System.out.println("\n====== Search completed ======");
+            System.out.println("Optimal solution : " + best.value());
+            System.out.println("Assignment       : ");
+            for (Variable var : best.variables) {
+                System.out.println("\tVar. " + var.id + " = " + var.value());
             }
+            System.out.println("Time elapsed : " + ((endTime - startTime) / 1000.0) + "s\n");
         }
 
         return best;

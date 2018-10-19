@@ -38,13 +38,13 @@ public class MinLA {
     public static void main(String[] args) {
         random = new Random(12);
 
-        int n = 10;
-        double p = 0.4;
+        int n = 12;
+        double p = 0.6;
         Edge[] edges = randomGraph(n, p);
 
         try {
             mip.MinLA mip = new mip.MinLA(n, edges);
-            mip.solve();
+            //mip.solve();
         } catch (GRBException e) {
             e.printStackTrace();
         }

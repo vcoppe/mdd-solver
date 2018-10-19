@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import static problems.Edge.toWeightedGraph;
@@ -79,7 +80,7 @@ public class MinLA implements Problem {
                 m = scan.nextInt();
             } else {
                 n = Integer.valueOf(tokens[0]);
-                m = Integer.valueOf(tokens[1]);
+                m = scan.nextInt();
             }
 
             deg = new int[n];
@@ -125,20 +126,31 @@ public class MinLA implements Problem {
         double value;
         Double w;
 
-        for (int i = minLAState.bs.nextSetBit(0); i != -1; i = minLAState.bs.nextSetBit(i + 1)) {
-            if (var.id == 0 && i > this.nVariables / 2) break; // breaking the symmetry
-
+        for (int i = minLAState.bs.nextSetBit(0); i >= 0; i = minLAState.bs.nextSetBit(i + 1)) {
             MinLAState succMinLAState = minLAState.copy();
             succMinLAState.bs.clear(i);
 
             value = s.value();
             for (int k = 0; k < pos; k++) {
-                j = s.variables[k].value();
-                w = g[i].get(j);
-                if (w != null) value += w * (pos - k);
+                int u = s.getVariable(k).value();
+                for (Entry<Integer, Double> e : g[u].entrySet()) {
+                    if (succMinLAState.isFree(e.getKey())) {
+                        value += e.getValue();
+                    }
+                }
+            }
+
+            for (Entry<Integer, Double> e : g[i].entrySet()) {
+                if (succMinLAState.isFree(e.getKey())) {
+                    value += e.getValue();
+                }
             }
 
             succs.add(s.getSuccessor(succMinLAState, value, pos, i));
+        }
+
+        if (succs.isEmpty()) {
+            succs.add(s.copy());
         }
 
         return succs.toArray(new State[0]);
@@ -153,8 +165,9 @@ public class MinLA implements Problem {
         for (State state : states) {
             if (minLAState == null) {
                 minLAState = (MinLAState) state.stateRepresentation;
-            } else {
-                minLAState.bs.or(((MinLAState) state.stateRepresentation).bs);
+            } else /*if(minLAState.bs.cardinality() < this.nVariables-state.layerNumber())*/ {
+                //minLAState.bs.or(((MinLAState) state.stateRepresentation).bs);
+                minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
             }
 
             if (state.value() > maxValue) {

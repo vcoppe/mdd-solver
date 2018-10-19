@@ -146,7 +146,7 @@ public class State implements Comparable<State> {
      * @return a new state with the internal properties required to be the successor of this state
      */
     public State getSuccessor(StateRepresentation stateRepresentation, double value, int id, int val) {
-        State succ = new State(stateRepresentation, variables, indexes, value, exact); //freeStates.poll();
+        State succ = new State(stateRepresentation, variables, indexes, value, exact);
         succ.setLayerNumber(this.layerNumber + 1);
         succ.assign(id, val);
         return succ;
@@ -284,10 +284,6 @@ public class State implements Comparable<State> {
         }
 
         State other = (State) o;
-
-        /*if (this.layerNumber != other.layerNumber) {
-            return false;
-        }*/
 
         if (this.hashCode() != other.hashCode()) {
             return false;

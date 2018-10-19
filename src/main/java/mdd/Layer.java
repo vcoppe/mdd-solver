@@ -73,7 +73,6 @@ public class Layer {
         Layer next = new Layer(this.problem, this.mdd, this.number + 1);
 
         next.setExact(this.exact);
-        int count = 0;
         for (State state : this.states.values()) {
             if (state.isExact()) {
                 state.exactParents().clear(); // we do not need them anymore -> garbage collection
@@ -132,8 +131,7 @@ public class Layer {
      */
     public void removeStates(State[] states) {
         for (State state : states) {
-            State removed = this.states.remove(state.stateRepresentation);
-            //if (removed != null) State.freeStates.add(removed);
+            this.states.remove(state.stateRepresentation);
         }
         this.exact = false;
     }
@@ -146,8 +144,7 @@ public class Layer {
      */
     public void removeStates(State[] states, Set<State> frontier) {
         for (State state : states) {
-            State removed = this.states.remove(state.stateRepresentation);
-            //if (removed != null) State.freeStates.add(removed);
+            this.states.remove(state.stateRepresentation);
             frontier.addAll(state.exactParents());
         }
         this.exact = false;

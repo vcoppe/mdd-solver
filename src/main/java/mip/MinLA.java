@@ -102,12 +102,6 @@ public class MinLA {
                 }
             }
         }
-
-        expr = new GRBLinExpr();
-        for (int i = 0; i < n / 2 + 1; i++) {
-            expr.addTerm(1, g[i][0]);
-        }
-        model.addConstr(expr, GRB.EQUAL, 1, "breaking symmetry");
     }
 
     public void solve() throws GRBException {
