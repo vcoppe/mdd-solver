@@ -85,7 +85,7 @@ public class MDD {
 
         while (!lastLayer.isFinal()) {
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                return lastLayer.best();
+                return null;
             }
 
             lastLayer = lastLayer.nextLayer(width, false);
@@ -112,7 +112,7 @@ public class MDD {
 
         while (!lastLayer.isFinal()) {
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                return lastLayer.best();
+                return null;
             }
 
             lastLayer = lastLayer.nextLayer(width, true);

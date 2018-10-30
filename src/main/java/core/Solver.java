@@ -18,8 +18,9 @@ import java.util.Queue;
 public class Solver {
 
     private int maxWidth = Integer.MAX_VALUE;
-    private long startTime;
+    private long startTime, endTime = -1;
     private double lowerBound, upperBound;
+    private boolean adaptiveWidth = true;
 
     private Problem problem;
     private MDD mdd;
@@ -59,8 +60,16 @@ public class Solver {
             }
 
             this.mdd.setInitialState(state);
-            State resultRestricted = this.mdd.solveRestricted(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),// the width of the DD is equal to the number
-                    startTime, timeOut);                                                                        // of variables not bound
+            State resultRestricted;
+            if (this.adaptiveWidth) resultRestricted = this.mdd.solveRestricted(
+                    problem.nVariables() - state.layerNumber(), // the width of the DD is equal to the number
+                    startTime, timeOut);                               // of variables not bound
+            else resultRestricted = this.mdd.solveRestricted(maxWidth, startTime, timeOut);
+
+            if (System.currentTimeMillis() - startTime > timeOut * 1000) {
+                endTime = System.currentTimeMillis();
+                return best;
+            }
 
             if (best == null || resultRestricted.value() > lowerBound) {
                 best = resultRestricted;
@@ -68,24 +77,24 @@ public class Solver {
                 printInfo(true);
             }
 
-            if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                return best;
-            }
-
             if (!this.mdd.isExact()) {
                 this.mdd.setInitialState(state);
-                State resultRelaxed = this.mdd.solveRelaxed(Math.min(maxWidth, problem.nVariables() - state.layerNumber()),
-                        startTime, timeOut);
+                State resultRelaxed;
+                if (this.adaptiveWidth) resultRelaxed = this.mdd.solveRelaxed(
+                        problem.nVariables() - state.layerNumber(), // the width of the DD is equal to the number
+                        startTime, timeOut);                               // of variables not bound
+                else resultRelaxed = this.mdd.solveRelaxed(maxWidth, startTime, timeOut);
+
+                if (System.currentTimeMillis() - startTime > timeOut * 1000) {
+                    endTime = System.currentTimeMillis();
+                    return best;
+                }
 
                 if (resultRelaxed.value() > lowerBound) {
                     for (State s : this.mdd.exactCutset()) {
                         s.setRelaxedValue(resultRelaxed.value());
                         q.add(s);
                     }
-                }
-
-                if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                    return best;
                 }
 
                 if (!q.isEmpty()) {
@@ -101,10 +110,12 @@ public class Solver {
             }
         }
 
+        upperBound = lowerBound;
+        endTime = System.currentTimeMillis();
+
         if (best == null) {
             System.out.println("No solution found.");
         } else {
-            long endTime = System.currentTimeMillis();
             System.out.println("\n====== Search completed ======");
             System.out.println("Optimal solution : " + best.value());
             System.out.println("Assignment       : ");
@@ -120,7 +131,7 @@ public class Solver {
     private void printInfo(boolean newSolution) {
         String sol = "";
         if (newSolution) sol = "*";
-        double gap = 100 * Math.abs(upperBound - lowerBound) / Math.abs(lowerBound);
+        double gap = 100 * gap();
         double timeElapsed = (System.currentTimeMillis() - startTime) / 1000.0;
         if (upperBound == Double.MAX_VALUE) {
             System.out.println("   |  Best sol.  Best bound |         Gap |        Time");
@@ -137,5 +148,19 @@ public class Solver {
      */
     public State solve() {
         return this.solve(Integer.MAX_VALUE / 1000);
+    }
+
+    public void setWidth(int width) {
+        this.adaptiveWidth = false;
+        this.maxWidth = width;
+    }
+
+    public double gap() {
+        if (upperBound == Double.MAX_VALUE) return 1;
+        return Math.abs(upperBound - lowerBound) / Math.abs(lowerBound);
+    }
+
+    public double runTime() {
+        return (endTime - startTime) / 1000.0;
     }
 }

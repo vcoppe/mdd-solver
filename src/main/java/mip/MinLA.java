@@ -105,6 +105,11 @@ public class MinLA {
     }
 
     public void solve() throws GRBException {
+        solve(Integer.MAX_VALUE);
+    }
+
+    public void solve(double timeLimit) throws GRBException {
+        model.set(GRB.DoubleParam.TimeLimit, timeLimit);
         model.optimize();
 
         System.out.println("\nOptimal solution : " + model.get(GRB.DoubleAttr.ObjVal));
@@ -119,7 +124,21 @@ public class MinLA {
         }
 
         System.out.println();
+    }
 
+    public double gap() throws GRBException {
+        return model.get(GRB.DoubleAttr.MIPGap);
+    }
+
+    public double runTime() throws GRBException {
+        return model.get(GRB.DoubleAttr.Runtime);
+    }
+
+    public double objVal() throws GRBException {
+        return model.get(GRB.DoubleAttr.ObjVal);
+    }
+
+    public void dispose() throws GRBException {
         model.dispose();
         env.dispose();
     }

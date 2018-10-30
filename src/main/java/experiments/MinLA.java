@@ -1,13 +1,18 @@
 package experiments;
 
 import core.Solver;
-import gurobi.GRBException;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.SimpleVariableSelector;
+import mdd.State;
 import problems.Edge;
 
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Random;
 
 public class MinLA {
@@ -38,20 +43,48 @@ public class MinLA {
     public static void main(String[] args) {
         random = new Random(12);
 
-        int n = 12;
-        double p = 0.6;
-        Edge[] edges = randomGraph(n, p);
+        int timeLimit = 30 * 60, minN = 6, maxN = 26;
+        int[] widths = {100, 1000, 10000};
+        double p = 0.7;
+
+        DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy@HH_mm_ss");
+        Date date = new Date();
+        String fileName = "/Users/Vianney/Desktop/results_" + dateFormat.format(date);
 
         try {
-            mip.MinLA mip = new mip.MinLA(n, edges);
-            //mip.solve();
-        } catch (GRBException e) {
+            PrintWriter out = new PrintWriter(fileName);
+
+            for (int n = minN; n <= maxN; n += 2) {
+                out.println("n " + n);
+
+                Edge[] edges = randomGraph(n, p);
+
+                mip.MinLA mip = new mip.MinLA(n, edges);
+                mip.solve(timeLimit);
+
+                out.printf(Locale.US, "%.3f %.0f %.5f\n", mip.runTime(), mip.objVal(), mip.gap());
+
+                mip.dispose();
+
+                problems.MinLA mdd = new problems.MinLA(n, edges);
+                Solver solver = new Solver(mdd, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+                State result = solver.solve(timeLimit);
+
+                out.printf(Locale.US, "%.3f %.0f %.5f\n", solver.runTime(), -result.value(), solver.gap());
+
+                for (int width : widths) {
+                    solver.setWidth(width);
+                    result = solver.solve(timeLimit);
+
+                    out.printf(Locale.US, "%.3f %.0f %.5f\n", solver.runTime(), -result.value(), solver.gap());
+                }
+            }
+
+            out.close();
+        } catch (
+                Exception e) {
             e.printStackTrace();
         }
-
-        problems.MinLA mdd = new problems.MinLA(n, edges);
-        Solver s = new Solver(mdd, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-        s.solve();
     }
 
 }
