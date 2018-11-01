@@ -11,24 +11,24 @@ import java.util.Set;
  *
  * @author Vianney Coppé
  */
-public class State implements Comparable<State> {
+public class State<R extends StateRepresentation> implements Comparable<State> {
 
-    public StateRepresentation stateRepresentation;
-    public Variable[] variables;
+    public final R stateRepresentation;
+    public final Variable[] variables;
     public int[] indexes;
     private double value;
     private double relaxedValue;
     private boolean exact;
     private int layerNumber;
     private Set<State> parents;
-    private int nVariables;
+    private final int nVariables;
 
     /**
      * @param stateRepresentation the state representation in the dynamic programming approach
      * @param variables           the variables of this state
      * @param value               the value of the objective function at this point
      */
-    public State(StateRepresentation stateRepresentation, Variable[] variables, double value) {
+    public State(R stateRepresentation, Variable[] variables, double value) {
         this(stateRepresentation, variables, value, true);
     }
 
@@ -38,7 +38,7 @@ public class State implements Comparable<State> {
      * @param value               the value of the objective function at this point
      * @param exact               a boolean telling if the state is exact or not
      */
-    public State(StateRepresentation stateRepresentation, Variable[] variables, double value, boolean exact) {
+    public State(R stateRepresentation, Variable[] variables, double value, boolean exact) {
         this(stateRepresentation, variables, new int[variables.length], value, exact);
         for (int i = 0; i < nVariables; i++) {
             this.indexes[i] = i;
@@ -52,8 +52,8 @@ public class State implements Comparable<State> {
      * @param value               the value of the objective function at this point
      * @param exact               a boolean telling if the state is exact or not
      */
-    public State(StateRepresentation stateRepresentation, Variable[] variables, int[] indexes, double value, boolean exact) {
-        this.stateRepresentation = stateRepresentation.copy();
+    public State(R stateRepresentation, Variable[] variables, int[] indexes, double value, boolean exact) {
+        this.stateRepresentation = stateRepresentation;
         this.value = value;
         this.exact = exact;
         this.layerNumber = 0;
@@ -63,26 +63,6 @@ public class State implements Comparable<State> {
 
         this.variables = new Variable[this.nVariables];
         this.indexes = new int[this.nVariables];
-        for (int i = 0; i < nVariables; i++) {
-            this.variables[i] = variables[i];
-            this.indexes[i] = indexes[i];
-        }
-    }
-
-    public void reset(StateRepresentation stateRepresentation, Variable[] variables, int[] indexes, double value, boolean exact) {
-        this.stateRepresentation = stateRepresentation.copy();
-        this.value = value;
-        this.exact = exact;
-        this.layerNumber = 0;
-        this.relaxedValue = Double.MAX_VALUE;
-        this.parents.clear();
-
-        if (this.nVariables != variables.length) {
-            this.nVariables = variables.length;
-            this.variables = new Variable[this.nVariables];
-            this.indexes = new int[this.nVariables];
-        }
-
         for (int i = 0; i < nVariables; i++) {
             this.variables[i] = variables[i];
             this.indexes[i] = indexes[i];
