@@ -30,10 +30,31 @@ public class MinLA implements Problem {
     private int nVariables;
     private State root;
 
+    private boolean complement = false;
+
     public double opt;
 
     public MinLA(int n, Edge[] edges) {
         this(toWeightedGraph(n, edges));
+        for (int i = 0; i < n; i++) {
+            g[i].clear();
+        }
+
+        double rootValue = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                g[i].put(j, 1.0);
+            }
+            rootValue -= (i + 1) * (n - (i + 1));
+        }
+
+        for (Edge e : edges) {
+            g[e.u].remove(e.v);
+            g[e.v].remove(e.u);
+        }
+
+        this.root.setValue(rootValue);
+        complement = true;
     }
 
     private MinLA(Map<Integer, Double>[] g) {
@@ -165,9 +186,12 @@ public class MinLA implements Problem {
         for (State state : states) {
             if (minLAState == null) {
                 minLAState = (MinLAState) state.stateRepresentation;
-            } else /*if(minLAState.bs.cardinality() < this.nVariables-state.layerNumber())*/ {
-                //minLAState.bs.or(((MinLAState) state.stateRepresentation).bs);
-                minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
+            } else {
+                if (complement) {
+                    if (minLAState.bs.cardinality() < this.nVariables - state.layerNumber()) {
+                        minLAState.bs.or(((MinLAState) state.stateRepresentation).bs);
+                    }
+                } else minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
             }
 
             if (state.value() > maxValue) {

@@ -1,8 +1,6 @@
 package core;
 
-import heuristics.DeleteSelector;
-import heuristics.MergeSelector;
-import heuristics.VariableSelector;
+import heuristics.*;
 import mdd.MDD;
 import mdd.State;
 
@@ -24,6 +22,16 @@ public class Solver {
 
     private Problem problem;
     private MDD mdd;
+
+    /**
+     * Constructor of the solver : allows the user to choose heuristics.
+     *
+     * @param problem the implementation of a problem
+     */
+    public Solver(Problem problem) {
+        this.problem = problem;
+        this.mdd = new MDD(problem, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+    }
 
     /**
      * Constructor of the solver : allows the user to choose heuristics.

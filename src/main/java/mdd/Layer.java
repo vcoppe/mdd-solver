@@ -212,30 +212,4 @@ public class Layer {
         }
         return false;
     }
-
-    /**
-     * Returns a {@code boolean} telling if the variable {@code i} is bound.
-     *
-     * @param i the id of a variable
-     * @return {@code true} <==> the variable {@code i} is bound
-     */
-    public boolean isBound(int i) {
-        for (State state : states.values()) {
-            return state.isBound(i);
-        }
-        return false;
-    }
-
-    /**
-     * Returns the variable with id {@code i}.
-     *
-     * @param i the id of a variable
-     * @return the variable {@code i}
-     */
-    public Variable getVariable(int i) {
-        for (State state : states.values()) {
-            return state.getVariable(i);
-        }
-        return null;
-    }
 }

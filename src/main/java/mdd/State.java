@@ -69,26 +69,6 @@ public class State implements Comparable<State> {
         }
     }
 
-    public void reset(StateRepresentation stateRepresentation, Variable[] variables, int[] indexes, double value, boolean exact) {
-        this.stateRepresentation = stateRepresentation.copy();
-        this.value = value;
-        this.exact = exact;
-        this.layerNumber = 0;
-        this.relaxedValue = Double.MAX_VALUE;
-        this.parents.clear();
-
-        if (this.nVariables != variables.length) {
-            this.nVariables = variables.length;
-            this.variables = new Variable[this.nVariables];
-            this.indexes = new int[this.nVariables];
-        }
-
-        for (int i = 0; i < nVariables; i++) {
-            this.variables[i] = variables[i];
-            this.indexes[i] = indexes[i];
-        }
-    }
-
     /**
      * Returns a copy of the state.
      *
@@ -242,6 +222,13 @@ public class State implements Comparable<State> {
      */
     public int nVariables() {
         return this.nVariables;
+    }
+
+    /**
+     * @param value the value to be set
+     */
+    public void setValue(double value) {
+        this.value = value;
     }
 
     /**

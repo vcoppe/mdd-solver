@@ -83,12 +83,17 @@ public class MDD {
         this.lastExactLayer = null;
         Layer lastLayer = root;
 
+        boolean first = true;
+
         while (!lastLayer.isFinal()) {
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
                 return null;
             }
 
-            lastLayer = lastLayer.nextLayer(width, false);
+            if (first) {
+                lastLayer = lastLayer.nextLayer(Integer.MAX_VALUE, false); // if the first layer is not complete,
+                first = false;                                                     // the start node is put in the queue again
+            } else lastLayer = lastLayer.nextLayer(width, false);
 
             if (!lastLayer.isExact()) {
                 this.exact = false;
@@ -110,12 +115,17 @@ public class MDD {
         this.frontier.clear();
         Layer lastLayer = root;
 
+        boolean first = true;
+
         while (!lastLayer.isFinal()) {
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
                 return null;
             }
 
-            lastLayer = lastLayer.nextLayer(width, true);
+            if (first) {
+                lastLayer = lastLayer.nextLayer(Integer.MAX_VALUE, true); // if the first layer is not complete,
+                first = false;                                                    // the start node is put in the queue again
+            } else lastLayer = lastLayer.nextLayer(width, true);
 
             if (lastLayer.isExact()) {
                 this.lastExactLayer = lastLayer;

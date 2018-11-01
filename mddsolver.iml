@@ -16,9 +16,6 @@
     <orderEntry type="library" name="Maven: org.tap4j:tap4j:4.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.17" level="project" />
     <orderEntry type="library" name="Maven: org.tap4j:tap4j-ext:4.2.1" level="project" />
-    <orderEntry type="library" name="Maven: org.xcsp:xcsp3-tools:1.0.0" level="project" />
-    <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.1.2" level="project" />
-    <orderEntry type="library" name="Maven: org.glassfish:javax.json:1.1.2" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: gurobi:gurobi:8.0.1">
         <CLASSES>
