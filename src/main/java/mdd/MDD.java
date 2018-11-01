@@ -86,10 +86,6 @@ public class MDD {
         boolean first = true;
 
         while (!lastLayer.isFinal()) {
-            if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                return null;
-            }
-
             if (first) {
                 lastLayer = lastLayer.nextLayer(Integer.MAX_VALUE, false); // if the first layer is not complete,
                 first = false;                                                     // the start node is put in the queue again
@@ -118,10 +114,6 @@ public class MDD {
         boolean first = true;
 
         while (!lastLayer.isFinal()) {
-            if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                return null;
-            }
-
             if (first) {
                 lastLayer = lastLayer.nextLayer(Integer.MAX_VALUE, true); // if the first layer is not complete,
                 first = false;                                                    // the start node is put in the queue again

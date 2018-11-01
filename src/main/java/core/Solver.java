@@ -93,11 +93,6 @@ public class Solver {
                         startTime, timeOut);                               // of variables not bound
                 else resultRelaxed = this.mdd.solveRelaxed(maxWidth, startTime, timeOut);
 
-                if (System.currentTimeMillis() - startTime > timeOut * 1000) {
-                    endTime = System.currentTimeMillis();
-                    return best;
-                }
-
                 if (resultRelaxed.value() > lowerBound) {
                     for (State s : this.mdd.exactCutset()) {
                         s.setRelaxedValue(resultRelaxed.value());
