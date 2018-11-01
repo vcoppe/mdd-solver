@@ -6,16 +6,12 @@ import core.Variable;
 import heuristics.MinLPDeleteSelector;
 import heuristics.MinLPMergeSelector;
 import heuristics.VariableSelector;
-import javafx.util.Pair;
 import mdd.Layer;
 import mdd.State;
 import mdd.StateRepresentation;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class MAX2SAT implements Problem {
 
@@ -258,7 +254,7 @@ public class MAX2SAT implements Problem {
             if (!done) {
                 index = new int[nVariables];
                 @SuppressWarnings("unchecked")
-                Pair<Double, Integer>[] l = new Pair[nVariables];
+                Map.Entry<Double,Integer> [] l = new Map.Entry[nVariables];
 
                 for (int i = 0; i < nVariables; i++) {
                     double sum = 0;
@@ -267,7 +263,7 @@ public class MAX2SAT implements Problem {
                             sum += w;
                         }
                     }
-                    l[i] = new Pair<>(sum, i);
+                    l[i] = new AbstractMap.SimpleEntry<>(sum, i);
                 }
 
                 Arrays.sort(l, (a, b) -> b.getKey().compareTo(a.getKey()));

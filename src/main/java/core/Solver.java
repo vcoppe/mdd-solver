@@ -47,7 +47,7 @@ public class Solver {
     }
 
     /**
-     * Solves the given problem with the given heuristics and returns the optimal solution if it exists.
+     * Solves the given maximization problem with the given heuristics and returns the optimal solution if it exists.
      *
      * @return an object {@code State} containing the optimal value and assignment
      */
@@ -63,16 +63,19 @@ public class Solver {
 
         while (!q.isEmpty()) {
             State state = q.poll();
+
             if (state.relaxedValue() <= lowerBound) {
                 continue;
             }
 
             this.mdd.setInitialState(state);
-            State resultRestricted;
-            if (this.adaptiveWidth) resultRestricted = this.mdd.solveRestricted(
-                    problem.nVariables() - state.layerNumber(), // the width of the DD is equal to the number
-                    startTime, timeOut);                               // of variables not bound
-            else resultRestricted = this.mdd.solveRestricted(maxWidth, startTime, timeOut);
+
+            int maxW = adaptiveWidth ?
+                    problem.nVariables() - state.layerNumber() : // the number of not bound vars
+                    maxWidth;
+
+            State resultRestricted = this.mdd.solveRestricted(maxW, startTime, timeOut);
+
 
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
                 endTime = System.currentTimeMillis();
@@ -87,11 +90,7 @@ public class Solver {
 
             if (!this.mdd.isExact()) {
                 this.mdd.setInitialState(state);
-                State resultRelaxed;
-                if (this.adaptiveWidth) resultRelaxed = this.mdd.solveRelaxed(
-                        problem.nVariables() - state.layerNumber(), // the width of the DD is equal to the number
-                        startTime, timeOut);                               // of variables not bound
-                else resultRelaxed = this.mdd.solveRelaxed(maxWidth, startTime, timeOut);
+                State resultRelaxed = this.mdd.solveRelaxed(maxW, startTime, timeOut);
 
                 if (resultRelaxed.value() > lowerBound) {
                     for (State s : this.mdd.exactCutset()) {

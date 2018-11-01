@@ -159,6 +159,7 @@ public class MDD {
      * @return a set of exact states being an exact cutset
      */
     public Collection<State> exactCutset() {
+        //return this.lastExactLayerCutset();
         return this.frontierCutset();
     }
 
