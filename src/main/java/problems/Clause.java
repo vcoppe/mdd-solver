@@ -7,12 +7,14 @@ package problems;
  */
 public class Clause {
 
-    public int u, v;
-    int num;    // 0 = 00 -> FF
+    int num;
+    // 0 = 00 -> FF
     // 1 = 01 -> FT
     // 2 = 10 -> TF
     // 3 = 11 -> TT
     double w;
+    int u, v;
+    private int tu, tv;
 
     /**
      * Returns a {@code Clause} object representing a disjunction with the two variables {@code u} and {@code v},
@@ -32,8 +34,14 @@ public class Clause {
 
         this.u = u;
         this.v = v;
+        this.tu = tu;
+        this.tv = tv;
         this.w = w;
 
         this.num = (tu << 1) | tv;
+    }
+
+    public boolean value(int uValue, int vValue) {
+        return uValue == tu || vValue == tv;
     }
 }

@@ -74,7 +74,7 @@ public class Solver {
                     problem.nVariables() - state.layerNumber() : // the number of not bound vars
                     maxWidth;
 
-            State resultRestricted = this.mdd.solveRestricted(maxW, startTime, timeOut);
+            State resultRestricted = this.mdd.solveRestricted(maxW);
 
 
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
@@ -90,7 +90,7 @@ public class Solver {
 
             if (!this.mdd.isExact()) {
                 this.mdd.setInitialState(state);
-                State resultRelaxed = this.mdd.solveRelaxed(maxW, startTime, timeOut);
+                State resultRelaxed = this.mdd.solveRelaxed(maxW);
 
                 if (resultRelaxed.value() > lowerBound) {
                     for (State s : this.mdd.exactCutset()) {

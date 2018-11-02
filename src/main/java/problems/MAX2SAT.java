@@ -195,12 +195,12 @@ public class MAX2SAT implements Problem {
             if (!g[clause.u].containsKey(clause.v)) {
                 g[clause.u].put(clause.v, new double[4]);
             }
-            g[clause.u].get(clause.v)[clause.num] = clause.w;
+            g[clause.u].get(clause.v)[clause.num] += clause.w;
 
             if (!g[clause.v].containsKey(clause.u)) {
                 g[clause.v].put(clause.u, new double[4]);
             }
-            g[clause.v].get(clause.u)[clause.num] = clause.w;
+            g[clause.v].get(clause.u)[clause.num] += clause.w;
         }
 
         return g;

@@ -110,6 +110,7 @@ public class MinLA {
 
     public void solve(double timeLimit) throws GRBException {
         model.set(GRB.DoubleParam.TimeLimit, timeLimit);
+        model.set(GRB.IntParam.Threads, 1);
         model.optimize();
 
         System.out.println("\nOptimal solution : " + model.get(GRB.DoubleAttr.ObjVal));

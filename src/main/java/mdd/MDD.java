@@ -79,7 +79,7 @@ public class MDD {
      * @param width the maximum width of the layers
      * @return the {@code State} object representing the best solution found
      */
-    public State solveRestricted(int width, long startTime, int timeOut) {
+    public State solveRestricted(int width) {
         this.lastExactLayer = null;
         Layer lastLayer = root;
 
@@ -106,7 +106,7 @@ public class MDD {
      * @param width the maximum width of the layers
      * @return the {@code State} object representing the best solution found
      */
-    public State solveRelaxed(int width, long startTime, int timeOut) {
+    public State solveRelaxed(int width) {
         this.lastExactLayer = null;
         this.frontier.clear();
         Layer lastLayer = root;
@@ -150,7 +150,7 @@ public class MDD {
      * @return the {@code State} object representing the best solution found
      */
     public State solveExact() {
-        return this.solveRelaxed(Integer.MAX_VALUE, Integer.MIN_VALUE, 0);
+        return this.solveRelaxed(Integer.MAX_VALUE);
     }
 
     /**

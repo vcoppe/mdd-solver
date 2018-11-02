@@ -11,7 +11,7 @@ import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestMinLA {
+public class TestMCP {
 
     private static Random random = new Random(12);
 
@@ -34,7 +34,7 @@ public class TestMinLA {
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 if (in.get(l++)) {
-                    edges.add(new Edge(i, j, -1));
+                    edges.add(new Edge(i, j, random.nextInt(100) - 50));
                 }
             }
         }
@@ -43,61 +43,40 @@ public class TestMinLA {
     private static double run(MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         Edge[] input = new Edge[edges.size()];
         edges.toArray(input);
-        Problem p = new MinLA(n, input);
+        Problem p = new MCP(n, input);
         Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
-        return -solver.solve().value();
-    }
-
-    // from https://codeforces.com/blog/entry/3980?#comment-80388
-    private static boolean next_permutation(int[] p) {
-        for (int a = p.length - 2; a >= 0; --a) {
-            if (p[a] < p[a + 1]) {
-                for (int b = p.length - 1; ; --b) {
-                    if (p[b] > p[a]) {
-                        int t = p[a];
-                        p[a] = p[b];
-                        p[b] = t;
-                        for (++a, b = p.length - 1; a < b; ++a, --b) {
-                            t = p[a];
-                            p[a] = p[b];
-                            p[b] = t;
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return solver.solve().value();
     }
 
     private static double bruteForce() {
-        double minValue = Double.MAX_VALUE;
-        int[] pos = new int[n];
-        int[] assignment = new int[n];
+        long vars = 0;
+        double maxValue = -Double.MAX_VALUE;
+        long assignment = 0;
 
-        for (int i = 0; i < n; i++) pos[i] = i;
-
-        do {
+        while (vars < Math.pow(2, n)) {
             double value = 0;
-            for (Edge e : edges) {
-                value -= e.w * Math.abs(pos[e.u] - pos[e.v]);
-            }
 
-            if (value < minValue) {
-                minValue = value;
-                for (int i = 0; i < n; i++) {
-                    assignment[pos[i]] = i;
+            for (Edge e : edges) {
+                if (((vars >> e.u) & 1) != ((vars >> e.v) & 1)) {
+                    value += e.w;
                 }
             }
-        } while (next_permutation(pos));
 
-        System.out.println("Optimal solution : " + minValue);
-        System.out.println("Assignment       :");
-        for (int i = 0; i < n; i++) {
-            System.out.println("\tVar. " + i + " = " + assignment[i]);
+            if (value > maxValue) {
+                maxValue = value;
+                assignment = vars;
+            }
+
+            vars++;
         }
 
-        return minValue;
+        System.out.println("Optimal solution : " + maxValue);
+        System.out.println("Assignment       :");
+        for (int i = 0; i < n; i++) {
+            System.out.println("\tVar. " + i + " = " + ((assignment >> i) & 1));
+        }
+
+        return maxValue;
     }
 
     @Test
@@ -108,7 +87,7 @@ public class TestMinLA {
 
         p = 0.5;
 
-        for (n = 4; n <= 10; n += 2) {
+        for (n = 5; n <= 20; n += 5) {
             for (int i = 0; i < 10; i++) {
                 generate();
                 assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
