@@ -82,4 +82,30 @@ public class TestMAX2SAT {
             }
         }
     }
+
+    @Test
+    public void testRandom2() {
+        MergeSelector ms = new SimpleMergeSelector();
+        DeleteSelector ds = new SimpleDeleteSelector();
+        VariableSelector vs = new SimpleVariableSelector();
+
+        for (n = 5; n <= 20; n += 5) {
+            for (int i = 0; i < 10; i++) {
+                generate();
+                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+            }
+        }
+    }
+
+    @Test
+    public void testReadDIMACS() {
+        MergeSelector ms = new MinLPMergeSelector();
+        DeleteSelector ds = new MinLPDeleteSelector();
+        VariableSelector vs = new MAX2SAT.MAX2SATVariableSelector();
+
+        MAX2SAT p = MAX2SAT.readDIMACS("data/max2sat/pass.wcnf");
+        Solver solver = new Solver(p, ms, ds, vs);
+
+        assertEquals(Double.compare(solver.solve().value(), p.opt), 0);
+    }
 }

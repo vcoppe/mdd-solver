@@ -94,4 +94,20 @@ public class TestMCP {
             }
         }
     }
+
+    @Test
+    public void testRandom2() {
+        MergeSelector ms = new SimpleMergeSelector();
+        DeleteSelector ds = new SimpleDeleteSelector();
+        VariableSelector vs = new SimpleVariableSelector();
+
+        p = 0.5;
+
+        for (n = 5; n <= 20; n += 5) {
+            for (int i = 0; i < 10; i++) {
+                generate();
+                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+            }
+        }
+    }
 }

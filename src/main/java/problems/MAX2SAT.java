@@ -1,10 +1,7 @@
 package problems;
 
 import core.Problem;
-import core.Solver;
 import core.Variable;
-import heuristics.MinLPDeleteSelector;
-import heuristics.MinLPMergeSelector;
 import heuristics.VariableSelector;
 import mdd.Layer;
 import mdd.State;
@@ -357,18 +354,5 @@ public class MAX2SAT implements Problem {
         MAX2SAT p = new MAX2SAT(toGraph(n, clauses));
         p.opt = opt;
         return p;
-    }
-
-    public static void main(String[] args) {
-        Clause[] clauses = {
-                new Clause(0, 2, 1, 1, 3), new Clause(0, 2, 0, 0, 5),
-                new Clause(0, 2, 0, 1, 4), new Clause(1, 2, 1, 0, 2),
-                new Clause(1, 2, 0, 0, 1), new Clause(1, 2, 1, 1, 5)
-        };
-
-        Problem p = new MAX2SAT(3, clauses);
-
-        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
-        solver.solve();
     }
 }

@@ -1,10 +1,7 @@
 package problems;
 
 import core.Problem;
-import core.Solver;
 import core.Variable;
-import heuristics.MinLPDeleteSelector;
-import heuristics.MinLPMergeSelector;
 import heuristics.VariableSelector;
 import mdd.Layer;
 import mdd.State;
@@ -255,25 +252,5 @@ public class MISP implements Problem {
         MISP p = new MISP(weights, complement);
         p.opt = opt;
         return p;
-    }
-
-    public static void main(String[] args) {
-
-        double[] weights = {3, 4, 2, 2, 7};
-        Edge[] edges = {new Edge(0, 1), new Edge(0, 2),
-                new Edge(1, 2), new Edge(1, 3),
-                new Edge(2, 3), new Edge(3, 4)};
-
-        Problem p = new MISP(5, weights, edges);
-
-        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
-        solver.solve();
-
-        /*Solver solver = new Solver(readDIMACS("data/misp/easy/johnson8-4-4.clq"), new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
-
-        long t0 = System.currentTimeMillis();
-        System.out.println(solver.solve(100).value());
-        System.out.println("time:" + (System.currentTimeMillis() - t0));*/
-
     }
 }

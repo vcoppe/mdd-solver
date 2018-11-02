@@ -108,11 +108,35 @@ public class TestMinLA {
 
         p = 0.5;
 
-        for (n = 4; n <= 10; n += 2) {
+        for (n = 4; n <= 8; n += 2) {
             for (int i = 0; i < 10; i++) {
                 generate();
                 assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
             }
         }
+    }
+
+    @Test
+    public void testRandom2() {
+        MergeSelector ms = new SimpleMergeSelector();
+        DeleteSelector ds = new SimpleDeleteSelector();
+        VariableSelector vs = new SimpleVariableSelector();
+
+        p = 0.5;
+
+        for (n = 4; n <= 8; n += 2) {
+            for (int i = 0; i < 10; i++) {
+                generate();
+                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+            }
+        }
+    }
+
+    @Test
+    public void testReadGRA() {
+        MinLA p = MinLA.readGra("data/minla/small.gra");
+        Solver solver = new Solver(p);
+
+        assertEquals(Double.compare(-solver.solve().value(), p.opt), 0);
     }
 }

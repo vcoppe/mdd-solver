@@ -1,6 +1,8 @@
 package problems;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Representation of an edge for the MCP and MISP problems.
@@ -59,35 +61,5 @@ public class Edge {
         }
 
         return g;
-    }
-
-    /**
-     * Creates a random graph with n vertices. Each edge has a probability p to appear.
-     *
-     * @param n the number of vertices
-     * @param p the density of the graph
-     * @return an array of edges representing the graph
-     */
-    private static Edge[] randomGraph(int n, double p, Random random) {
-        int m = (int) Math.floor(p * n * (n - 1) / 2);
-        Edge[] edges = new Edge[m];
-        LinkedList<Boolean> in = new LinkedList<>();
-
-        for (int i = 0; i < n * (n - 1) / 2; i++) {
-            in.add(i < m);
-        }
-
-        Collections.shuffle(in, random);
-
-        int k = 0, l = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                if (in.get(l++)) {
-                    edges[k++] = new Edge(i, j, -1);
-                }
-            }
-        }
-
-        return edges;
     }
 }

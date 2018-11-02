@@ -1,11 +1,7 @@
 package problems;
 
 import core.Problem;
-import core.Solver;
 import core.Variable;
-import heuristics.MinLPDeleteSelector;
-import heuristics.MinLPMergeSelector;
-import heuristics.SimpleVariableSelector;
 import mdd.State;
 import mdd.StateRepresentation;
 
@@ -36,25 +32,27 @@ public class MinLA implements Problem {
 
     public MinLA(int n, Edge[] edges) {
         this(toWeightedGraph(n, edges));
-        for (int i = 0; i < n; i++) {
-            g[i].clear();
-        }
-
-        double rootValue = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                g[i].put(j, 1.0);
+        if (false) {
+            for (int i = 0; i < n; i++) {
+                g[i].clear();
             }
-            rootValue -= (i + 1) * (n - (i + 1));
-        }
 
-        for (Edge e : edges) {
-            g[e.u].remove(e.v);
-            g[e.v].remove(e.u);
-        }
+            double rootValue = 0;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    g[i].put(j, 1.0);
+                }
+                rootValue -= (i + 1) * (n - (i + 1));
+            }
 
-        this.root.setValue(rootValue);
-        complement = true;
+            for (Edge e : edges) {
+                g[e.u].remove(e.v);
+                g[e.v].remove(e.u);
+            }
+
+            this.root.setValue(rootValue);
+            complement = true;
+        }
     }
 
     private MinLA(Map<Integer, Double>[] g) {
@@ -130,15 +128,6 @@ public class MinLA implements Problem {
         return p;
     }
 
-    public static void main(String[] args) {
-        Edge[] edges = {new Edge(0, 1, -1), new Edge(0, 2, -2), new Edge(0, 3, -2),
-                new Edge(1, 2, -3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
-
-        Problem p = new MinLA(4, edges);
-        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-        solver.solve();
-    }
-
     public State[] successors(State s, Variable var) {
         int pos = var.id, j;
         MinLAState minLAState = (MinLAState) s.stateRepresentation;
@@ -188,9 +177,9 @@ public class MinLA implements Problem {
                 minLAState = (MinLAState) state.stateRepresentation;
             } else {
                 if (complement) {
-                    if (minLAState.bs.cardinality() < this.nVariables - state.layerNumber()) {
+                    //if (minLAState.bs.cardinality() < this.nVariables - state.layerNumber() ) {
                         minLAState.bs.or(((MinLAState) state.stateRepresentation).bs);
-                    }
+                    //}
                 } else minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
             }
 

@@ -1,11 +1,7 @@
 package problems;
 
 import core.Problem;
-import core.Solver;
 import core.Variable;
-import heuristics.MinLPDeleteSelector;
-import heuristics.MinLPMergeSelector;
-import heuristics.SimpleVariableSelector;
 import mdd.State;
 import mdd.StateRepresentation;
 
@@ -215,15 +211,5 @@ public class MCP implements Problem {
         public MCPState copy() {
             return new MCPState(this.benefits.clone());
         }
-    }
-
-    public static void main(String[] args) {
-        Edge[] edges = {new Edge(0, 1, 1), new Edge(0, 2, 2), new Edge(0, 3, -2),
-                new Edge(1, 2, 3), new Edge(1, 3, -1), new Edge(2, 3, -1)};
-
-        Problem p = new MCP(4, edges);
-
-        Solver solver = new Solver(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-        solver.solve();
     }
 }

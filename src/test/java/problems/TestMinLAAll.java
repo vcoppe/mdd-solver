@@ -21,7 +21,7 @@ public class TestMinLAAll extends TestHelper {
 
     @Parameterized.Parameters
     public static Object[] data() {
-        return dataFromFolder("data/minla/small");
+        return dataFromFolder("data/minla/test");
     }
 
     @Override
