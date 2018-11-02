@@ -124,7 +124,7 @@ public class Solver {
             for (Variable var : best.variables) {
                 System.out.println("\tVar. " + var.id + " = " + var.value());
             }
-            System.out.println("Time elapsed : " + ((endTime - startTime) / 1000.0) + "s\n");
+            System.out.println("Time elapsed : " + runTime() + "s\n");
         }
 
         return best;

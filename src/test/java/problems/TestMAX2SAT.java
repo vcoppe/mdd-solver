@@ -98,6 +98,20 @@ public class TestMAX2SAT {
     }
 
     @Test
+    public void testRandom3() {
+        for (n = 5; n <= 20; n += 5) {
+            for (int i = 0; i < 10; i++) {
+                generate();
+
+                Problem p = new MAX2SAT(n, clauses.toArray(new Clause[0]));
+                Solver solver = new Solver(p);
+                solver.setWidth(15);
+                assertEquals(Double.compare(solver.solve().value(), bruteForce()), 0);
+            }
+        }
+    }
+
+    @Test
     public void testReadDIMACS() {
         MergeSelector ms = new MinLPMergeSelector();
         DeleteSelector ds = new MinLPDeleteSelector();
