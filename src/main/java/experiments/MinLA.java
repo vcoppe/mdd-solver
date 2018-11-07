@@ -6,7 +6,6 @@ import mdd.State;
 import problems.Edge;
 
 import java.io.File;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class MinLA {
@@ -69,13 +68,22 @@ public class MinLA {
 
         readGra(args[0]);
 
+        System.out.println("File successfully read");
+        System.out.println("fileName : " + args[0]);
+
         int timeLimit = Integer.valueOf(args[1]);
 
         if (args[2].equals("mip")) {
             mip.MinLA mip = new mip.MinLA(n, edges);
+
+            System.out.println("MIP model created");
+            System.out.println("Solving...");
+
             mip.solve(timeLimit);
 
-            System.out.printf(Locale.US, "%.3f %.0f %.5f\n", mip.runTime(), mip.objVal(), mip.gap());
+            System.out.println("runTime : " + mip.runTime());
+            System.out.println("objValue : " + mip.objVal());
+            System.out.println("gap : " + mip.gap());
 
             mip.dispose();
         } else if (args[2].equals("mdd")) {
@@ -83,11 +91,16 @@ public class MinLA {
 
             Solver solver = new Solver(mdd);
 
+            System.out.println("MDD model created");
+            System.out.println("Solving...");
+
             if (args.length == 4) solver.setWidth(Integer.valueOf(args[3]));
 
             State result = solver.solve(timeLimit);
 
-            System.out.printf(Locale.US, "%.3f %.0f %.5f\n", solver.runTime(), -result.value(), solver.gap());
+            System.out.println("runTime : " + solver.runTime());
+            System.out.println("objValue : " + -result.value());
+            System.out.println("gap : " + solver.gap());
         }
     }
 

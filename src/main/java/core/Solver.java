@@ -159,7 +159,8 @@ public class Solver {
 
     public double gap() {
         if (upperBound == Double.MAX_VALUE) return 1;
-        return Math.abs(upperBound - lowerBound) / Math.abs(lowerBound);
+        if (upperBound < 0) return Math.abs(upperBound - lowerBound) / Math.abs(lowerBound);
+        else return (upperBound - lowerBound) / upperBound;
     }
 
     public double runTime() {

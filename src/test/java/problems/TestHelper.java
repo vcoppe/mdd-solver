@@ -39,7 +39,7 @@ public abstract class TestHelper {
     public void testInstance() {
         System.out.println(path);
         try {
-            assertTrue(testData(1800));
+            assertTrue(testData(86400));
         } catch (NullPointerException e) {
             fail("Timed out");
         } catch (OutOfMemoryError e) {

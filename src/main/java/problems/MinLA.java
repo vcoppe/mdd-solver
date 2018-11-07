@@ -26,33 +26,10 @@ public class MinLA implements Problem {
     private int nVariables;
     private State root;
 
-    private boolean complement = false;
-
     public double opt;
 
     public MinLA(int n, Edge[] edges) {
         this(toWeightedGraph(n, edges));
-        if (false) {
-            for (int i = 0; i < n; i++) {
-                g[i].clear();
-            }
-
-            double rootValue = 0;
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    g[i].put(j, 1.0);
-                }
-                rootValue -= (i + 1) * (n - (i + 1));
-            }
-
-            for (Edge e : edges) {
-                g[e.u].remove(e.v);
-                g[e.v].remove(e.u);
-            }
-
-            this.root.setValue(rootValue);
-            complement = true;
-        }
     }
 
     private MinLA(Map<Integer, Double>[] g) {
@@ -129,33 +106,25 @@ public class MinLA implements Problem {
     }
 
     public State[] successors(State s, Variable var) {
-        int pos = var.id, j;
+        int pos = var.id;
         MinLAState minLAState = (MinLAState) s.stateRepresentation;
         LinkedList<State> succs = new LinkedList<>();
 
         double value;
-        Double w;
 
         for (int i = minLAState.bs.nextSetBit(0); i >= 0; i = minLAState.bs.nextSetBit(i + 1)) {
             MinLAState succMinLAState = minLAState.copy();
             succMinLAState.bs.clear(i);
 
-            value = s.value();
-            for (int k = 0; k < pos; k++) {
-                int u = s.getVariable(k).value();
-                for (Entry<Integer, Double> e : g[u].entrySet()) {
-                    if (succMinLAState.isFree(e.getKey())) {
-                        value += e.getValue();
-                    }
-                }
-            }
-
-            for (Entry<Integer, Double> e : g[i].entrySet()) {
+            for (Entry<Integer, Double> e : g[i].entrySet()) { // compute the extra cost incrementally
                 if (succMinLAState.isFree(e.getKey())) {
-                    value += e.getValue();
+                    succMinLAState.inc += e.getValue();
+                } else {
+                    succMinLAState.inc -= e.getValue();
                 }
             }
 
+            value = s.value() + succMinLAState.inc;
             succs.add(s.getSuccessor(succMinLAState, value, pos, i));
         }
 
@@ -176,11 +145,7 @@ public class MinLA implements Problem {
             if (minLAState == null) {
                 minLAState = (MinLAState) state.stateRepresentation;
             } else {
-                if (complement) {
-                    //if (minLAState.bs.cardinality() < this.nVariables - state.layerNumber() ) {
-                        minLAState.bs.or(((MinLAState) state.stateRepresentation).bs);
-                    //}
-                } else minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
+                minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
             }
 
             if (state.value() > maxValue) {
@@ -197,16 +162,19 @@ public class MinLA implements Problem {
 
         int size;
         BitSet bs;
+        double inc;
 
         public MinLAState(int size) {
             this.size = size;
             this.bs = new BitSet(size);
             this.bs.flip(0, size);
+            this.inc = 0;
         }
 
-        public MinLAState(BitSet bitSet) {
+        public MinLAState(BitSet bitSet, double inc) {
             this.size = bitSet.size();
             this.bs = (BitSet) bitSet.clone();
+            this.inc = inc;
         }
 
         public int hashCode() {
@@ -222,7 +190,7 @@ public class MinLA implements Problem {
         }
 
         public MinLAState copy() {
-            return new MinLAState(this.bs);
+            return new MinLAState(this.bs, this.inc);
         }
 
         public double rank(State state) {
