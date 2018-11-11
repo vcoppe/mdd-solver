@@ -24,7 +24,7 @@ public class LayerTest {
         vars = new Variable[n];
         double[] weights = new double[n];
         for (int i = 0; i < n; i++) {
-            vars[i] = new Variable(i, 2);
+            vars[i] = new Variable(i);
             weights[i] = 1;
         }
         p = new MISP(n, weights, new Edge[0]);

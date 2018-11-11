@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.util.LinkedList;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestMAX2SAT {
 
@@ -78,7 +78,7 @@ public class TestMAX2SAT {
         for (n = 5; n <= 20; n += 5) {
             for (int i = 0; i < 10; i++) {
                 generate();
-                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+                assertTrue(run(ms, ds, vs) == bruteForce());
             }
         }
     }
@@ -92,7 +92,7 @@ public class TestMAX2SAT {
         for (n = 5; n <= 20; n += 5) {
             for (int i = 0; i < 10; i++) {
                 generate();
-                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+                assertTrue(run(ms, ds, vs) == bruteForce());
             }
         }
     }
@@ -106,7 +106,7 @@ public class TestMAX2SAT {
                 Problem p = new MAX2SAT(n, clauses.toArray(new Clause[0]));
                 Solver solver = new Solver(p);
                 solver.setWidth(15);
-                assertEquals(Double.compare(solver.solve().value(), bruteForce()), 0);
+                assertTrue(solver.solve().value() == bruteForce());
             }
         }
     }
@@ -120,6 +120,6 @@ public class TestMAX2SAT {
         MAX2SAT p = MAX2SAT.readDIMACS("data/max2sat/pass.wcnf");
         Solver solver = new Solver(p, ms, ds, vs);
 
-        assertEquals(Double.compare(solver.solve().value(), p.opt), 0);
+        assertTrue(solver.solve().value() == p.opt);
     }
 }

@@ -75,7 +75,7 @@ public class State<R extends StateRepresentation> implements Comparable<State> {
      * @return a different {@code State} object with the same properties
      */
     public State copy() {
-        return new State(this.stateRepresentation, this.variables, this.indexes, this.value, this.exact);
+        return new State(this.stateRepresentation.copy(), this.variables, this.indexes, this.value, this.exact);
     }
 
     /**

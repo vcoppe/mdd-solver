@@ -2,6 +2,8 @@ package core;
 
 import mdd.State;
 
+import java.util.List;
+
 /**
  * Enables solving new problems by implementing the successors and merge functions.
  * The interface {@code StateRepresentation} should also be implemented.
@@ -34,7 +36,7 @@ public interface Problem {
      * @param var a variable belonging to the state's variables and not assigned yet
      * @return an array of states resulting from a valid value assigned to the variable based on the given state
      */
-    State[] successors(State s, Variable var);
+    List<State> successors(State s, Variable var);
 
     /**
      * Given a set of states, returns a new state with a {@code StateRepresentation}

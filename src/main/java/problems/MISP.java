@@ -10,6 +10,7 @@ import mdd.StateRepresentation;
 import java.io.File;
 import java.util.BitSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 import static problems.Edge.toGraph;
@@ -53,7 +54,7 @@ public class MISP implements Problem {
 
         Variable[] variables = new Variable[this.nVariables];
         for (int i = 0; i < this.nVariables; i++) {
-            variables[i] = new Variable(i, 2);
+            variables[i] = new Variable(i);
         }
 
         this.root = new State(new MISPState(this.nVariables), variables, 0);
@@ -90,18 +91,19 @@ public class MISP implements Problem {
         return new State(mispState, variables, indexes, maxValue, false);
     }
 
-    public State[] successors(State s, Variable var) {
+    public List<State> successors(State s, Variable var) {
         int u = var.id;
         MISPState mispState = ((MISPState) s.stateRepresentation);
+        List<State> succs = new LinkedList<>();
 
         // assign 0
         MISPState mispState0 = mispState.copy();
         mispState0.bs.clear(u);
         State dontTake = s.getSuccessor(mispState0, s.value(), u, 0);
+        succs.add(dontTake);
 
         if (!mispState.isFree(u)) {
-            State[] ret = {dontTake};
-            return ret;
+            return succs;
         }
 
         // assign 1
@@ -113,10 +115,9 @@ public class MISP implements Problem {
         }
 
         State take = s.getSuccessor(mispState1, s.value() + this.weights[u], u, 1);
+        succs.add(take);
 
-        State[] ret = {dontTake, take};
-
-        return ret;
+        return succs;
     }
 
     public class MISPState implements StateRepresentation {

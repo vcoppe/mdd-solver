@@ -48,7 +48,7 @@ public class MAX2SAT implements Problem {
 
         Variable[] variables = new Variable[nVariables];
         for (int i = 0; i < nVariables; i++) {
-            variables[i] = new Variable(i, 2);
+            variables[i] = new Variable(i);
         }
 
         this.root = new State(new MAX2SATState(nVariables), variables, 0);
@@ -62,8 +62,9 @@ public class MAX2SAT implements Problem {
         return nVariables;
     }
 
-    public State[] successors(State s, Variable var) {
+    public List<State> successors(State s, Variable var) {
         int u = var.id;
+        List<State> succs = new LinkedList<>();
 
         MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation);
 
@@ -95,7 +96,7 @@ public class MAX2SAT implements Problem {
             }
         }
 
-        State state0 = s.getSuccessor(new MAX2SATState(benefits0), value0, u, 0);
+        succs.add(s.getSuccessor(new MAX2SATState(benefits0), value0, u, 0));
 
         // assigning var to 1
         double[] benefits1 = new double[nVariables];
@@ -125,11 +126,9 @@ public class MAX2SAT implements Problem {
             }
         }
 
-        State state1 = s.getSuccessor(new MAX2SATState(benefits1), value1, u, 1);
+        succs.add(s.getSuccessor(new MAX2SATState(benefits1), value1, u, 1));
 
-        State[] ret = {state0, state1};
-
-        return ret;
+        return succs;
     }
 
     public State merge(State[] states) {

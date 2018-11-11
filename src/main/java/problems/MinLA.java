@@ -6,11 +6,7 @@ import mdd.State;
 import mdd.StateRepresentation;
 
 import java.io.File;
-import java.util.BitSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
+import java.util.*;
 
 import static problems.Edge.toWeightedGraph;
 
@@ -38,7 +34,7 @@ public class MinLA implements Problem {
 
         Variable[] variables = new Variable[this.nVariables];
         for (int i = 0; i < this.nVariables; i++) {
-            variables[i] = new Variable(i, this.nVariables);
+            variables[i] = new Variable(i);
         }
 
         this.root = new State(new MinLAState(this.nVariables), variables, 0);
@@ -105,10 +101,10 @@ public class MinLA implements Problem {
         return p;
     }
 
-    public State[] successors(State s, Variable var) {
+    public List<State> successors(State s, Variable var) {
         int pos = var.id;
         MinLAState minLAState = (MinLAState) s.stateRepresentation;
-        LinkedList<State> succs = new LinkedList<>();
+        List<State> succs = new LinkedList<>();
 
         double value;
 
@@ -116,15 +112,18 @@ public class MinLA implements Problem {
             MinLAState succMinLAState = minLAState.copy();
             succMinLAState.bs.clear(i);
 
-            for (Entry<Integer, Double> e : g[i].entrySet()) { // compute the extra cost incrementally
-                if (succMinLAState.isFree(e.getKey())) {
-                    succMinLAState.inc += e.getValue();
-                } else {
-                    succMinLAState.inc -= e.getValue();
+            value = s.value();
+            Double w;
+            for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
+                w = g[i].get(j);
+                if (w != null) value += w;
+                for (int k = 0; k < pos; k++) {
+                    int u = s.getVariable(k).value();
+                    w = g[u].get(j);
+                    if (w != null) value += w;
                 }
             }
 
-            value = s.value() + succMinLAState.inc;
             succs.add(s.getSuccessor(succMinLAState, value, pos, i));
         }
 
@@ -132,7 +131,7 @@ public class MinLA implements Problem {
             succs.add(s.copy());
         }
 
-        return succs.toArray(new State[0]);
+        return succs;
     }
 
     public State merge(State[] states) {
@@ -162,19 +161,16 @@ public class MinLA implements Problem {
 
         int size;
         BitSet bs;
-        double inc;
 
         public MinLAState(int size) {
             this.size = size;
             this.bs = new BitSet(size);
             this.bs.flip(0, size);
-            this.inc = 0;
         }
 
-        public MinLAState(BitSet bitSet, double inc) {
+        public MinLAState(BitSet bitSet) {
             this.size = bitSet.size();
             this.bs = (BitSet) bitSet.clone();
-            this.inc = inc;
         }
 
         public int hashCode() {
@@ -190,7 +186,7 @@ public class MinLA implements Problem {
         }
 
         public MinLAState copy() {
-            return new MinLAState(this.bs, this.inc);
+            return new MinLAState(this.bs);
         }
 
         public double rank(State state) {

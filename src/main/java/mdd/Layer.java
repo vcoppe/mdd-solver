@@ -82,8 +82,7 @@ public class Layer {
                 nextVar = this.mdd.variableSelector.select(state.freeVariables(), this);
             }
 
-            State[] successors = this.problem.successors(state, nextVar);
-            for (State s : successors) {
+            for (State s : this.problem.successors(state, nextVar)) {
                 if (state.isExact()) {
                     s.addParent(state);
                 } else {

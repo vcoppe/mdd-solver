@@ -71,7 +71,7 @@ public class Solver {
             this.mdd.setInitialState(state);
 
             int maxW = adaptiveWidth ?
-                    problem.nVariables() - state.layerNumber() : // the number of not bound vars
+                    (problem.nVariables() - state.layerNumber()) : // the number of not bound vars
                     maxWidth;
 
             State resultRestricted = this.mdd.solveRestricted(maxW);
@@ -86,6 +86,10 @@ public class Solver {
                 best = resultRestricted;
                 lowerBound = best.value();
                 printInfo(true);
+                /*System.out.println("Assignment       : ");
+                for (int i = 0; i<best.nVariables(); i++) {
+                    System.out.println("\tVar. " + i + " = " + best.getVariable(i).value());
+                }*/
             }
 
             if (!this.mdd.isExact()) {
@@ -121,8 +125,8 @@ public class Solver {
             System.out.println("\n====== Search completed ======");
             System.out.println("Optimal solution : " + best.value());
             System.out.println("Assignment       : ");
-            for (Variable var : best.variables) {
-                System.out.println("\tVar. " + var.id + " = " + var.value());
+            for (int i = 0; i < best.nVariables(); i++) {
+                System.out.println("\tVar. " + i + " = " + best.getVariable(i).value());
             }
             System.out.println("Time elapsed : " + runTime() + "s\n");
         }

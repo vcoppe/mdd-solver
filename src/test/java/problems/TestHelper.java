@@ -41,6 +41,7 @@ public abstract class TestHelper {
         try {
             assertTrue(testData(86400));
         } catch (NullPointerException e) {
+            e.printStackTrace();
             fail("Timed out");
         } catch (OutOfMemoryError e) {
             fail("Not enough memory");

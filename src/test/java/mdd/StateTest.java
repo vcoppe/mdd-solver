@@ -22,7 +22,7 @@ public class StateTest {
         vars = new Variable[n];
         double[] weights = new double[n];
         for (int i = 0; i < n; i++) {
-            vars[i] = new Variable(i, 2);
+            vars[i] = new Variable(i);
         }
         p = new MISP(n, weights, new Edge[0]);
     }

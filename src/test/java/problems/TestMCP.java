@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestMCP {
 
@@ -90,7 +90,7 @@ public class TestMCP {
         for (n = 5; n <= 20; n += 5) {
             for (int i = 0; i < 10; i++) {
                 generate();
-                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+                assertTrue(run(ms, ds, vs) == bruteForce());
             }
         }
     }
@@ -106,7 +106,7 @@ public class TestMCP {
         for (n = 5; n <= 20; n += 5) {
             for (int i = 0; i < 10; i++) {
                 generate();
-                assertEquals(Double.compare(run(ms, ds, vs), bruteForce()), 0);
+                assertTrue(run(ms, ds, vs) == bruteForce());
             }
         }
     }

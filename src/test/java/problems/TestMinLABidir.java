@@ -11,7 +11,7 @@ import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
 
-public class TestMinLA {
+public class TestMinLABidir {
 
     private static Random random = new Random(12);
 
@@ -43,7 +43,7 @@ public class TestMinLA {
     private static double run(MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         Edge[] input = new Edge[edges.size()];
         edges.toArray(input);
-        Problem p = new MinLA(n, input);
+        Problem p = new MinLABidir(n, input);
         Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
         return -solver.solve().value();
     }
@@ -104,9 +104,9 @@ public class TestMinLA {
     public void testRandom() {
         MergeSelector ms = new MinLPMergeSelector();
         DeleteSelector ds = new MinLPDeleteSelector();
-        VariableSelector vs = new SimpleVariableSelector();
+        VariableSelector vs = new MinLABidir.MinLABidirVariableSelector();
 
-        p = 0.5;
+        p = 0.7;
 
         for (n = 4; n <= 8; n += 2) {
             for (int i = 0; i < 10; i++) {
@@ -120,9 +120,9 @@ public class TestMinLA {
     public void testRandom2() {
         MergeSelector ms = new SimpleMergeSelector();
         DeleteSelector ds = new SimpleDeleteSelector();
-        VariableSelector vs = new SimpleVariableSelector();
+        VariableSelector vs = new MinLABidir.MinLABidirVariableSelector();
 
-        p = 0.5;
+        p = 0.7;
 
         for (n = 4; n <= 8; n += 2) {
             for (int i = 0; i < 10; i++) {
@@ -134,9 +134,11 @@ public class TestMinLA {
 
     @Test
     public void testReadGRA() {
-        MinLA p = MinLA.readGra("data/minla/jpetit/small.gra");
-        Solver solver = new Solver(p);
-
+        MinLABidir p = MinLABidir.readGra("data/minla/jpetit/small.gra");
+        MergeSelector ms = new SimpleMergeSelector();
+        DeleteSelector ds = new SimpleDeleteSelector();
+        VariableSelector vs = new MinLABidir.MinLABidirVariableSelector();
+        Solver solver = new Solver(p, ms, ds, vs);
         assertTrue(-solver.solve().value() == p.opt);
     }
 }

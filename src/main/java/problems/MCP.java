@@ -6,6 +6,8 @@ import mdd.State;
 import mdd.StateRepresentation;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import static problems.Edge.toWeightedGraph;
@@ -45,7 +47,7 @@ public class MCP implements Problem {
 
         Variable[] variables = new Variable[this.nVariables];
         for (int i = 0; i < this.nVariables; i++) {
-            variables[i] = new Variable(i, 2);
+            variables[i] = new Variable(i);
         }
 
         variables[0].assign(0); // arbitrarily assign first vertex to one side
@@ -126,8 +128,9 @@ public class MCP implements Problem {
         return new State(new MCPState(benefits), variables, indexes, maxValue, false);
     }
 
-    public State[] successors(State s, Variable var) {
+    public List<State> successors(State s, Variable var) {
         int u = var.id;
+        List<State> succs = new LinkedList<>();
 
         Variable[] variables = s.variables;
         MCPState mcpState = ((MCPState) s.stateRepresentation);
@@ -148,7 +151,7 @@ public class MCP implements Problem {
             }
         }
 
-        State state0 = s.getSuccessor(new MCPState(benefits0), value0, u, 0);
+        succs.add(s.getSuccessor(new MCPState(benefits0), value0, u, 0));
 
         // assigning var to 1
         double[] benefits1 = new double[this.nVariables];
@@ -166,11 +169,9 @@ public class MCP implements Problem {
             }
         }
 
-        State state1 = s.getSuccessor(new MCPState(benefits1), value1, u, 1);
+        succs.add(s.getSuccessor(new MCPState(benefits1), value1, u, 1));
 
-        State[] ret = {state0, state1};
-
-        return ret;
+        return succs;
     }
 
     class MCPState implements StateRepresentation {
