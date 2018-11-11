@@ -124,6 +124,7 @@ public class MinLABidir implements Problem {
         }
 
         for (int i = 0; i < side.length; i++) {
+            if (layerNumber == 0 && i == side.length - 1) break; // break symmetry
             if (layerNumber == 1 && i < s.getVariable(0).value()) continue; // break symmetry
             if (side[i] == 0) {
                 MinLAState succMinLAState = minLAState.copy();

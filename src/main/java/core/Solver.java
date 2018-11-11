@@ -76,7 +76,6 @@ public class Solver {
 
             State resultRestricted = this.mdd.solveRestricted(maxW);
 
-
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
                 endTime = System.currentTimeMillis();
                 return best;

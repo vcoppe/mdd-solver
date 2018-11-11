@@ -206,9 +206,6 @@ public class Layer {
      * @return {@code true} <==> the layer is the final one
      */
     public boolean isFinal() {
-        for (State state : this.states.values()) {
-            return state.isFinal();
-        }
-        return false;
+        return this.number == this.problem.nVariables();
     }
 }

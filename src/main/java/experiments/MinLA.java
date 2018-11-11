@@ -87,7 +87,7 @@ public class MinLA {
 
             mip.dispose();
         } else if (args[2].equals("mdd")) {
-            problems.MinLA mdd = new problems.MinLA(n, edges);
+            problems.MinLABidir mdd = new problems.MinLABidir(n, edges);
 
             Solver solver = new Solver(mdd);
 

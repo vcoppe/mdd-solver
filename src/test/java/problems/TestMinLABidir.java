@@ -106,7 +106,7 @@ public class TestMinLABidir {
         DeleteSelector ds = new MinLPDeleteSelector();
         VariableSelector vs = new MinLABidir.MinLABidirVariableSelector();
 
-        p = 0.7;
+        p = 0.5;
 
         for (n = 4; n <= 8; n += 2) {
             for (int i = 0; i < 10; i++) {
@@ -122,7 +122,7 @@ public class TestMinLABidir {
         DeleteSelector ds = new SimpleDeleteSelector();
         VariableSelector vs = new MinLABidir.MinLABidirVariableSelector();
 
-        p = 0.7;
+        p = 0.5;
 
         for (n = 4; n <= 8; n += 2) {
             for (int i = 0; i < 10; i++) {
