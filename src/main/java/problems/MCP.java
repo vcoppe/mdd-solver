@@ -19,7 +19,7 @@ import static problems.Edge.toWeightedGraph;
  */
 public class MCP implements Problem {
 
-    private Map<Integer, Double>[] g;
+    private Map<Integer, Integer>[] g;
 
     private int nVariables;
     private State root;
@@ -41,7 +41,7 @@ public class MCP implements Problem {
      *          {@code g[i]} contains the key {@code j} if the vertices{@code i} and {@code j}
      *          are connected with an edge and {@code g[i].get(j)} is the weight of this edge
      */
-    private MCP(Map<Integer, Double>[] g) {
+    private MCP(Map<Integer, Integer>[] g) {
         this.nVariables = g.length;
         this.g = g;
 
@@ -53,7 +53,7 @@ public class MCP implements Problem {
         variables[0].assign(0); // arbitrarily assign first vertex to one side
 
         double rootValue = 0;
-        for (Map<Integer, Double> adj : g) {
+        for (Map<Integer, Integer> adj : g) {
             for (double e : adj.values()) {
                 rootValue += Math.min(0, e);
             }

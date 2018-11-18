@@ -11,8 +11,7 @@ import java.util.Map;
  */
 public class Edge {
 
-    public int u, v;
-    double w;
+    public int u, v, w;
 
     /**
      * Returns an {@code Edge} object connecting the vertices {@code u} and {@code v}.
@@ -26,7 +25,7 @@ public class Edge {
      * Returns an {@code Edge} object connecting the vertices {@code u} and {@code v}
      * with weight {@code w}.
      */
-    public Edge(int u, int v, double w) {
+    public Edge(int u, int v, int w) {
         this.u = u;
         this.v = v;
         this.w = w;
@@ -47,9 +46,9 @@ public class Edge {
         return adj;
     }
 
-    public static Map<Integer, Double>[] toWeightedGraph(int n, Edge[] edges) {
+    public static Map<Integer, Integer>[] toWeightedGraph(int n, Edge[] edges) {
         @SuppressWarnings("unchecked")
-        Map<Integer, Double>[] g = new Map[n];
+        Map<Integer, Integer>[] g = new Map[n];
 
         for (int i = 0; i < g.length; i++) {
             g[i] = new HashMap<>();

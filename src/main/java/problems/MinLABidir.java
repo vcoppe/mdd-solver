@@ -20,7 +20,7 @@ import static problems.Edge.toWeightedGraph;
 public class MinLABidir implements Problem {
 
     public double opt;
-    private Map<Integer, Double>[] g;
+    private Map<Integer, Integer>[] g;
     private int nVariables;
     private State root;
 
@@ -28,7 +28,7 @@ public class MinLABidir implements Problem {
         this(toWeightedGraph(n, edges));
     }
 
-    private MinLABidir(Map<Integer, Double>[] g) {
+    private MinLABidir(Map<Integer, Integer>[] g) {
         this.nVariables = g.length;
         this.g = g;
 
@@ -125,7 +125,7 @@ public class MinLABidir implements Problem {
 
                 value = s.value();
 
-                Double w;
+                Integer w;
                 for (int j = 0; j < succMinLAState.side.length; j++) {
                     if (succMinLAState.side[j] == 0) {
                         w = g[i].get(j);

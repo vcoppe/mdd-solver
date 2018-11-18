@@ -17,7 +17,7 @@ import static problems.Edge.toWeightedGraph;
  */
 public class MinLA implements Problem {
 
-    private Map<Integer, Double>[] g;
+    private Map<Integer, Integer>[] g;
 
     private int nVariables;
     private State root;
@@ -28,7 +28,7 @@ public class MinLA implements Problem {
         this(toWeightedGraph(n, edges));
     }
 
-    private MinLA(Map<Integer, Double>[] g) {
+    private MinLA(Map<Integer, Integer>[] g) {
         this.nVariables = g.length;
         this.g = g;
 
@@ -113,7 +113,7 @@ public class MinLA implements Problem {
             succMinLAState.bs.clear(i);
 
             value = s.value();
-            Double w, w1, w2;
+            Integer w, w1, w2;
             for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
                 w = g[i].get(j);
                 if (w != null) value += w;
@@ -135,7 +135,7 @@ public class MinLA implements Problem {
                             w1 = succMinLAState.dummyVertices[u].get(j);
                             w2 = succMinLAState.dummyVertices[j].get(u);
                             if (w1 != null && w2 != null) w = Math.min(w1, w2);
-                            else w = 0.0;
+                            else w = 0;
                         } else w = g[u].get(j);
                         if (w != null) value += w;
                     }
@@ -150,7 +150,7 @@ public class MinLA implements Problem {
                 succMinLAState.removeDummy(i);
 
                 value = s.value();
-                Double w, w1, w2;
+                Integer w, w1, w2;
 
                 for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
                     w = minLAState.dummyVertices[i].get(j);
@@ -174,7 +174,7 @@ public class MinLA implements Problem {
                                 w1 = succMinLAState.dummyVertices[u].get(j);
                                 w2 = succMinLAState.dummyVertices[j].get(u);
                                 if (w1 != null && w2 != null) w = Math.min(w1, w2);
-                                else w = 0.0;
+                                else w = 0;
                             } else w = g[u].get(j);
                             if (w != null) value += w;
                         }
@@ -220,7 +220,7 @@ public class MinLA implements Problem {
             }
         }
 
-        int i = 0, j = 0;
+        /*int i = 0, j = 0;
         while (i < this.nVariables) {
             while (i < this.nVariables && (state1.dummyVertices[i] == null || state1.used[i])) i++;
             if (i == this.nVariables) break;
@@ -241,6 +241,44 @@ public class MinLA implements Problem {
 
             i++;
             j++;
+        }*/
+
+        Integer w1, w2;
+        Map<Integer, Integer> m1, m2;
+        int[][] weights = new int[this.nVariables][this.nVariables];
+        for (int i = 0; i < this.nVariables; i++)
+            if (state1.dummyVertices[i] != null) {
+                m1 = state1.dummyVertices[i];
+                for (int j = 0; j < this.nVariables; j++)
+                    if (state2.dummyVertices[j] != null) {
+                        m2 = state2.dummyVertices[j];
+
+                        for (int k = 0; k < this.nVariables; k++) {
+                            w1 = m1.get(k);
+                            w2 = m2.get(k);
+
+                            if (w1 != null && w2 != null) weights[i][j] += Math.min(w1, w2);
+                        }
+                    }
+            }
+
+        HungarianAlgorithm ha = new HungarianAlgorithm(weights);
+        int[] match = ha.findOptimalAssignment();
+
+        for (int i = 0; i < this.nVariables; i++) {
+            m1 = state1.dummyVertices[i];
+            m2 = state2.dummyVertices[match[i]];
+
+            if (m1 == null || m2 == null) continue;
+
+            for (int k = 0; k < this.nVariables; k++) {
+                w1 = m1.get(k);
+                w2 = m2.get(k);
+                if (w1 != null) {
+                    if (w2 == null) m1.remove(k);
+                    else if (w1 != w2) m1.replace(k, Math.min(w1, w2));
+                }
+            }
         }
     }
 
@@ -248,7 +286,7 @@ public class MinLA implements Problem {
 
         int size;
         BitSet bs;
-        Map<Integer, Double>[] dummyVertices;
+        Map<Integer, Integer>[] dummyVertices;
         boolean[] used;
 
         public MinLAState(int size) {
@@ -259,13 +297,13 @@ public class MinLA implements Problem {
             this.used = new boolean[size];
         }
 
-        public MinLAState(BitSet bitSet, Map<Integer, Double>[] dummyVertices, boolean[] used) {
+        public MinLAState(BitSet bitSet, Map<Integer, Integer>[] dummyVertices, boolean[] used) {
             this.size = dummyVertices.length;
             this.bs = (BitSet) bitSet.clone();
             this.dummyVertices = new Map[size];
             for (int i = 0; i < size; i++)
                 if (dummyVertices[i] != null) {
-                    Map<Integer, Double> dummyVertex = new HashMap<>();
+                    Map<Integer, Integer> dummyVertex = new HashMap<>();
                     dummyVertex.putAll(dummyVertices[i]);
                     this.dummyVertices[i] = dummyVertex;
                 }
