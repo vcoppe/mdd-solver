@@ -16,6 +16,8 @@ public class TestMinLAAll extends TestHelper {
 
     private static double run(Problem p, int timeOut, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
+        int n = p.nVariables();
+        solver.setWidth(n);
         return solver.solve(timeOut).value();
     }
 

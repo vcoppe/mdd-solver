@@ -113,22 +113,74 @@ public class MinLA implements Problem {
             succMinLAState.bs.clear(i);
 
             value = s.value();
-            Double w;
+            Double w, w1, w2;
             for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
                 w = g[i].get(j);
                 if (w != null) value += w;
                 for (int k = 0; k < pos; k++) {
                     int u = s.getVariable(k).value();
-                    w = g[u].get(j);
+                    if (succMinLAState.dummyVertices[u] != null) w = succMinLAState.dummyVertices[u].get(j);
+                    else w = g[u].get(j);
                     if (w != null) value += w;
                 }
             }
 
+            for (int j = 0; j < this.nVariables; j++)
+                if (succMinLAState.dummyVertices[j] != null && !succMinLAState.used[j]) {
+                    w = succMinLAState.dummyVertices[j].get(i);
+                    if (w != null) value += w;
+                    for (int k = 0; k < pos; k++) {
+                        int u = s.getVariable(k).value();
+                        if (succMinLAState.dummyVertices[u] != null) {
+                            w1 = succMinLAState.dummyVertices[u].get(j);
+                            w2 = succMinLAState.dummyVertices[j].get(u);
+                            if (w1 != null && w2 != null) w = Math.min(w1, w2);
+                            else w = 0.0;
+                        } else w = g[u].get(j);
+                        if (w != null) value += w;
+                    }
+                }
+
             succs.add(s.getSuccessor(succMinLAState, value, pos, i));
         }
 
-        if (succs.isEmpty()) {
-            succs.add(s.copy());
+        for (int i = 0; i < this.nVariables; i++)
+            if (minLAState.dummyVertices[i] != null && !minLAState.used[i]) {
+                MinLAState succMinLAState = minLAState.copy();
+                succMinLAState.removeDummy(i);
+
+                value = s.value();
+                Double w, w1, w2;
+
+                for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
+                    w = minLAState.dummyVertices[i].get(j);
+                    if (w != null) value += w;
+                    for (int k = 0; k < pos; k++) {
+                        int u = s.getVariable(k).value();
+                        if (succMinLAState.dummyVertices[u] != null) w = succMinLAState.dummyVertices[u].get(j);
+                        else w = g[u].get(j);
+                        if (w != null) value += w;
+                    }
+                }
+
+                for (int j = 0; j < this.nVariables; j++)
+                    if (succMinLAState.dummyVertices[j] != null && !succMinLAState.used[j]) {
+                        w1 = succMinLAState.dummyVertices[j].get(i);
+                        w2 = succMinLAState.dummyVertices[i].get(j);
+                        if (w1 != null && w2 != null) value += Math.min(w1, w2);
+                        for (int k = 0; k < pos; k++) {
+                            int u = s.getVariable(k).value();
+                            if (succMinLAState.dummyVertices[u] != null) {
+                                w1 = succMinLAState.dummyVertices[u].get(j);
+                                w2 = succMinLAState.dummyVertices[j].get(u);
+                                if (w1 != null && w2 != null) w = Math.min(w1, w2);
+                                else w = 0.0;
+                            } else w = g[u].get(j);
+                            if (w != null) value += w;
+                        }
+                    }
+
+                succs.add(s.getSuccessor(succMinLAState, value, pos, i));
         }
 
         return succs;
@@ -144,7 +196,7 @@ public class MinLA implements Problem {
             if (minLAState == null) {
                 minLAState = (MinLAState) state.stateRepresentation;
             } else {
-                minLAState.bs.and(((MinLAState) state.stateRepresentation).bs);
+                merge(minLAState, (MinLAState) state.stateRepresentation);
             }
 
             if (state.value() > maxValue) {
@@ -157,20 +209,67 @@ public class MinLA implements Problem {
         return new State(minLAState, variables, indexes, maxValue, false);
     }
 
+    private void merge(MinLAState state1, MinLAState state2) {
+        for (int i = 0; i < this.nVariables; i++) {
+            if (state1.bs.get(i) && !state2.bs.get(i)) {
+                state1.bs.clear(i);
+                state1.addDummy(i);
+            } else if (!state1.bs.get(i) && state2.bs.get(i)) {
+                state1.bs.clear(i);
+                state2.addDummy(i);
+            }
+        }
+
+        int i = 0, j = 0;
+        while (i < this.nVariables) {
+            while (i < this.nVariables && (state1.dummyVertices[i] == null || state1.used[i])) i++;
+            if (i == this.nVariables) break;
+            while (j < this.nVariables && (state2.dummyVertices[j] == null || state2.used[j])) j++;
+            if (j == this.nVariables) break;
+
+            Map<Integer, Double> m1 = state1.dummyVertices[i];
+            Map<Integer, Double> m2 = state2.dummyVertices[j];
+
+            for (int k = 0; k < this.nVariables; k++) {
+                Double w1 = m1.get(k);
+                Double w2 = m2.get(k);
+                if (w1 != null) {
+                    if (w2 == null) m1.remove(k);
+                    else if (w1 != w2) m1.replace(k, Math.min(w1, w2));
+                }
+            }
+
+            i++;
+            j++;
+        }
+    }
+
     class MinLAState implements StateRepresentation {
 
         int size;
         BitSet bs;
+        Map<Integer, Double>[] dummyVertices;
+        boolean[] used;
 
         public MinLAState(int size) {
             this.size = size;
             this.bs = new BitSet(size);
             this.bs.flip(0, size);
+            this.dummyVertices = new Map[size];
+            this.used = new boolean[size];
         }
 
-        public MinLAState(BitSet bitSet) {
-            this.size = bitSet.size();
+        public MinLAState(BitSet bitSet, Map<Integer, Double>[] dummyVertices, boolean[] used) {
+            this.size = dummyVertices.length;
             this.bs = (BitSet) bitSet.clone();
+            this.dummyVertices = new Map[size];
+            for (int i = 0; i < size; i++)
+                if (dummyVertices[i] != null) {
+                    Map<Integer, Double> dummyVertex = new HashMap<>();
+                    dummyVertex.putAll(dummyVertices[i]);
+                    this.dummyVertices[i] = dummyVertex;
+                }
+            this.used = used.clone();
         }
 
         public int hashCode() {
@@ -181,12 +280,8 @@ public class MinLA implements Problem {
             return o instanceof MinLAState && this.bs.equals(((MinLAState) o).bs);
         }
 
-        public boolean isFree(int u) {
-            return this.bs.get(u);
-        }
-
         public MinLAState copy() {
-            return new MinLAState(this.bs);
+            return new MinLAState(this.bs, this.dummyVertices, this.used);
         }
 
         public double rank(State state) {
@@ -195,6 +290,16 @@ public class MinLA implements Problem {
 
         public String toString() {
             return this.bs.toString();
+        }
+
+        public void addDummy(int i) {
+            this.dummyVertices[i] = new HashMap<>();
+            this.dummyVertices[i].putAll(g[i]);
+            this.used[i] = false;
+        }
+
+        public void removeDummy(int i) {
+            this.used[i] = true;
         }
     }
 }

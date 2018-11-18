@@ -3,6 +3,7 @@ package problems;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public abstract class TestHelper {
     public static Object[] dataFromFolder(String path) {
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();
+        Arrays.sort(listOfFiles);
 
         List<Object> out = new LinkedList<>();
         assert listOfFiles != null;

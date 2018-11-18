@@ -90,20 +90,20 @@ public class Layer {
                 }
                 next.addState(s);
             }
+        }
 
-            if (next.width() > width) {
-                if (relaxed) {
-                    State[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
-                    next.removeStates(toMerge, this.mdd.frontier);
+        if (next.width() > width) {
+            if (relaxed) {
+                State[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
+                next.removeStates(toMerge, this.mdd.frontier);
 
-                    State mergedState = this.problem.merge(toMerge);
-                    mergedState.setExact(false);
+                State mergedState = this.problem.merge(toMerge);
+                mergedState.setExact(false);
 
-                    next.addState(mergedState);
-                } else {
-                    State[] toRemove = this.mdd.deleteSelector.select(next, next.width() - width);
-                    next.removeStates(toRemove);
-                }
+                next.addState(mergedState);
+            } else {
+                State[] toRemove = this.mdd.deleteSelector.select(next, next.width() - width);
+                next.removeStates(toRemove);
             }
         }
 
