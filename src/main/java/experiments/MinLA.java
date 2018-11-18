@@ -2,6 +2,7 @@ package experiments;
 
 import core.Solver;
 import gurobi.GRBException;
+import heuristics.*;
 import mdd.State;
 import problems.Edge;
 
@@ -89,7 +90,11 @@ public class MinLA {
         } else if (args[2].equals("mdd")) {
             problems.MinLABidir mdd = new problems.MinLABidir(n, edges);
 
-            Solver solver = new Solver(mdd);
+            MergeSelector ms = new MinLPMergeSelector();
+            DeleteSelector ds = new MinLPDeleteSelector();
+            VariableSelector vs = new problems.MinLABidir.MinLABidirVariableSelector();
+
+            Solver solver = new Solver(mdd, ms, ds, vs);
 
             System.out.println("MDD model created");
             System.out.println("Solving...");

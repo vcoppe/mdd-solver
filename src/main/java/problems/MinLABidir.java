@@ -112,13 +112,6 @@ public class MinLABidir implements Problem {
         int endL = endR - 1;
         double value;
 
-        /*System.out.println("pos = " + pos);
-        for(int i=0; i<side.length; i++) {
-            System.out.println(i + " : " + s.getVariable(i).value() + " " + (s.getVariable(i).value() >= 0 ? side[s.getVariable(i).value()] : ""));
-        }
-        System.out.println(s.isExact());
-        System.out.println();*/
-
         if (layerNumber == 1 && s.getVariable(0).value() == side.length - 1) { // break symmetry
             return succs;
         }
@@ -144,24 +137,12 @@ public class MinLABidir implements Problem {
                                 w = g[u].get(j);
                                 if (w != null) value += w;
                             }
-                            /*for (int k = 0; k < side.length; k++) {
-                                if(side[k] == 1) {
-                                    w = g[k].get(j);
-                                    if (w != null) value += w;
-                                }
-                            }*/
                         } else {
                             for (int k = side.length - 1; k > pos; k--) {
                                 int u = s.getVariable(k).value();
                                 w = g[u].get(j);
                                 if (w != null) value += w;
                             }
-                            /*for (int k = 0; k < side.length; k++) {
-                                if(side[k] == 2) {
-                                    w = g[k].get(j);
-                                    if (w != null) value += w;
-                                }
-                            }*/
                         }
                     } else if (succMinLAState.side[i] != succMinLAState.side[j] && succMinLAState.side[j] > 0) {
                         if (pos < endR) { // left
@@ -215,7 +196,7 @@ public class MinLABidir implements Problem {
         return new State(minLAState, variables, indexes, maxValue, false);
     }
 
-    static class MinLABidirVariableSelector implements VariableSelector {
+    public static class MinLABidirVariableSelector implements VariableSelector {
 
         public Variable select(Variable[] vars, Layer layer) {
             if (vars.length == 0) return null;
