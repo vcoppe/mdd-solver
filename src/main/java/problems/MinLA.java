@@ -220,6 +220,9 @@ public class MinLA implements Problem {
             }
         }
 
+        Integer w1, w2;
+        Map<Integer, Integer> m1, m2;
+
         /*int i = 0, j = 0;
         while (i < this.nVariables) {
             while (i < this.nVariables && (state1.dummyVertices[i] == null || state1.used[i])) i++;
@@ -227,12 +230,12 @@ public class MinLA implements Problem {
             while (j < this.nVariables && (state2.dummyVertices[j] == null || state2.used[j])) j++;
             if (j == this.nVariables) break;
 
-            Map<Integer, Double> m1 = state1.dummyVertices[i];
-            Map<Integer, Double> m2 = state2.dummyVertices[j];
+            m1 = state1.dummyVertices[i];
+            m2 = state2.dummyVertices[j];
 
             for (int k = 0; k < this.nVariables; k++) {
-                Double w1 = m1.get(k);
-                Double w2 = m2.get(k);
+                w1 = m1.get(k);
+                w2 = m2.get(k);
                 if (w1 != null) {
                     if (w2 == null) m1.remove(k);
                     else if (w1 != w2) m1.replace(k, Math.min(w1, w2));
@@ -243,8 +246,6 @@ public class MinLA implements Problem {
             j++;
         }*/
 
-        Integer w1, w2;
-        Map<Integer, Integer> m1, m2;
         int[][] weights = new int[this.nVariables][this.nVariables];
         for (int i = 0; i < this.nVariables; i++)
             if (state1.dummyVertices[i] != null) {
@@ -257,7 +258,10 @@ public class MinLA implements Problem {
                             w1 = m1.get(k);
                             w2 = m2.get(k);
 
-                            if (w1 != null && w2 != null) weights[i][j] += Math.min(w1, w2);
+                            if (w1 != null && w2 != null) {
+                                weights[i][j] += Math.max(w1, w2); // weights are negative
+                                weights[j][i] += Math.max(w1, w2);
+                            }
                         }
                     }
             }
@@ -269,14 +273,18 @@ public class MinLA implements Problem {
             m1 = state1.dummyVertices[i];
             m2 = state2.dummyVertices[match[i]];
 
-            if (m1 == null || m2 == null) continue;
+            if (m1 == null) continue;
+            if (m2 == null) {
+                m1.clear();
+                continue;
+            }
 
             for (int k = 0; k < this.nVariables; k++) {
                 w1 = m1.get(k);
                 w2 = m2.get(k);
                 if (w1 != null) {
                     if (w2 == null) m1.remove(k);
-                    else if (w1 != w2) m1.replace(k, Math.min(w1, w2));
+                    else if (w1 != w2) m1.replace(k, Math.max(w1, w2)); // weights are negative
                 }
             }
         }

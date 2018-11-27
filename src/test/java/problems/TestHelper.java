@@ -41,7 +41,7 @@ public abstract class TestHelper {
     public void testInstance() {
         System.out.println(path);
         try {
-            assertTrue(testData(86400));
+            assertTrue(testData(Integer.MAX_VALUE / 1000));
         } catch (NullPointerException e) {
             e.printStackTrace();
             fail("Timed out");
