@@ -83,11 +83,8 @@ public class Layer {
             }
 
             for (State s : this.problem.successors(state, nextVar)) {
-                if (state.isExact()) {
-                    s.addParent(state);
-                } else {
-                    s.setExact(false);
-                }
+                if (state.isExact()) s.addParent(state);
+                else s.setExact(false);
                 next.addState(s);
             }
         }

@@ -107,7 +107,7 @@ public class Solver {
                     for (State s : q) {
                         queueUpperBound = Math.max(queueUpperBound, s.relaxedValue());
                     }
-                    if (queueUpperBound < upperBound) {
+                    if (queueUpperBound != upperBound || queueUpperBound < upperBound) {
                         upperBound = queueUpperBound;
                         printInfo(false);
                     }
