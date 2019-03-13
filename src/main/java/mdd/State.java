@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class State<R extends StateRepresentation> implements Comparable<State> {
 
-    public final R stateRepresentation;
+    public R stateRepresentation;
     public final Variable[] variables;
     public int[] indexes;
     private double value;
@@ -111,6 +111,7 @@ public class State<R extends StateRepresentation> implements Comparable<State> {
             System.arraycopy(other.variables, 0, this.variables, 0, this.nVariables);
             System.arraycopy(other.indexes, 0, this.indexes, 0, this.nVariables);
             this.value = other.value;
+            this.stateRepresentation = (R) other.stateRepresentation;
         }
         this.exact &= other.exact;
         this.parents.addAll(other.parents);

@@ -106,14 +106,7 @@ public class TestMinLA {
         DeleteSelector ds = new MinLPDeleteSelector();
         VariableSelector vs = new SimpleVariableSelector();
 
-        p = 0.5;
-
-        for (n = 4; n <= 8; n += 2) {
-            for (int i = 0; i < 10; i++) {
-                generate();
-                assertTrue(run(ms, ds, vs) == bruteForce());
-            }
-        }
+        body(ms, ds, vs);
     }
 
     @Test
@@ -122,14 +115,36 @@ public class TestMinLA {
         DeleteSelector ds = new SimpleDeleteSelector();
         VariableSelector vs = new SimpleVariableSelector();
 
+        body(ms, ds, vs);
+    }
+
+    public void body(MergeSelector ms, DeleteSelector ds, VariableSelector vs) {
         p = 0.5;
 
         for (n = 4; n <= 8; n += 2) {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 generate();
                 assertTrue(run(ms, ds, vs) == bruteForce());
             }
         }
+    }
+
+    @Test
+    public void test() {
+        MergeSelector ms = new MinLPMergeSelector();
+        DeleteSelector ds = new MinLPDeleteSelector();
+        VariableSelector vs = new SimpleVariableSelector();
+
+        n = 5;
+        edges = new LinkedList<>();
+        edges.add(new Edge(0, 1, -2));
+        edges.add(new Edge(0, 2, -3));
+        edges.add(new Edge(1, 2, -5));
+        edges.add(new Edge(1, 3, -4));
+        edges.add(new Edge(2, 4, -1));
+        edges.add(new Edge(3, 4, -3));
+
+        run(ms, ds, vs);
     }
 
     @Test

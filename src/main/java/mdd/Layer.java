@@ -89,7 +89,7 @@ public class Layer {
             }
         }
 
-        if (next.width() > width) {
+        while (next.width() > width) {
             if (relaxed) {
                 State[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
                 next.removeStates(toMerge, this.mdd.frontier);

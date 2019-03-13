@@ -2,6 +2,8 @@ package problems;
 
 import core.Problem;
 import core.Variable;
+import heuristics.MergeSelector;
+import mdd.Layer;
 import mdd.State;
 import mdd.StateRepresentation;
 
@@ -153,58 +155,113 @@ public class MinLA implements Problem {
     }
 
     private void merge(MinLAState state1, MinLAState state2) {
+        boolean print = false;
+
+        if (print) {
+            System.out.println("Merge");
+            System.out.println("State 1 assignment :");
+            System.out.println("State 1 graph :");
+        }
         for (int i = 0; i < this.nVariables; i++) {
-            if (state1.bs.get(i) && state2.bs.get(i)) {
-                if (state1.dummyVertices[i] != null && state2.dummyVertices[i] == null) state2.addDummy(i);
-                else if (state1.dummyVertices[i] == null && state2.dummyVertices[i] != null) state1.addDummy(i);
-            } else if (state1.bs.get(i) && !state2.bs.get(i)) state1.addDummy(i);
-            else if (!state1.bs.get(i) && state2.bs.get(i)) state2.addDummy(i);
+            if (print) System.out.print(i + (state1.bs.get(i) ? "" : " (fixed)") + " : ");
+            for (int j = i + 1; j < this.nVariables; j++) {
+                int w = state1.edgeWeight(i, j);
+                if (w != 0 && print) System.out.print("(" + j + "," + (-w) + ") ");
+            }
+            if (print) System.out.println();
+        }
+        if (print) System.out.println("State 2 graph :");
+        for (int i = 0; i < this.nVariables; i++) {
+            if (print) System.out.print(i + (state2.bs.get(i) ? "" : " (fixed)") + " : ");
+            for (int j = i + 1; j < this.nVariables; j++) {
+                int w = state2.edgeWeight(i, j);
+                if (w != 0 && print) System.out.print("(" + j + "," + (-w) + ") ");
+            }
+            if (print) System.out.println();
         }
 
-        Integer w1, w2;
-        Map<Integer, Integer> m1, m2;
+        int w1, w2;
 
         int[][] weights = new int[this.nVariables][this.nVariables];
-        for (int i = 0; i < this.nVariables; i++)
-            if (state1.dummyVertices[i] != null && state1.bs.get(i)) {
-                m1 = state1.dummyVertices[i];
-                for (int j = 0; j < this.nVariables; j++)
-                    if (state2.dummyVertices[j] != null && state2.bs.get(j)) {
-                        m2 = state2.dummyVertices[j];
 
-                        for (int k = 0; k < this.nVariables; k++) {
-                            w1 = m1.get(k);
-                            w2 = m2.get(k);
+        for (int i = state1.bs.nextSetBit(0); i >= 0; i = state1.bs.nextSetBit(i + 1)) {
+            for (int j = state2.bs.nextSetBit(0); j >= 0; j = state2.bs.nextSetBit(j + 1)) {
+                w1 = state1.mergeWeight(state2, i, j);
 
-                            if (w1 != null && w2 != null) {
-                                weights[i][j] += Math.max(w1, w2); // weights are negative
-                                weights[j][i] += Math.max(w1, w2);
-                            }
-                        }
-                    }
+                weights[i][j] += w1;
+                weights[j][i] += w1;
             }
+        }
 
         HungarianAlgorithm ha = new HungarianAlgorithm(weights);
         int[] match = ha.findOptimalAssignment();
 
+        if (print) System.out.println("Matching :");
         for (int i = 0; i < this.nVariables; i++) {
-            m1 = state1.dummyVertices[i];
-            m2 = state2.dummyVertices[match[i]];
-
-            if (m1 == null) continue;
-            if (m2 == null) {
-                m1.clear();
-                continue;
-            }
+            int j = match[i];
+            if (print) System.out.println(i + " " + j);
 
             for (int k = 0; k < this.nVariables; k++) {
-                w1 = m1.get(k);
-                w2 = m2.get(k);
-                if (w1 != null) {
-                    if (w2 == null) m1.remove(k);
-                    else if (w1 < w2) m1.replace(k, w2); // weights are negative
+                if (k != i && k != j) {
+                    w1 = state1.edgeWeight(i, k);
+                    w2 = state2.edgeWeight(j, k); // match[k] ?
+
+                    if (w1 != 0) {
+                        if (w2 == 0) state1.removeEdge(i, k);
+                        else if (w2 > w1) state1.replaceEdge(i, k, w2);
+                    }
                 }
             }
+
+            w1 = state1.edgeWeight(i, j);
+            w2 = state2.edgeWeight(i, j);
+
+            if (w1 != 0) {
+                if (w2 == 0) state1.removeEdge(i, j);
+                else if (w2 > w1) state1.replaceEdge(i, j, w2);
+            }
+        }
+
+        if (print) System.out.println("Result graph :");
+        for (int i = 0; i < this.nVariables; i++) {
+            if (print) System.out.print(i + " : ");
+            for (int j = i + 1; j < this.nVariables; j++) {
+                int w = state1.edgeWeight(i, j);
+                if (w != 0 && print) System.out.print("(" + j + "," + (-w) + ") ");
+            }
+            if (print) System.out.println();
+        }
+    }
+
+    static class MinLAMergeSelector implements MergeSelector {
+
+        public State[] select(Layer layer, int number) {
+            State[] states = new State[layer.width()];
+            layer.states().toArray(states);
+
+            Arrays.sort(states);
+
+            int index1 = number - 1, index2 = 0;
+
+            BitSet bs1 = ((MinLAState) states[index1].stateRepresentation).bs;
+            BitSet bs2 = (BitSet) ((MinLAState) states[0].stateRepresentation).bs.clone();
+
+            bs2.and(bs1);
+            int bestMatch = bs2.cardinality();
+
+            for (int i = 1; i < states.length; i++) {
+                if (i != index1) {
+                    bs2 = (BitSet) ((MinLAState) states[i].stateRepresentation).bs.clone();
+                    bs2.and(bs1);
+                    int match = bs2.cardinality();
+                    if (match > bestMatch) {
+                        bestMatch = match;
+                        index2 = i;
+                    }
+                }
+            }
+
+            return new State[]{states[index1], states[index2]};
         }
     }
 
@@ -212,22 +269,21 @@ public class MinLA implements Problem {
 
         int size;
         BitSet bs;
-        Map<Integer, Integer>[] dummyVertices;
+        Map<Integer, Integer>[] gMod;
 
         public MinLAState(int size) {
             this.size = size;
             this.bs = new BitSet(size);
             this.bs.flip(0, size);
-            this.dummyVertices = new Map[size];
+            this.gMod = new HashMap[size];
         }
 
-        public MinLAState(BitSet bitSet, Map<Integer, Integer>[] dummyVertices) {
-            this.size = dummyVertices.length;
+        public MinLAState(BitSet bitSet, Map<Integer, Integer>[] gMod) {
+            this.size = gMod.length;
             this.bs = (BitSet) bitSet.clone();
-            this.dummyVertices = new Map[size];
+            this.gMod = new HashMap[size];
             for (int i = 0; i < size; i++)
-                if (dummyVertices[i] != null)
-                    this.dummyVertices[i] = new HashMap<>(dummyVertices[i]);
+                if (gMod[i] != null) this.gMod[i] = new HashMap<>(gMod[i]);
         }
 
         public int hashCode() {
@@ -239,7 +295,7 @@ public class MinLA implements Problem {
         }
 
         public MinLAState copy() {
-            return new MinLAState(this.bs, this.dummyVertices);
+            return new MinLAState(this.bs, this.gMod);
         }
 
         public double rank(State state) {
@@ -247,33 +303,60 @@ public class MinLA implements Problem {
         }
 
         public String toString() {
-            return this.bs.toString();
-        }
-
-        public void addDummy(int i) {
-            this.dummyVertices[i] = new HashMap<>(g[i]);
+            StringBuilder s = new StringBuilder();
+            for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
+                s.append(i + 1);
+            return s.toString();
         }
 
         public int edgeWeight(int i, int j) {
             Integer w1, w2;
-            if (this.dummyVertices[i] != null && this.dummyVertices[j] != null) {
-                w1 = this.dummyVertices[i].get(j);
-                w2 = this.dummyVertices[j].get(i);
-                if (w1 == null || w2 == null) return 0;
-                else return Math.max(w1, w2);
-            } else if (this.dummyVertices[i] != null) {
-                w1 = this.dummyVertices[i].get(j);
-                if (w1 == null) return 0;
-                else return w1;
-            } else if (this.dummyVertices[j] != null) {
-                w1 = this.dummyVertices[j].get(i);
-                if (w1 == null) return 0;
-                else return w1;
-            } else {
-                w1 = g[i].get(j);
-                if (w1 == null) return 0;
-                else return w1;
+
+            if (gMod[i] != null) w1 = gMod[i].get(j);
+            else w1 = g[i].get(j);
+            if (w1 == null) w1 = 0;
+
+            if (gMod[j] != null) w2 = gMod[j].get(i);
+            else w2 = g[j].get(i);
+            if (w2 == null) w2 = 0;
+
+            return Math.max(w1, w2);
+        }
+
+        public void removeEdge(int i, int j) {
+            if (gMod[i] == null && gMod[j] == null) {
+                gMod[i] = new HashMap<>(g[i]);
+                gMod[i].remove(j);
+            } else if (gMod[i] != null) gMod[i].remove(j);
+            else if (gMod[i] != null) gMod[j].remove(i);
+        }
+
+        public void replaceEdge(int i, int j, int w) {
+            if (gMod[i] == null && gMod[j] == null) {
+                gMod[i] = new HashMap<>(g[i]);
+                gMod[i].replace(j, w);
+            } else if (gMod[i] != null) gMod[i].replace(j, w);
+            else if (gMod[i] != null) gMod[j].replace(i, w);
+        }
+
+        public int mergeWeight(MinLAState other, int i, int j) {
+            int w1, w2, weight = 0;
+
+            for (int k = 0; k < nVariables; k++) {
+                if (k != i && k != j) {
+                    w1 = this.edgeWeight(i, k);
+                    w2 = other.edgeWeight(j, k);
+
+                    weight += Math.max(w1, w2); // weights are negative
+                }
             }
+
+            w1 = this.edgeWeight(i, j);
+            w2 = other.edgeWeight(i, j);
+
+            weight += Math.max(w1, w2); // weights are negative
+
+            return weight;
         }
     }
 }
