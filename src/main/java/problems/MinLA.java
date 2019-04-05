@@ -118,11 +118,11 @@ public class MinLA implements Problem {
 
             // add weight of edges between fixed vertices and free vertices
             for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
-                value += succMinLAState.edgeWeight(i, j);
-                for (int k = 0; k < pos; k++) {
-                    int u = s.getVariable(k).value();
-                    value += succMinLAState.edgeWeight(u, j);
-                }
+                int edgeWeight = succMinLAState.edgeWeight(i, j);
+                succMinLAState.removeEdge(i, j);
+                int toFixedWeight = succMinLAState.edgeWeight(j, nVariables);
+                succMinLAState.replaceEdge(j, nVariables, toFixedWeight + edgeWeight);
+                value += toFixedWeight + edgeWeight;
             }
 
             succs.add(s.getSuccessor(succMinLAState, value, pos, i));
@@ -155,81 +155,57 @@ public class MinLA implements Problem {
     }
 
     private void merge(MinLAState state1, MinLAState state2) {
-        boolean print = false;
-
-        if (print) {
-            System.out.println("Merge");
-            System.out.println("State 1 assignment :");
-            System.out.println("State 1 graph :");
-        }
-        for (int i = 0; i < this.nVariables; i++) {
-            if (print) System.out.print(i + (state1.bs.get(i) ? "" : " (fixed)") + " : ");
-            for (int j = i + 1; j < this.nVariables; j++) {
-                int w = state1.edgeWeight(i, j);
-                if (w != 0 && print) System.out.print("(" + j + "," + (-w) + ") ");
-            }
-            if (print) System.out.println();
-        }
-        if (print) System.out.println("State 2 graph :");
-        for (int i = 0; i < this.nVariables; i++) {
-            if (print) System.out.print(i + (state2.bs.get(i) ? "" : " (fixed)") + " : ");
-            for (int j = i + 1; j < this.nVariables; j++) {
-                int w = state2.edgeWeight(i, j);
-                if (w != 0 && print) System.out.print("(" + j + "," + (-w) + ") ");
-            }
-            if (print) System.out.println();
-        }
-
-        int w1, w2;
-
-        int[][] weights = new int[this.nVariables][this.nVariables];
+        LinkedList<Vertex> l1 = new LinkedList<>(), l2 = new LinkedList<>();
 
         for (int i = state1.bs.nextSetBit(0); i >= 0; i = state1.bs.nextSetBit(i + 1)) {
-            for (int j = state2.bs.nextSetBit(0); j >= 0; j = state2.bs.nextSetBit(j + 1)) {
-                w1 = state1.mergeWeight(state2, i, j);
-
-                weights[i][j] += w1;
-                weights[j][i] += w1;
+            int deg = 0, w = 0;
+            for (int j = 0; j <= nVariables; j++) {
+                if (state1.edgeWeight(i, j) != 0) {
+                    deg++;
+                    w += state1.edgeWeight(i, j);
+                }
             }
+            l1.add(new Vertex(deg, w, i));
         }
 
-        HungarianAlgorithm ha = new HungarianAlgorithm(weights);
-        int[] match = ha.findOptimalAssignment();
+        for (int i = state2.bs.nextSetBit(0); i >= 0; i = state2.bs.nextSetBit(i + 1)) {
+            int deg = 0, w = 0;
+            for (int j = 0; j <= nVariables; j++) {
+                if (state2.edgeWeight(i, j) != 0) {
+                    deg++;
+                    w += state2.edgeWeight(i, j);
+                }
+            }
+            l2.add(new Vertex(deg, w, i));
+        }
 
-        if (print) System.out.println("Matching :");
-        for (int i = 0; i < this.nVariables; i++) {
+        Collections.sort(l1);
+        Collections.sort(l2);
+
+        int[] match = new int[nVariables];
+        for (int k = 0; k < l1.size(); k++) match[l1.get(k).index] = l2.get(k).index;
+
+        int w1, w2;
+        for (int z = 0; z < l1.size(); z++) {
+            int i = l1.get(z).index;
             int j = match[i];
-            if (print) System.out.println(i + " " + j);
 
-            for (int k = 0; k < this.nVariables; k++) {
-                if (k != i && k != j) {
-                    w1 = state1.edgeWeight(i, k);
-                    w2 = state2.edgeWeight(j, k); // match[k] ?
+            // common edges to other free vertices
+            for (int k = state1.bs.nextSetBit(0); k >= 0; k = state1.bs.nextSetBit(k + 1)) {
+                w1 = state1.edgeWeight(i, k);
+                w2 = state2.edgeWeight(j, match[k]);
 
-                    if (w1 != 0) {
-                        if (w2 == 0) state1.removeEdge(i, k);
-                        else if (w2 > w1) state1.replaceEdge(i, k, w2);
-                    }
+                if (w1 != 0) {
+                    if (w2 == 0) state1.removeEdge(i, k);
+                    else if (w2 > w1) state1.replaceEdge(i, k, w2);
                 }
             }
 
-            w1 = state1.edgeWeight(i, j);
-            w2 = state2.edgeWeight(i, j);
+            // weight to fixed vertices
+            w1 = state1.edgeWeight(i, nVariables);
+            w2 = state2.edgeWeight(j, nVariables);
 
-            if (w1 != 0) {
-                if (w2 == 0) state1.removeEdge(i, j);
-                else if (w2 > w1) state1.replaceEdge(i, j, w2);
-            }
-        }
-
-        if (print) System.out.println("Result graph :");
-        for (int i = 0; i < this.nVariables; i++) {
-            if (print) System.out.print(i + " : ");
-            for (int j = i + 1; j < this.nVariables; j++) {
-                int w = state1.edgeWeight(i, j);
-                if (w != 0 && print) System.out.print("(" + j + "," + (-w) + ") ");
-            }
-            if (print) System.out.println();
+            if (w2 > w1) state1.replaceEdge(i, nVariables, w2);
         }
     }
 
@@ -275,7 +251,9 @@ public class MinLA implements Problem {
             this.size = size;
             this.bs = new BitSet(size);
             this.bs.flip(0, size);
-            this.gMod = new HashMap[size];
+            this.gMod = new HashMap[size + 1];
+            this.gMod[size] = new HashMap<>();
+            for (int i = 0; i < size; i++) this.gMod[size].put(i, 0);
         }
 
         public MinLAState(BitSet bitSet, Map<Integer, Integer>[] gMod) {
@@ -320,41 +298,46 @@ public class MinLA implements Problem {
             else w2 = g[j].get(i);
             if (w2 == null) w2 = 0;
 
+            if (i == nVariables) return w1;
+            if (j == nVariables) return w2;
+
             return Math.max(w1, w2);
         }
 
         public void removeEdge(int i, int j) {
-            if (gMod[i] == null && gMod[j] == null) {
+            if (gMod[i] != null) gMod[i].remove(j);
+            else if (gMod[j] != null) gMod[j].remove(i);
+            else {
                 gMod[i] = new HashMap<>(g[i]);
                 gMod[i].remove(j);
-            } else if (gMod[i] != null) gMod[i].remove(j);
-            else if (gMod[i] != null) gMod[j].remove(i);
+            }
         }
 
         public void replaceEdge(int i, int j, int w) {
-            if (gMod[i] == null && gMod[j] == null) {
+            if (i == nVariables) gMod[i].replace(j, w);
+            else if (j == nVariables) gMod[j].replace(i, w);
+            else if (gMod[i] == null && gMod[j] == null) {
                 gMod[i] = new HashMap<>(g[i]);
                 gMod[i].replace(j, w);
             } else if (gMod[i] != null) gMod[i].replace(j, w);
-            else if (gMod[i] != null) gMod[j].replace(i, w);
+            else if (gMod[j] != null) gMod[j].replace(i, w);
         }
 
         public int mergeWeight(MinLAState other, int i, int j) {
             int w1, w2, weight = 0;
 
-            for (int k = 0; k < nVariables; k++) {
-                if (k != i && k != j) {
-                    w1 = this.edgeWeight(i, k);
-                    w2 = other.edgeWeight(j, k);
+            if (this.bs.get(i) && other.bs.get(j)) {
+                weight = Math.max(this.edgeWeight(i, nVariables), other.edgeWeight(j, nVariables));
 
-                    weight += Math.max(w1, w2); // weights are negative
+                for (int k = 0; k < nVariables; k++) {
+                    if (k != i && k != j && this.bs.get(k) && other.bs.get(k)) {
+                        w1 = this.edgeWeight(i, k);
+                        w2 = other.edgeWeight(j, k);
+
+                        weight += Math.max(w1, w2); // weights are negative
+                    }
                 }
             }
-
-            w1 = this.edgeWeight(i, j);
-            w2 = other.edgeWeight(i, j);
-
-            weight += Math.max(w1, w2); // weights are negative
 
             return weight;
         }

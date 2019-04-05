@@ -121,8 +121,8 @@ public class TestMinLA {
     public void body(MergeSelector ms, DeleteSelector ds, VariableSelector vs) {
         p = 0.5;
 
-        for (n = 4; n <= 8; n += 2) {
-            for (int i = 0; i < 5; i++) {
+        for (n = 4; n <= 10; n += 2) {
+            for (int i = 0; i < 10; i++) {
                 generate();
                 assertTrue(run(ms, ds, vs) == bruteForce());
             }
