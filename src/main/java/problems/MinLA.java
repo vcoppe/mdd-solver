@@ -2,8 +2,6 @@ package problems;
 
 import core.Problem;
 import core.Variable;
-import heuristics.MergeSelector;
-import mdd.Layer;
 import mdd.State;
 import mdd.StateRepresentation;
 
@@ -135,109 +133,72 @@ public class MinLA implements Problem {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
-        MinLAState minLAState = null;
 
-        for (State state : states) {
-            if (minLAState == null) {
-                minLAState = (MinLAState) state.stateRepresentation;
-            } else {
-                merge(minLAState, (MinLAState) state.stateRepresentation);
-            }
+        MinLAState[] minLAStates = new MinLAState[states.length];
 
-            if (state.value() > maxValue) {
-                maxValue = state.value();
-                variables = state.variables;
-                indexes = state.indexes;
+        for (int i = 0; i < states.length; i++) {
+            minLAStates[i] = (MinLAState) states[i].stateRepresentation;
+
+            if (states[i].value() > maxValue) {
+                maxValue = states[i].value();
+                variables = states[i].variables;
+                indexes = states[i].indexes;
             }
         }
 
-        return new State(minLAState, variables, indexes, maxValue, false);
+        merge(minLAStates);
+
+        return new State(minLAStates[0], variables, indexes, maxValue, false);
     }
 
-    private void merge(MinLAState state1, MinLAState state2) {
-        LinkedList<Vertex> l1 = new LinkedList<>(), l2 = new LinkedList<>();
+    private void merge(MinLAState[] states) {
+        LinkedList<Vertex>[] l = new LinkedList[states.length];
+        int[][] match = new int[states.length][nVariables];
 
-        for (int i = state1.bs.nextSetBit(0); i >= 0; i = state1.bs.nextSetBit(i + 1)) {
-            int deg = 0, w = 0;
-            for (int j = 0; j <= nVariables; j++) {
-                if (state1.edgeWeight(i, j) != 0) {
-                    deg++;
-                    w += state1.edgeWeight(i, j);
+        for (int k = 0; k < states.length; k++) {
+            l[k] = new LinkedList<>();
+
+            for (int i = states[k].bs.nextSetBit(0); i >= 0; i = states[k].bs.nextSetBit(i + 1)) {
+                int deg = 0, w = 0;
+                for (int j = 0; j <= nVariables; j++) {
+                    if (states[k].edgeWeight(i, j) != 0) {
+                        deg++;
+                        w += states[k].edgeWeight(i, j);
+                    }
                 }
+                l[k].add(new Vertex(deg, w, i));
             }
-            l1.add(new Vertex(deg, w, i));
+
+            Collections.sort(l[k]);
+
+            if (k == 0) for (int i = 0; i < l[k].size(); i++) match[k][i] = l[k].get(i).index;
+            else for (int i = 0; i < l[k].size(); i++) match[k][match[0][i]] = l[k].get(i).index;
         }
-
-        for (int i = state2.bs.nextSetBit(0); i >= 0; i = state2.bs.nextSetBit(i + 1)) {
-            int deg = 0, w = 0;
-            for (int j = 0; j <= nVariables; j++) {
-                if (state2.edgeWeight(i, j) != 0) {
-                    deg++;
-                    w += state2.edgeWeight(i, j);
-                }
-            }
-            l2.add(new Vertex(deg, w, i));
-        }
-
-        Collections.sort(l1);
-        Collections.sort(l2);
-
-        int[] match = new int[nVariables];
-        for (int k = 0; k < l1.size(); k++) match[l1.get(k).index] = l2.get(k).index;
 
         int w1, w2;
-        for (int z = 0; z < l1.size(); z++) {
-            int i = l1.get(z).index;
-            int j = match[i];
+        for (Vertex v : l[0]) {
+            int i = v.index;
 
             // common edges to other free vertices
-            for (int k = state1.bs.nextSetBit(0); k >= 0; k = state1.bs.nextSetBit(k + 1)) {
-                w1 = state1.edgeWeight(i, k);
-                w2 = state2.edgeWeight(j, match[k]);
+            for (int j = states[0].bs.nextSetBit(0); j >= 0; j = states[0].bs.nextSetBit(j + 1)) {
+                w1 = states[0].edgeWeight(i, j);
+                w2 = Integer.MIN_VALUE;
+                for (int k = 1; k < states.length; k++)
+                    w2 = Math.max(w2, states[k].edgeWeight(match[k][i], match[k][j]));
 
                 if (w1 != 0) {
-                    if (w2 == 0) state1.removeEdge(i, k);
-                    else if (w2 > w1) state1.replaceEdge(i, k, w2);
+                    if (w2 == 0) states[0].removeEdge(i, j);
+                    else if (w2 > w1) states[0].replaceEdge(i, j, w2);
                 }
             }
 
             // weight to fixed vertices
-            w1 = state1.edgeWeight(i, nVariables);
-            w2 = state2.edgeWeight(j, nVariables);
+            w1 = states[0].edgeWeight(i, nVariables);
+            w2 = Integer.MIN_VALUE;
+            for (int k = 1; k < states.length; k++)
+                w2 = Math.max(w2, states[k].edgeWeight(match[k][i], nVariables));
 
-            if (w2 > w1) state1.replaceEdge(i, nVariables, w2);
-        }
-    }
-
-    static class MinLAMergeSelector implements MergeSelector {
-
-        public State[] select(Layer layer, int number) {
-            State[] states = new State[layer.width()];
-            layer.states().toArray(states);
-
-            Arrays.sort(states);
-
-            int index1 = number - 1, index2 = 0;
-
-            BitSet bs1 = ((MinLAState) states[index1].stateRepresentation).bs;
-            BitSet bs2 = (BitSet) ((MinLAState) states[0].stateRepresentation).bs.clone();
-
-            bs2.and(bs1);
-            int bestMatch = bs2.cardinality();
-
-            for (int i = 1; i < states.length; i++) {
-                if (i != index1) {
-                    bs2 = (BitSet) ((MinLAState) states[i].stateRepresentation).bs.clone();
-                    bs2.and(bs1);
-                    int match = bs2.cardinality();
-                    if (match > bestMatch) {
-                        bestMatch = match;
-                        index2 = i;
-                    }
-                }
-            }
-
-            return new State[]{states[index1], states[index2]};
+            if (w2 > w1) states[0].replaceEdge(i, nVariables, w2);
         }
     }
 
@@ -321,25 +282,6 @@ public class MinLA implements Problem {
                 gMod[i].replace(j, w);
             } else if (gMod[i] != null) gMod[i].replace(j, w);
             else if (gMod[j] != null) gMod[j].replace(i, w);
-        }
-
-        public int mergeWeight(MinLAState other, int i, int j) {
-            int w1, w2, weight = 0;
-
-            if (this.bs.get(i) && other.bs.get(j)) {
-                weight = Math.max(this.edgeWeight(i, nVariables), other.edgeWeight(j, nVariables));
-
-                for (int k = 0; k < nVariables; k++) {
-                    if (k != i && k != j && this.bs.get(k) && other.bs.get(k)) {
-                        w1 = this.edgeWeight(i, k);
-                        w2 = other.edgeWeight(j, k);
-
-                        weight += Math.max(w1, w2); // weights are negative
-                    }
-                }
-            }
-
-            return weight;
         }
     }
 }
