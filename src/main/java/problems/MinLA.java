@@ -8,7 +8,7 @@ import mdd.StateRepresentation;
 import java.io.File;
 import java.util.*;
 
-import static problems.Edge.toWeightedGraph;
+import static problems.Edge.toWeightedGraphArray;
 
 /**
  * Implementation of the Minimum Linear Arrangement Problem.
@@ -17,7 +17,7 @@ import static problems.Edge.toWeightedGraph;
  */
 public class MinLA implements Problem {
 
-    private Map<Integer, Integer>[] g;
+    private int[][] g;
 
     private int nVariables;
     private State root;
@@ -25,10 +25,10 @@ public class MinLA implements Problem {
     public double opt;
 
     public MinLA(int n, Edge[] edges) {
-        this(toWeightedGraph(n, edges));
+        this(toWeightedGraphArray(n, edges));
     }
 
-    private MinLA(Map<Integer, Integer>[] g) {
+    private MinLA(int[][] g) {
         this.nVariables = g.length;
         this.g = g;
 
@@ -204,25 +204,21 @@ public class MinLA implements Problem {
 
     class MinLAState implements StateRepresentation {
 
-        int size;
         BitSet bs;
-        Map<Integer, Integer>[] gMod;
+        int[][] gMod;
 
         public MinLAState(int size) {
-            this.size = size;
             this.bs = new BitSet(size);
             this.bs.flip(0, size);
-            this.gMod = new HashMap[size + 1];
-            this.gMod[size] = new HashMap<>();
-            for (int i = 0; i < size; i++) this.gMod[size].put(i, 0);
+            this.gMod = new int[size + 1][];
+            this.gMod[size] = new int[size];
         }
 
-        public MinLAState(BitSet bitSet, Map<Integer, Integer>[] gMod) {
-            this.size = gMod.length;
+        public MinLAState(BitSet bitSet, int[][] gMod) {
             this.bs = (BitSet) bitSet.clone();
-            this.gMod = new HashMap[size];
-            for (int i = 0; i < size; i++)
-                if (gMod[i] != null) this.gMod[i] = new HashMap<>(gMod[i]);
+            this.gMod = new int[gMod.length][];
+            for (int i = 0; i < gMod.length; i++)
+                if (gMod[i] != null) this.gMod[i] = gMod[i].clone();
         }
 
         public int hashCode() {
@@ -249,39 +245,32 @@ public class MinLA implements Problem {
         }
 
         public int edgeWeight(int i, int j) {
-            Integer w1, w2;
-
-            if (gMod[i] != null) w1 = gMod[i].get(j);
-            else w1 = g[i].get(j);
-            if (w1 == null) w1 = 0;
-
-            if (gMod[j] != null) w2 = gMod[j].get(i);
-            else w2 = g[j].get(i);
-            if (w2 == null) w2 = 0;
-
-            if (i == nVariables) return w1;
-            if (j == nVariables) return w2;
-
-            return Math.max(w1, w2);
+            if (i == nVariables) return gMod[i][j];
+            if (j == nVariables) return gMod[j][i];
+            int ans = g[i][j];
+            if (gMod[i] != null) ans = Math.max(ans, gMod[i][j]);
+            if (gMod[j] != null) ans = Math.max(ans, gMod[j][i]);
+            return ans;
         }
 
         public void removeEdge(int i, int j) {
-            if (gMod[i] != null) gMod[i].remove(j);
-            else if (gMod[j] != null) gMod[j].remove(i);
+            if (i == nVariables) gMod[i][j] = 0;
+            else if (j == nVariables) gMod[j][i] = 0;
             else {
-                gMod[i] = new HashMap<>(g[i]);
-                gMod[i].remove(j);
+                if (gMod[i] == null && gMod[j] == null) gMod[i] = g[i].clone();
+                if (gMod[i] != null) gMod[i][j] = 0;
+                if (gMod[j] != null) gMod[j][i] = 0;
             }
         }
 
         public void replaceEdge(int i, int j, int w) {
-            if (i == nVariables) gMod[i].replace(j, w);
-            else if (j == nVariables) gMod[j].replace(i, w);
-            else if (gMod[i] == null && gMod[j] == null) {
-                gMod[i] = new HashMap<>(g[i]);
-                gMod[i].replace(j, w);
-            } else if (gMod[i] != null) gMod[i].replace(j, w);
-            else if (gMod[j] != null) gMod[j].replace(i, w);
+            if (i == nVariables) gMod[i][j] = w;
+            else if (j == nVariables) gMod[j][i] = w;
+            else {
+                if (gMod[i] == null && gMod[j] == null) gMod[i] = g[i].clone();
+                if (gMod[i] != null) gMod[i][j] = w;
+                if (gMod[j] != null) gMod[j][i] = w;
+            }
         }
     }
 }

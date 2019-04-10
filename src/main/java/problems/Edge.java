@@ -61,4 +61,15 @@ public class Edge {
 
         return g;
     }
+
+    public static int[][] toWeightedGraphArray(int n, Edge[] edges) {
+        int[][] g = new int[n][n];
+
+        for (Edge e : edges) {
+            g[e.u][e.v] = e.w;
+            g[e.v][e.u] = e.w;
+        }
+
+        return g;
+    }
 }

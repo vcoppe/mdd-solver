@@ -26,7 +26,6 @@ public class MDD {
     private Layer root;
     private Layer lastExactLayer;
     private boolean exact;
-    private Problem problem;
 
     /**
      * Returns the MDD representation of the problem.
@@ -50,7 +49,6 @@ public class MDD {
      * @param initialState     the state where to start the layers
      */
     private MDD(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
-        this.problem = problem;
         this.root = new Layer(problem, this, initialState, initialState.layerNumber());
         this.exact = true;
         this.lastExactLayer = null;
