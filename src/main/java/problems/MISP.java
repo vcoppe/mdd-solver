@@ -52,12 +52,7 @@ public class MISP implements Problem {
         this.weights = weights;
         this.g = g;
 
-        Variable[] variables = new Variable[this.nVariables];
-        for (int i = 0; i < this.nVariables; i++) {
-            variables[i] = new Variable(i);
-        }
-
-        this.root = new State(new MISPState(this.nVariables), variables, 0);
+        this.root = new State(new MISPState(this.nVariables), Variable.newArray(nVariables), 0);
     }
 
     public State root() {

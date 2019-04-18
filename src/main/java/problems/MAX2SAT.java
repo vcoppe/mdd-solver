@@ -26,7 +26,7 @@ public class MAX2SAT implements Problem {
      * @param n       the number of boolean variables
      * @param clauses an array of {@code Clause} objects with variables indexes in [0,n-1]
      */
-    public MAX2SAT(int n, Clause[] clauses) {
+    MAX2SAT(int n, Clause[] clauses) {
         this(toGraph(n, clauses));
     }
 
@@ -46,12 +46,7 @@ public class MAX2SAT implements Problem {
         done = false;
         MAX2SAT.g = g;
 
-        Variable[] variables = new Variable[nVariables];
-        for (int i = 0; i < nVariables; i++) {
-            variables[i] = new Variable(i);
-        }
-
-        this.root = new State(new MAX2SATState(nVariables), variables, 0);
+        this.root = new State(new MAX2SATState(nVariables), Variable.newArray(nVariables), 0);
     }
 
     public State root() {
@@ -206,11 +201,11 @@ public class MAX2SAT implements Problem {
 
         double[] benefits;
 
-        public MAX2SATState(int size) {
+        MAX2SATState(int size) {
             this.benefits = new double[size];
         }
 
-        public MAX2SATState(double[] benefits) {
+        MAX2SATState(double[] benefits) {
             this.benefits = benefits;
         }
 

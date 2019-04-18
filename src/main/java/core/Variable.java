@@ -55,4 +55,12 @@ public class Variable {
     public void assign(int value) {
         this.value = value;
     }
+
+    public static Variable[] newArray(int n) {
+        Variable[] variables = new Variable[n];
+        for (int i = 0; i < n; i++) {
+            variables[i] = new Variable(i);
+        }
+        return variables;
+    }
 }

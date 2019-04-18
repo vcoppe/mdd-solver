@@ -30,7 +30,7 @@ public class MCP implements Problem {
      * @param n     the number of vertices
      * @param edges a list of {@code Edge} objects with vertices indexes in [0,n-1]
      */
-    public MCP(int n, Edge[] edges) {
+    MCP(int n, Edge[] edges) {
         this(toWeightedGraph(n, edges));
     }
 
@@ -45,10 +45,7 @@ public class MCP implements Problem {
         this.nVariables = g.length;
         this.g = g;
 
-        Variable[] variables = new Variable[this.nVariables];
-        for (int i = 0; i < this.nVariables; i++) {
-            variables[i] = new Variable(i);
-        }
+        Variable[] variables = Variable.newArray(nVariables);
 
         variables[0].assign(0); // arbitrarily assign first vertex to one side
 
@@ -182,7 +179,7 @@ public class MCP implements Problem {
             this.benefits = new double[size];
         }
 
-        public MCPState(double[] benefits) {
+        MCPState(double[] benefits) {
             this.benefits = benefits;
         }
 

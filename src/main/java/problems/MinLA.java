@@ -24,7 +24,7 @@ public class MinLA implements Problem {
 
     public double opt;
 
-    public MinLA(int n, Edge[] edges) {
+    MinLA(int n, Edge[] edges) {
         this(toWeightedGraphArray(n, edges));
     }
 
@@ -32,12 +32,7 @@ public class MinLA implements Problem {
         this.nVariables = g.length;
         this.g = g;
 
-        Variable[] variables = new Variable[this.nVariables];
-        for (int i = 0; i < this.nVariables; i++) {
-            variables[i] = new Variable(i);
-        }
-
-        this.root = new State(new MinLAState(this.nVariables), variables, 0);
+        this.root = new State(new MinLAState(this.nVariables), Variable.newArray(nVariables), 0);
     }
 
     public State root() {
@@ -108,14 +103,16 @@ public class MinLA implements Problem {
 
         double value;
 
-        for (int i = minLAState.bs.nextSetBit(0); i >= 0; i = minLAState.bs.nextSetBit(i + 1)) {
+        for (int i = 0; i < nVariables; i++)
+            if (((minLAState.mask[i / 64] >> (i % 64)) & 1L) == 1L) {
             MinLAState succMinLAState = minLAState.copy();
-            succMinLAState.bs.clear(i);
+                succMinLAState.mask[i / 64] &= ~(1L << (i % 64));
 
             value = s.value();
 
             // add weight of edges between fixed vertices and free vertices
-            for (int j = succMinLAState.bs.nextSetBit(0); j >= 0; j = succMinLAState.bs.nextSetBit(j + 1)) {
+                for (int j = 0; j < nVariables; j++)
+                    if (((succMinLAState.mask[j / 64] >> (j % 64)) & 1L) == 1L) {
                 int edgeWeight = succMinLAState.edgeWeight(i, j);
                 succMinLAState.removeEdge(i, j);
                 int toFixedWeight = succMinLAState.edgeWeight(j, nVariables);
@@ -158,7 +155,8 @@ public class MinLA implements Problem {
         for (int k = 0; k < states.length; k++) {
             l[k] = new LinkedList<>();
 
-            for (int i = states[k].bs.nextSetBit(0); i >= 0; i = states[k].bs.nextSetBit(i + 1)) {
+            for (int i = 0; i < nVariables; i++)
+                if (((states[k].mask[i / 64] >> (i % 64)) & 1L) == 1L) {
                 int deg = 0, w = 0;
                 for (int j = 0; j <= nVariables; j++) {
                     if (states[k].edgeWeight(i, j) != 0) {
@@ -180,7 +178,8 @@ public class MinLA implements Problem {
             int i = v.index;
 
             // common edges to other free vertices
-            for (int j = states[0].bs.nextSetBit(0); j >= 0; j = states[0].bs.nextSetBit(j + 1)) {
+            for (int j = 0; j < nVariables; j++)
+                if (((states[0].mask[j / 64] >> (j % 64)) & 1L) == 1L) {
                 w1 = states[0].edgeWeight(i, j);
                 w2 = Integer.MIN_VALUE;
                 for (int k = 1; k < states.length; k++)
@@ -204,33 +203,33 @@ public class MinLA implements Problem {
 
     class MinLAState implements StateRepresentation {
 
-        BitSet bs;
+        long[] mask;
         int[][] gMod;
 
-        public MinLAState(int size) {
-            this.bs = new BitSet(size);
-            this.bs.flip(0, size);
+        MinLAState(int size) {
+            this.mask = new long[size / 64 + 1];
+            Arrays.fill(mask, ~0L);
             this.gMod = new int[size + 1][];
             this.gMod[size] = new int[size];
         }
 
-        public MinLAState(BitSet bitSet, int[][] gMod) {
-            this.bs = (BitSet) bitSet.clone();
+        MinLAState(long[] mask, int[][] gMod) {
+            this.mask = mask.clone();
             this.gMod = new int[gMod.length][];
             for (int i = 0; i < gMod.length; i++)
                 if (gMod[i] != null) this.gMod[i] = gMod[i].clone();
         }
 
         public int hashCode() {
-            return this.bs.hashCode();
+            return Arrays.hashCode(mask);
         }
 
         public boolean equals(Object o) {
-            return o instanceof MinLAState && this.bs.equals(((MinLAState) o).bs);
+            return o instanceof MinLAState && Arrays.equals(this.mask, ((MinLAState) o).mask);
         }
 
         public MinLAState copy() {
-            return new MinLAState(this.bs, this.gMod);
+            return new MinLAState(this.mask, this.gMod);
         }
 
         public double rank(State state) {
@@ -239,12 +238,13 @@ public class MinLA implements Problem {
 
         public String toString() {
             StringBuilder s = new StringBuilder();
-            for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
+            for (int i = 0; i < nVariables; i++)
+                if (((mask[i / 64] >> (i % 64)) & 1L) == 1L)
                 s.append(i + 1);
             return s.toString();
         }
 
-        public int edgeWeight(int i, int j) {
+        int edgeWeight(int i, int j) {
             if (i == nVariables) return gMod[i][j];
             if (j == nVariables) return gMod[j][i];
             int ans = g[i][j];
@@ -253,7 +253,7 @@ public class MinLA implements Problem {
             return ans;
         }
 
-        public void removeEdge(int i, int j) {
+        void removeEdge(int i, int j) {
             if (i == nVariables) gMod[i][j] = 0;
             else if (j == nVariables) gMod[j][i] = 0;
             else {
@@ -263,7 +263,7 @@ public class MinLA implements Problem {
             }
         }
 
-        public void replaceEdge(int i, int j, int w) {
+        void replaceEdge(int i, int j, int w) {
             if (i == nVariables) gMod[i][j] = w;
             else if (j == nVariables) gMod[j][i] = w;
             else {

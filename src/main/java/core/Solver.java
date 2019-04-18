@@ -85,10 +85,6 @@ public class Solver {
                 best = resultRestricted;
                 lowerBound = best.value();
                 printInfo(true);
-                /*System.out.println("Assignment       : ");
-                for (int i = 0; i<best.nVariables(); i++) {
-                    System.out.println("\tVar. " + i + " = " + best.getVariable(i).value());
-                }*/
             }
 
             if (!this.mdd.isExact()) {
