@@ -19,14 +19,13 @@ import java.util.Set;
  */
 public class MDD {
 
-    public Set<State> frontier;
+    public Set<Node> frontier;
     public MergeSelector mergeSelector;
     public DeleteSelector deleteSelector;
     public VariableSelector variableSelector;
     private Layer root;
     private Layer lastExactLayer;
     private boolean exact;
-    private Problem problem;
 
     /**
      * Returns the MDD representation of the problem.
@@ -47,11 +46,10 @@ public class MDD {
      * @param mergeSelector    heuristic to select nodes to merge (to build relaxed MDDs)
      * @param deleteSelector   heuristic to select nodes to delete (to build restricted MDDs)
      * @param variableSelector heuristic to select the next variable to be assigned
-     * @param initialState     the state where to start the layers
+     * @param initialNode     the state where to start the layers
      */
-    private MDD(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, State initialState) {
-        this.problem = problem;
-        this.root = new Layer(problem, this, initialState, initialState.layerNumber());
+    private MDD(Problem problem, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector, Node initialNode) {
+        this.root = new Layer(problem, this, initialNode, initialNode.layerNumber());
         this.exact = true;
         this.lastExactLayer = null;
         this.frontier = new HashSet<>();
@@ -63,23 +61,23 @@ public class MDD {
     /**
      * Sets the initial state of the MDD representation.
      *
-     * @param initialState the state where to start the layers
+     * @param initialNode the state where to start the layers
      */
-    public void setInitialState(State initialState) {
-        this.root.reset(initialState.layerNumber());
-        this.root.addState(initialState);
+    public void setInitialNode(Node initialNode) {
+        this.root.reset(initialNode.layerNumber());
+        this.root.addNode(initialNode);
         this.lastExactLayer = null;
         this.exact = true;
     }
 
     /**
      * Solves the given problem starting from the given node with layers of at most {@code width}
-     * states by deleting some states and thus providing a feasible solution.
+     * nodes by deleting some nodes and thus providing a feasible solution.
      *
      * @param width the maximum width of the layers
-     * @return the {@code State} object representing the best solution found
+     * @return the {@code Node} object representing the best solution found
      */
-    public State solveRestricted(int width) {
+    public Node solveRestricted(int width) {
         this.lastExactLayer = null;
         Layer lastLayer = root;
 
@@ -101,12 +99,12 @@ public class MDD {
 
     /**
      * Solves the given problem starting from the given node with layers of at most {@code width}
-     * states by merging some states and thus providing a solution not always feasible.
+     * nodes by merging some nodes and thus providing a solution not always feasible.
      *
      * @param width the maximum width of the layers
-     * @return the {@code State} object representing the best solution found
+     * @return the {@code Node} object representing the best solution found
      */
-    public State solveRelaxed(int width) {
+    public Node solveRelaxed(int width) {
         this.lastExactLayer = null;
         this.frontier.clear();
         Layer lastLayer = root;
@@ -126,7 +124,7 @@ public class MDD {
             }
         }
 
-        for (State s : lastLayer.states()) {
+        for (Node s : lastLayer.nodes()) {
             if (s.isExact()) {
                 this.frontier.add(s);
             }
@@ -147,18 +145,18 @@ public class MDD {
     /**
      * Solves the given problem starting from the given node.
      *
-     * @return the {@code State} object representing the best solution found
+     * @return the {@code Node} object representing the best solution found
      */
-    public State solveExact() {
+    public Node solveExact() {
         return this.solveRelaxed(Integer.MAX_VALUE);
     }
 
     /**
      * Returns an exact cutset of the current MDD tree.
      *
-     * @return a set of exact states being an exact cutset
+     * @return a set of exact nodes being an exact cutset
      */
-    public Collection<State> exactCutset() {
+    public Collection<Node> exactCutset() {
         return this.lastExactLayerCutset();
         //return this.frontierCutset();
     }
@@ -167,20 +165,20 @@ public class MDD {
      * Returns the last exact layer cutset,
      * which is the deepest layer equal to the corresponding complete MDD layer.
      *
-     * @return the states of the last exact layer
+     * @return the nodes of the last exact layer
      */
-    private Collection<State> lastExactLayerCutset() {
-        return this.lastExactLayer.states();
+    private Collection<Node> lastExactLayerCutset() {
+        return this.lastExactLayer.nodes();
     }
 
     /**
      * Returns the frontier cutset.
-     * A state is in the frontier cutset if it is an exact state
+     * A node is in the frontier cutset if it is an exact node
      * and if one of its successors is not.
      *
-     * @return the states of the frontier cutset
+     * @return the nodes of the frontier cutset
      */
-    private Set<State> frontierCutset() {
+    private Set<Node> frontierCutset() {
         return this.frontier;
     }
 }

@@ -1,7 +1,7 @@
 package heuristics;
 
 import mdd.Layer;
-import mdd.State;
+import mdd.Node;
 
 /**
  * Enables defining heuristics to select nodes to be deleted when building a restricted MDD.
@@ -11,12 +11,12 @@ import mdd.State;
 public interface DeleteSelector {
 
     /**
-     * Selects the states to be deleted in order to restrict the MDD.
+     * Selects the nodes to be deleted in order to restrict the MDD.
      *
-     * @param layer  the layer from which we need to remove states
-     * @param number the number of states to be removed
-     * @return an array of {@code State} objects to be deleted from the layer
+     * @param layer  the layer from which we need to remove nodes
+     * @param number the number of nodes to be removed
+     * @return an array of {@code Node} objects to be deleted from the layer
      */
-    State[] select(Layer layer, int number);
+    Node[] select(Layer layer, int number);
 
 }

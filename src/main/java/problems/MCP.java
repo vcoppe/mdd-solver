@@ -2,8 +2,8 @@ package problems;
 
 import core.Problem;
 import core.Variable;
+import mdd.Node;
 import mdd.State;
-import mdd.StateRepresentation;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -22,7 +22,7 @@ public class MCP implements Problem {
     private Map<Integer, Integer>[] g;
 
     private int nVariables;
-    private State root;
+    private Node root;
 
     /**
      * Returns the representation of the MCP problem.
@@ -64,11 +64,11 @@ public class MCP implements Problem {
             }
         }
 
-        this.root = new State(new MCPState(benefits0), variables, rootValue);
+        this.root = new Node(new MCPState(benefits0), variables, rootValue);
         this.root.setLayerNumber(1); // already 1 variable assigned
     }
 
-    public State root() {
+    public Node root() {
         return this.root;
     }
 
@@ -76,18 +76,18 @@ public class MCP implements Problem {
         return this.nVariables;
     }
 
-    public State merge(State[] states) {
+    public Node merge(Node[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
         double[] benefits = new double[nVariables];
-        double[] newValues = new double[states.length];
-        MCPState[] statesRep = new MCPState[states.length];
+        double[] newValues = new double[nodes.length];
+        MCPState[] statesRep = new MCPState[nodes.length];
 
         int i = 0;
-        for (State state : states) {
-            newValues[i] = state.value();
-            statesRep[i++] = (MCPState) state.stateRepresentation;
+        for (Node node : nodes) {
+            newValues[i] = node.value();
+            statesRep[i++] = (MCPState) node.state;
         }
 
         for (i = 0; i < nVariables; i++) {
@@ -117,20 +117,20 @@ public class MCP implements Problem {
         for (i = 0; i < newValues.length; i++) {
             if (newValues[i] > maxValue) {
                 maxValue = newValues[i];
-                variables = states[i].variables;
-                indexes = states[i].indexes;
+                variables = nodes[i].variables;
+                indexes = nodes[i].indexes;
             }
         }
 
-        return new State(new MCPState(benefits), variables, indexes, maxValue, false);
+        return new Node(new MCPState(benefits), variables, indexes, maxValue, false);
     }
 
-    public List<State> successors(State s, Variable var) {
+    public List<Node> successors(Node s, Variable var) {
         int u = var.id;
-        List<State> succs = new LinkedList<>();
+        List<Node> succs = new LinkedList<>();
 
         Variable[] variables = s.variables;
-        MCPState mcpState = ((MCPState) s.stateRepresentation);
+        MCPState mcpState = ((MCPState) s.state);
 
         // assigning var to 0
         double[] benefits0 = new double[this.nVariables];
@@ -171,13 +171,9 @@ public class MCP implements Problem {
         return succs;
     }
 
-    class MCPState implements StateRepresentation {
+    class MCPState implements State {
 
         double[] benefits;
-
-        public MCPState(int size) {
-            this.benefits = new double[size];
-        }
 
         MCPState(double[] benefits) {
             this.benefits = benefits;
@@ -196,8 +192,8 @@ public class MCP implements Problem {
             return Arrays.equals(benefits, other.benefits);
         }
 
-        public double rank(State state) {
-            double rank = state.value();
+        public double rank(Node node) {
+            double rank = node.value();
 
             for (double benefit : benefits) {
                 rank += Math.abs(benefit);

@@ -48,9 +48,9 @@ public class LayerTest {
 
         assertTrue(layer.isExact());
 
-        State state = new State(p.new MISPState(n), vars, 0, false);
+        Node node = new Node(p.new MISPState(n), vars, 0, false);
 
-        layer.addState(state);
+        layer.addNode(node);
 
         assertFalse(layer.isExact());
     }
@@ -58,13 +58,13 @@ public class LayerTest {
     @Test
     public void testRemove() {
         Layer layer = new Layer(p, mdd, 0);
-        State state = new State(p.new MISPState(0), new Variable[0], 0);
-        layer.addState(state);
+        Node node = new Node(p.new MISPState(0), new Variable[0], 0);
+        layer.addNode(node);
 
         assertEquals(layer.width(), 1);
 
-        State[] states = {state};
-        layer.removeStates(states);
+        Node[] nodes = {node};
+        layer.removeNodes(nodes);
 
         assertEquals(layer.width(), 0);
         assertFalse(layer.isExact());
@@ -79,8 +79,8 @@ public class LayerTest {
         assertTrue(layer2.isExact());
 
         layer = new Layer(p, mdd, 0);
-        State state = new State(p.new MISPState(n), vars, 0, false);
-        layer.addState(state);
+        Node node = new Node(p.new MISPState(n), vars, 0, false);
+        layer.addNode(node);
 
         layer2 = layer.nextLayer(Integer.MAX_VALUE, false);
 
@@ -90,7 +90,7 @@ public class LayerTest {
         try {
             assertEquals(Double.compare(layer2.best().value(), 1), 0);
         } catch (NullPointerException e) {
-            fail("Should have one state");
+            fail("Should have one node");
         }
     }
 }

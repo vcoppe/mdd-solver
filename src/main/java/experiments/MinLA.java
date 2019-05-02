@@ -3,7 +3,7 @@ package experiments;
 import core.Solver;
 import gurobi.GRBException;
 import heuristics.*;
-import mdd.State;
+import mdd.Node;
 import problems.Edge;
 
 import java.io.File;
@@ -88,7 +88,7 @@ public class MinLA {
 
             mip.dispose();
         } else if (args[2].equals("mdd")) {
-            problems.MinLABidir mdd = new problems.MinLABidir(n, edges);
+            problems.MinLA mdd = new problems.MinLA(n, edges);
 
             MergeSelector ms = new MinLPMergeSelector();
             DeleteSelector ds = new MinLPDeleteSelector();
@@ -101,7 +101,7 @@ public class MinLA {
 
             if (args.length == 4) solver.setWidth(Integer.valueOf(args[3]));
 
-            State result = solver.solve(timeLimit);
+            Node result = solver.solve(timeLimit);
 
             System.out.println("runTime : " + solver.runTime());
             System.out.println("objValue : " + -result.value());

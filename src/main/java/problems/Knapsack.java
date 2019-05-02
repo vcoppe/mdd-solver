@@ -2,30 +2,33 @@ package problems;
 
 import core.Problem;
 import core.Variable;
+import mdd.Node;
 import mdd.State;
-import mdd.StateRepresentation;
 
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Implementation of the Unbounded Knapsack Problem.
+ *
+ * @author Vianney Coppé
+ */
 public class Knapsack implements Problem {
 
-    private int n, c;
-    private int[] w;
+    private int n, w[];
     private double[] v;
 
-    private State root;
+    private Node root;
 
-    public Knapsack(int n, int c, int[] w, double[] v) {
+    Knapsack(int n, int c, int[] w, double[] v) {
         this.n = n;
-        this.c = c;
         this.w = w;
         this.v = v;
 
-        root = new State(new KnapsackState(c), Variable.newArray(n), 0);
+        root = new Node(new KnapsackState(c), Variable.newArray(n), 0);
     }
 
-    public State root() {
+    public Node root() {
         return root;
     }
 
@@ -33,43 +36,35 @@ public class Knapsack implements Problem {
         return n;
     }
 
-    public List<State> successors(State state, Variable var) {
+    public List<Node> successors(Node node, Variable var) {
         int i = var.id;
-        KnapsackState knapsackState = (KnapsackState) state.stateRepresentation;
-        List<State> successors = new LinkedList<>();
+        KnapsackState knapsackState = (KnapsackState) node.state;
+        List<Node> successors = new LinkedList<>();
 
-        for (int x = 0; x <= c / w[i]; x++) {
+        for (int x = 0; x <= knapsackState.capacity / w[i]; x++) {
             KnapsackState succKnapsackState = new KnapsackState(knapsackState.capacity - x * w[i]);
-            double value = state.value() + x * v[i];
-            successors.add(state.getSuccessor(succKnapsackState, value, i, x));
+            double value = node.value() + x * v[i];
+            successors.add(node.getSuccessor(succKnapsackState, value, i, x));
         }
 
         return successors;
     }
 
-    public State merge(State[] states) {
-        Variable[] variables = null;
-        int[] indexes = null;
-        double maxValue = -Double.MAX_VALUE;
-        KnapsackState knapsackState = new KnapsackState(0);
+    public Node merge(Node[] nodes) {
+        Node<KnapsackState> best = nodes[0];
+        int maxCapacity = 0;
 
-        for (State state : states) {
-            knapsackState.capacity = Math.max(
-                    knapsackState.capacity,
-                    ((KnapsackState) state.stateRepresentation).capacity
-            );
+        for (Node<KnapsackState> node : nodes) {
+            maxCapacity = Math.max(maxCapacity, node.state.capacity);
 
-            if (state.value() > maxValue) {
-                maxValue = state.value();
-                variables = state.variables;
-                indexes = state.indexes;
-            }
+            if (node.value() > best.value()) best = node;
         }
 
-        return new State(knapsackState, variables, indexes, maxValue, false);
+        best.state.capacity = maxCapacity;
+        return best;
     }
 
-    private class KnapsackState implements StateRepresentation {
+    private class KnapsackState implements State {
 
         int capacity;
 
@@ -77,8 +72,16 @@ public class Knapsack implements Problem {
             this.capacity = capacity;
         }
 
-        public double rank(State state) {
-            return state.value();
+        public double rank(Node node) {
+            return node.value();
+        }
+
+        public int hashCode() {
+            return capacity;
+        }
+
+        public boolean equals(Object o) {
+            return o instanceof Knapsack.KnapsackState && capacity == ((KnapsackState) o).capacity;
         }
 
         public KnapsackState copy() {

@@ -4,8 +4,8 @@ import core.Problem;
 import core.Variable;
 import heuristics.VariableSelector;
 import mdd.Layer;
+import mdd.Node;
 import mdd.State;
-import mdd.StateRepresentation;
 
 import java.io.File;
 import java.util.*;
@@ -22,7 +22,7 @@ public class MinLABidir implements Problem {
     public double opt;
     private Map<Integer, Integer>[] g;
     private int nVariables;
-    private State root;
+    private Node root;
 
     public MinLABidir(int n, Edge[] edges) {
         this(toWeightedGraph(n, edges));
@@ -37,7 +37,7 @@ public class MinLABidir implements Problem {
             variables[i] = new Variable(i);
         }
 
-        this.root = new State(new MinLAState(this.nVariables), variables, 0);
+        this.root = new Node(new MinLAState(this.nVariables), variables, 0);
     }
 
     /**
@@ -93,7 +93,7 @@ public class MinLABidir implements Problem {
         return p;
     }
 
-    public State root() {
+    public Node root() {
         return this.root;
     }
 
@@ -101,12 +101,12 @@ public class MinLABidir implements Problem {
         return this.nVariables;
     }
 
-    public List<State> successors(State s, Variable var) {
+    public List<Node> successors(Node s, Variable var) {
         int pos = var.id;
         int layerNumber = s.layerNumber();
-        MinLAState minLAState = (MinLAState) s.stateRepresentation;
+        MinLAState minLAState = (MinLAState) s.state;
         int[] side = minLAState.side;
-        List<State> succs = new LinkedList<>();
+        List<Node> succs = new LinkedList<>();
 
         int endR = side.length / 2 + side.length % 2;
         int endL = endR - 1;
@@ -160,7 +160,7 @@ public class MinLABidir implements Problem {
         }
 
         if (succs.isEmpty()) {
-            State succ = s.getSuccessor(s.stateRepresentation.copy(), s.value(), pos, -1);
+            Node succ = s.getSuccessor(s.state.copy(), s.value(), pos, -1);
             succ.setExact(false);
             succs.add(succ);
         }
@@ -168,17 +168,17 @@ public class MinLABidir implements Problem {
         return succs;
     }
 
-    public State merge(State[] states) {
+    public Node merge(Node[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
         MinLAState minLAState = null;
 
-        for (State state : states) {
+        for (Node node : nodes) {
             if (minLAState == null) {
-                minLAState = (MinLAState) state.stateRepresentation;
+                minLAState = (MinLAState) node.state;
             } else {
-                int[] side = ((MinLAState) state.stateRepresentation).side;
+                int[] side = ((MinLAState) node.state).side;
                 for (int i = 0; i < side.length; i++) {
                     if (minLAState.side[i] != side[i]) {
                         minLAState.side[i] = -1;
@@ -186,14 +186,14 @@ public class MinLABidir implements Problem {
                 }
             }
 
-            if (state.value() > maxValue) {
-                maxValue = state.value();
-                variables = state.variables;
-                indexes = state.indexes;
+            if (node.value() > maxValue) {
+                maxValue = node.value();
+                variables = node.variables;
+                indexes = node.indexes;
             }
         }
 
-        return new State(minLAState, variables, indexes, maxValue, false);
+        return new Node(minLAState, variables, indexes, maxValue, false);
     }
 
     public static class MinLABidirVariableSelector implements VariableSelector {
@@ -219,7 +219,7 @@ public class MinLABidir implements Problem {
         }
     }
 
-    class MinLAState implements StateRepresentation {
+    class MinLAState implements State {
 
         int size;
         int[] side;
@@ -250,8 +250,8 @@ public class MinLABidir implements Problem {
             return new MinLAState(this.side.clone());
         }
 
-        public double rank(State state) {
-            return state.value();
+        public double rank(Node node) {
+            return node.value();
         }
     }
 }

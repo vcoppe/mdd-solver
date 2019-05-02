@@ -29,7 +29,7 @@ public abstract class TestHelper {
         for (File listOfFile : listOfFiles) {
             if (listOfFile.isFile()) {
                 String name = listOfFile.getAbsolutePath();
-                if (name.endsWith(".clq") || name.endsWith(".wcnf") || name.endsWith(".gra")) {
+                if (name.endsWith(".clq") || name.endsWith(".wcnf") || name.endsWith(".gra") || name.endsWith(".sukp")) {
                     out.add(name);
                 }
             }

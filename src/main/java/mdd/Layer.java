@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class Layer {
 
-    private Map<StateRepresentation, State> states;
+    private Map<State, Node> nodes;
     private Problem problem;
     private MDD mdd;
     private boolean exact;
@@ -29,7 +29,7 @@ public class Layer {
      * @param number  the number of the layer
      */
     public Layer(Problem problem, MDD mdd, int number) {
-        this.states = new HashMap<>();
+        this.nodes = new HashMap<>();
         this.problem = problem;
         this.mdd = mdd;
         this.exact = true;
@@ -37,17 +37,17 @@ public class Layer {
     }
 
     /**
-     * Returns a layer containing the given state.
+     * Returns a layer containing the given node.
      *
      * @param problem the implementation of a problem
      * @param mdd     the  associated decision diagram
-     * @param state   the state to be contained
+     * @param node    the node to be contained
      * @param number  the number of the layer
      */
-    public Layer(Problem problem, MDD mdd, State state, int number) {
+    public Layer(Problem problem, MDD mdd, Node node, int number) {
         this(problem, mdd, number);
-        this.states.put(state.stateRepresentation, state);
-        this.exact = state.isExact();
+        this.nodes.put(node.state, node);
+        this.exact = node.isExact();
     }
 
     /**
@@ -56,14 +56,14 @@ public class Layer {
      * @param number the number of the layer
      */
     public void reset(int number) {
-        this.states.clear();
+        this.nodes.clear();
         this.exact = true;
         this.number = number;
     }
 
     /**
      * Returns the next layer of the MDD using the {@code variableSelector} to choose the next variable
-     * to assign and the {@code problem} implementation to provide the successors of all the states of
+     * to assign and the {@code problem} implementation to provide the successors of all the nodes of
      * the layer.
      *
      * @return the next layer of the MDD
@@ -73,34 +73,34 @@ public class Layer {
         Layer next = new Layer(this.problem, this.mdd, this.number + 1);
 
         next.setExact(this.exact);
-        for (State state : this.states.values()) {
-            if (state.isExact()) {
-                state.exactParents().clear(); // we do not need them anymore -> garbage collection
+        for (Node node : this.nodes.values()) {
+            if (node.isExact()) {
+                node.exactParents().clear(); // we do not need them anymore -> garbage collection
             }
 
             if (nextVar == null) {
-                nextVar = this.mdd.variableSelector.select(state.freeVariables(), this);
+                nextVar = this.mdd.variableSelector.select(node.freeVariables(), this);
             }
 
-            for (State s : this.problem.successors(state, nextVar)) {
-                if (state.isExact()) s.addParent(state);
+            for (Node s : this.problem.successors(node, nextVar)) {
+                if (node.isExact()) s.addParent(node);
                 else s.setExact(false);
-                next.addState(s);
+                next.addNode(s);
             }
         }
 
         while (next.width() > width) {
             if (relaxed) {
-                State[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
-                next.removeStates(toMerge, this.mdd.frontier);
+                Node[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
+                next.removeNodes(toMerge, this.mdd.frontier);
 
-                State mergedState = this.problem.merge(toMerge);
-                mergedState.setExact(false);
+                Node mergedNode = this.problem.merge(toMerge);
+                mergedNode.setExact(false);
 
-                next.addState(mergedState);
+                next.addNode(mergedNode);
             } else {
-                State[] toRemove = this.mdd.deleteSelector.select(next, next.width() - width);
-                next.removeStates(toRemove);
+                Node[] toRemove = this.mdd.deleteSelector.select(next, next.width() - width);
+                next.removeNodes(toRemove);
             }
         }
 
@@ -108,72 +108,72 @@ public class Layer {
     }
 
     /**
-     * Adds states to the layer or updates an existing state in the layer with the same {@code StateRepresentation}.
+     * Adds nodes to the layer or updates an existing node in the layer with the same {@code State}.
      *
-     * @param state the state to be added
+     * @param node the node to be added
      */
-    public void addState(State state) {
-        this.exact &= state.isExact();
-        state.setLayerNumber(this.number);
-        State existing = this.states.get(state.stateRepresentation);
-        if (existing == null) this.states.put(state.stateRepresentation, state);
-        else existing.update(state);
+    public void addNode(Node node) {
+        this.exact &= node.isExact();
+        node.setLayerNumber(this.number);
+        Node existing = this.nodes.get(node.state);
+        if (existing == null) this.nodes.put(node.state, node);
+        else existing.update(node);
     }
 
     /**
-     * Remove the states from the layer.
+     * Remove the nodes from the layer.
      *
-     * @param states the states to be removed
+     * @param nodes the nodes to be removed
      */
-    public void removeStates(State[] states) {
-        for (State state : states) {
-            this.states.remove(state.stateRepresentation);
+    public void removeNodes(Node[] nodes) {
+        for (Node node : nodes) {
+            this.nodes.remove(node.state);
         }
         this.exact = false;
     }
 
     /**
-     * Remove the states from the layer.
+     * Remove the nodes from the layer.
      *
-     * @param states   the states to be removed
+     * @param nodes   the nodes to be removed
      * @param frontier the frontier cutset in order to add exact parents
      */
-    public void removeStates(State[] states, Set<State> frontier) {
-        for (State state : states) {
-            this.states.remove(state.stateRepresentation);
-            frontier.addAll(state.exactParents());
+    public void removeNodes(Node[] nodes, Set<Node> frontier) {
+        for (Node node : nodes) {
+            this.nodes.remove(node.state);
+            frontier.addAll(node.exactParents());
         }
         this.exact = false;
     }
 
     /**
-     * Returns a {@code Set} of all states contained in the layer.
+     * Returns a {@code Set} of all nodes contained in the layer.
      *
-     * @return a {@code Set} with all the states
+     * @return a {@code Set} with all the nodes
      */
-    public Collection<State> states() {
-        return this.states.values();
+    public Collection<Node> nodes() {
+        return this.nodes.values();
     }
 
     /**
      * Returns the width of the layer.
      *
-     * @return the number of states in the layer
+     * @return the number of nodes in the layer
      */
     public int width() {
-        return this.states.size();
+        return this.nodes.size();
     }
 
     /**
-     * Returns the best state of the layer.
+     * Returns the best node of the layer.
      *
-     * @return a {@code State} object representing the best state of the layer
+     * @return a {@code Node} object representing the best node of the layer
      */
-    public State best() {
-        State best = null;
-        for (State state : this.states.values()) {
-            if (best == null || state.value() > best.value()) {
-                best = state;
+    public Node best() {
+        Node best = null;
+        for (Node node : this.nodes.values()) {
+            if (best == null || node.value() > best.value()) {
+                best = node;
             }
         }
         return best;

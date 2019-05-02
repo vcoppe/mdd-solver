@@ -1,23 +1,23 @@
 package heuristics;
 
 import mdd.Layer;
-import mdd.State;
+import mdd.Node;
 
 import java.util.Arrays;
 
 public class MinLPDeleteSelector implements DeleteSelector {
 
     @Override
-    public State[] select(Layer layer, int number) {
-        if (number <= 0) return new State[0];
-        State[] states = new State[layer.width()];
-        layer.states().toArray(states);
+    public Node[] select(Layer layer, int number) {
+        if (number <= 0) return new Node[0];
+        Node[] nodes = new Node[layer.width()];
+        layer.nodes().toArray(nodes);
 
-        Arrays.sort(states);
-        State[] ret = new State[number];
+        Arrays.sort(nodes);
+        Node[] ret = new Node[number];
         int i = 0;
 
-        for (State s : states) {
+        for (Node s : nodes) {
             ret[i++] = s;
             if (i == number) break;
         }

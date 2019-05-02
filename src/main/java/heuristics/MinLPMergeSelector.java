@@ -1,7 +1,7 @@
 package heuristics;
 
 import mdd.Layer;
-import mdd.State;
+import mdd.Node;
 
 import java.util.Arrays;
 
@@ -12,15 +12,15 @@ import java.util.Arrays;
  */
 public class MinLPMergeSelector implements MergeSelector {
 
-    public State[] select(Layer layer, int number) {
-        State[] states = new State[layer.width()];
-        layer.states().toArray(states);
+    public Node[] select(Layer layer, int number) {
+        Node[] nodes = new Node[layer.width()];
+        layer.nodes().toArray(nodes);
 
-        Arrays.sort(states);
-        State[] ret = new State[number];
+        Arrays.sort(nodes);
+        Node[] ret = new Node[number];
         int i = 0;
 
-        for (State s : states) {
+        for (Node s : nodes) {
             ret[i++] = s;
             if (i == number) break;
         }

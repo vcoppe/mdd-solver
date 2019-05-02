@@ -2,7 +2,7 @@ package core;
 
 import heuristics.*;
 import mdd.MDD;
-import mdd.State;
+import mdd.Node;
 
 import java.util.Locale;
 import java.util.PriorityQueue;
@@ -49,32 +49,32 @@ public class Solver {
     /**
      * Solves the given maximization problem with the given heuristics and returns the optimal solution if it exists.
      *
-     * @return an object {@code State} containing the optimal value and assignment
+     * @return an object {@code Node} containing the optimal value and assignment
      */
-    public State solve(int timeOut) {
+    public Node solve(int timeOut) {
         startTime = System.currentTimeMillis();
 
-        State best = null;
+        Node best = null;
         lowerBound = -Double.MAX_VALUE;
         upperBound = Double.MAX_VALUE;
 
-        Queue<State> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
+        Queue<Node> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
         q.add(this.problem.root());
 
         while (!q.isEmpty()) {
-            State state = q.poll();
+            Node node = q.poll();
 
-            if (state.relaxedValue() <= lowerBound) {
+            if (node.relaxedValue() <= lowerBound) {
                 continue;
             }
 
-            this.mdd.setInitialState(state);
+            this.mdd.setInitialNode(node);
 
             int maxW = adaptiveWidth ?
-                    (problem.nVariables() - state.layerNumber()) : // the number of not bound vars
+                    (problem.nVariables() - node.layerNumber()) : // the number of not bound vars
                     maxWidth;
 
-            State resultRestricted = this.mdd.solveRestricted(maxW);
+            Node resultRestricted = this.mdd.solveRestricted(maxW);
 
             if (System.currentTimeMillis() - startTime > timeOut * 1000) {
                 endTime = System.currentTimeMillis();
@@ -88,11 +88,11 @@ public class Solver {
             }
 
             if (!this.mdd.isExact()) {
-                this.mdd.setInitialState(state);
-                State resultRelaxed = this.mdd.solveRelaxed(maxW);
+                this.mdd.setInitialNode(node);
+                Node resultRelaxed = this.mdd.solveRelaxed(maxW);
 
                 if (resultRelaxed.value() > lowerBound) {
-                    for (State s : this.mdd.exactCutset()) {
+                    for (Node s : this.mdd.exactCutset()) {
                         s.setRelaxedValue(resultRelaxed.value());
                         q.add(s);
                     }
@@ -100,7 +100,7 @@ public class Solver {
 
                 if (!q.isEmpty()) {
                     double queueUpperBound = -Double.MAX_VALUE;
-                    for (State s : q) {
+                    for (Node s : q) {
                         queueUpperBound = Math.max(queueUpperBound, s.relaxedValue());
                     }
                     if (queueUpperBound != upperBound || queueUpperBound < upperBound) {
@@ -145,9 +145,9 @@ public class Solver {
     /**
      * Solves the problem with no timeout.
      *
-     * @return the state with optimal assignment
+     * @return the node with optimal assignment
      */
-    public State solve() {
+    public Node solve() {
         return this.solve(Integer.MAX_VALUE / 1000);
     }
 

@@ -1,7 +1,7 @@
 package heuristics;
 
 import mdd.Layer;
-import mdd.State;
+import mdd.Node;
 
 /**
  * Enables defining heuristics to select nodes to be merged when building a relax MDD.
@@ -11,12 +11,12 @@ import mdd.State;
 public interface MergeSelector {
 
     /**
-     * Selects the states to be merged in order to relax the MDD.
+     * Selects the nodes to be merged in order to relax the MDD.
      *
-     * @param layer  the layer in which we need to merge states
-     * @param number the number of states to merge
-     * @return an array of {@code State} objects to be merged in the layer
+     * @param layer  the layer in which we need to merge nodes
+     * @param number the number of nodes to merge
+     * @return an array of {@code Node} objects to be merged in the layer
      */
-    State[] select(Layer layer, int number);
+    Node[] select(Layer layer, int number);
 
 }

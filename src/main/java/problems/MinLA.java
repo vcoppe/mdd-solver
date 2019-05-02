@@ -2,8 +2,8 @@ package problems;
 
 import core.Problem;
 import core.Variable;
+import mdd.Node;
 import mdd.State;
-import mdd.StateRepresentation;
 
 import java.io.File;
 import java.util.*;
@@ -20,11 +20,11 @@ public class MinLA implements Problem {
     private int[][] g;
 
     private int nVariables;
-    private State root;
+    private Node root;
 
     public double opt;
 
-    MinLA(int n, Edge[] edges) {
+    public MinLA(int n, Edge[] edges) {
         this(toWeightedGraphArray(n, edges));
     }
 
@@ -32,10 +32,10 @@ public class MinLA implements Problem {
         this.nVariables = g.length;
         this.g = g;
 
-        this.root = new State(new MinLAState(this.nVariables), Variable.newArray(nVariables), 0);
+        this.root = new Node(new MinLAState(this.nVariables), Variable.newArray(nVariables), 0);
     }
 
-    public State root() {
+    public Node root() {
         return this.root;
     }
 
@@ -96,10 +96,10 @@ public class MinLA implements Problem {
         return p;
     }
 
-    public List<State> successors(State s, Variable var) {
+    public List<Node> successors(Node s, Variable var) {
         int pos = var.id;
-        MinLAState minLAState = (MinLAState) s.stateRepresentation;
-        List<State> succs = new LinkedList<>();
+        MinLAState minLAState = (MinLAState) s.state;
+        List<Node> succs = new LinkedList<>();
 
         double value;
 
@@ -126,26 +126,26 @@ public class MinLA implements Problem {
         return succs;
     }
 
-    public State merge(State[] states) {
+    public Node merge(Node[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
 
-        MinLAState[] minLAStates = new MinLAState[states.length];
+        MinLAState[] minLAStates = new MinLAState[nodes.length];
 
-        for (int i = 0; i < states.length; i++) {
-            minLAStates[i] = (MinLAState) states[i].stateRepresentation;
+        for (int i = 0; i < nodes.length; i++) {
+            minLAStates[i] = (MinLAState) nodes[i].state;
 
-            if (states[i].value() > maxValue) {
-                maxValue = states[i].value();
-                variables = states[i].variables;
-                indexes = states[i].indexes;
+            if (nodes[i].value() > maxValue) {
+                maxValue = nodes[i].value();
+                variables = nodes[i].variables;
+                indexes = nodes[i].indexes;
             }
         }
 
         merge(minLAStates);
 
-        return new State(minLAStates[0], variables, indexes, maxValue, false);
+        return new Node(minLAStates[0], variables, indexes, maxValue, false);
     }
 
     private void merge(MinLAState[] states) {
@@ -201,7 +201,7 @@ public class MinLA implements Problem {
         }
     }
 
-    class MinLAState implements StateRepresentation {
+    class MinLAState implements State {
 
         long[] mask;
         int[][] gMod;
@@ -232,8 +232,8 @@ public class MinLA implements Problem {
             return new MinLAState(this.mask, this.gMod);
         }
 
-        public double rank(State state) {
-            return state.value();
+        public double rank(Node node) {
+            return node.value();
         }
 
         public String toString() {

@@ -4,8 +4,8 @@ import core.Problem;
 import core.Variable;
 import heuristics.VariableSelector;
 import mdd.Layer;
+import mdd.Node;
 import mdd.State;
-import mdd.StateRepresentation;
 
 import java.io.File;
 import java.util.*;
@@ -15,7 +15,7 @@ public class MAX2SAT implements Problem {
     private static Map<Integer, double[]>[] g;
 
     private static int nVariables;
-    private State root;
+    private Node root;
     private static boolean done = false;
 
     public double opt;
@@ -46,10 +46,10 @@ public class MAX2SAT implements Problem {
         done = false;
         MAX2SAT.g = g;
 
-        this.root = new State(new MAX2SATState(nVariables), Variable.newArray(nVariables), 0);
+        this.root = new Node(new MAX2SATState(nVariables), Variable.newArray(nVariables), 0);
     }
 
-    public State root() {
+    public Node root() {
         return this.root;
     }
 
@@ -57,11 +57,11 @@ public class MAX2SAT implements Problem {
         return nVariables;
     }
 
-    public List<State> successors(State s, Variable var) {
+    public List<Node> successors(Node s, Variable var) {
         int u = var.id;
-        List<State> succs = new LinkedList<>();
+        List<Node> succs = new LinkedList<>();
 
-        MAX2SATState max2satState = ((MAX2SATState) s.stateRepresentation);
+        MAX2SATState max2satState = ((MAX2SATState) s.state);
 
         // assigning var to 0
         double[] benefits0 = new double[nVariables];
@@ -126,18 +126,18 @@ public class MAX2SAT implements Problem {
         return succs;
     }
 
-    public State merge(State[] states) {
+    public Node merge(Node[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
         double[] benefits = new double[nVariables];
-        double[] newValues = new double[states.length];
-        MAX2SATState[] statesRep = new MAX2SATState[states.length];
+        double[] newValues = new double[nodes.length];
+        MAX2SATState[] statesRep = new MAX2SATState[nodes.length];
 
         int i = 0;
-        for (State state : states) {
-            newValues[i] = state.value();
-            statesRep[i++] = (MAX2SATState) state.stateRepresentation;
+        for (Node node : nodes) {
+            newValues[i] = node.value();
+            statesRep[i++] = (MAX2SATState) node.state;
         }
 
         for (i = 0; i < nVariables; i++) {
@@ -167,12 +167,12 @@ public class MAX2SAT implements Problem {
         for (i = 0; i < newValues.length; i++) {
             if (newValues[i] > maxValue) {
                 maxValue = newValues[i];
-                variables = states[i].variables;
-                indexes = states[i].indexes;
+                variables = nodes[i].variables;
+                indexes = nodes[i].indexes;
             }
         }
 
-        return new State(new MAX2SATState(benefits), variables, indexes, maxValue, false);
+        return new Node(new MAX2SATState(benefits), variables, indexes, maxValue, false);
     }
 
     private static Map<Integer, double[]>[] toGraph(int n, Clause[] clauses) {
@@ -197,7 +197,7 @@ public class MAX2SAT implements Problem {
         return g;
     }
 
-    class MAX2SATState implements StateRepresentation {
+    class MAX2SATState implements State {
 
         double[] benefits;
 
@@ -222,8 +222,8 @@ public class MAX2SAT implements Problem {
             return Arrays.equals(benefits, other.benefits);
         }
 
-        public double rank(State state) {
-            double rank = state.value();
+        public double rank(Node node) {
+            double rank = node.value();
 
             for (double benefit : benefits) {
                 rank += Math.abs(benefit);

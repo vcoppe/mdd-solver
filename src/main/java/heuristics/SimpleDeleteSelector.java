@@ -1,15 +1,15 @@
 package heuristics;
 
 import mdd.Layer;
-import mdd.State;
+import mdd.Node;
 
 public class SimpleDeleteSelector implements DeleteSelector {
 
-    public State[] select(Layer layer, int number) {
-        State[] ret = new State[number];
+    public Node[] select(Layer layer, int number) {
+        Node[] ret = new Node[number];
         int i = 0;
 
-        for (State s : layer.states()) {
+        for (Node s : layer.nodes()) {
             ret[i++] = s;
             if (i == number) break;
         }
