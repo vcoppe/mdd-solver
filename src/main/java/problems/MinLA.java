@@ -103,24 +103,26 @@ public class MinLA implements Problem {
 
         double value;
 
-        for (int i = 0; i < nVariables; i++)
+        for (int i = 0; i < nVariables; i++) {
+            if (s.layerNumber() == 0 && i == nVariables - 1) break;
             if (((minLAState.mask[i / 64] >> (i % 64)) & 1L) == 1L) {
-            MinLAState succMinLAState = minLAState.copy();
+                MinLAState succMinLAState = minLAState.copy();
                 succMinLAState.mask[i / 64] &= ~(1L << (i % 64));
 
-            value = s.value();
+                value = s.value();
 
-            // add weight of edges between fixed vertices and free vertices
+                // add weight of edges between fixed vertices and free vertices
                 for (int j = 0; j < nVariables; j++)
                     if (((succMinLAState.mask[j / 64] >> (j % 64)) & 1L) == 1L) {
-                int edgeWeight = succMinLAState.edgeWeight(i, j);
-                succMinLAState.removeEdge(i, j);
-                int toFixedWeight = succMinLAState.edgeWeight(j, nVariables);
-                succMinLAState.replaceEdge(j, nVariables, toFixedWeight + edgeWeight);
-                value += toFixedWeight + edgeWeight;
-            }
+                        int edgeWeight = succMinLAState.edgeWeight(i, j);
+                        succMinLAState.removeEdge(i, j);
+                        int toFixedWeight = succMinLAState.edgeWeight(j, nVariables);
+                        succMinLAState.replaceEdge(j, nVariables, toFixedWeight + edgeWeight);
+                        value += toFixedWeight + edgeWeight;
+                    }
 
-            succs.add(s.getSuccessor(succMinLAState, value, pos, i));
+                succs.add(s.getSuccessor(succMinLAState, value, pos, i));
+            }
         }
 
         return succs;

@@ -5,8 +5,10 @@ import core.Solver;
 import heuristics.*;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 
@@ -21,10 +23,12 @@ public class TestMAX2SAT {
         clauses = new LinkedList<>();
 
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < 1 + random.nextInt(5); j++) {
-                Clause c = new Clause(i, random.nextInt(n), random.nextInt(2), random.nextInt(2), random.nextInt(100) - 50);
-                if (c.v != i) {
+            Set<Integer> s = new HashSet<Integer>();
+            for (int j = 0; n - i - 1 > 0 && j < 1 + random.nextInt(5); j++) {
+                Clause c = new Clause(i, i + 1 + random.nextInt(n - i - 1), random.nextInt(2), random.nextInt(2), random.nextInt(100) - 50);
+                if (c.v != i && !s.contains(c.v)) {
                     clauses.add(c);
+                    s.add(c.v);
                 }
             }
         }

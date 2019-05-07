@@ -31,9 +31,9 @@ public class MinLA {
                 for (int p = 0; p < n; p++) {
                     for (int q = 0; q < n; q++) {
                         if (p < q && adj[i].contains(j)) {
-                            z[i][p][j][q] = model.addVar(0, GRB.INFINITY, q - p, GRB.INTEGER, "z" + i + p + j + q);
+                            z[i][p][j][q] = model.addVar(0, 1, q - p, GRB.BINARY, "z" + i + p + j + q);
                         } else {
-                            z[i][p][j][q] = model.addVar(0, GRB.INFINITY, 0, GRB.INTEGER, "z" + i + p + j + q);
+                            z[i][p][j][q] = model.addVar(0, 1, 0, GRB.BINARY, "z" + i + p + j + q);
                         }
                     }
                 }

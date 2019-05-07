@@ -4,6 +4,7 @@ import heuristics.*;
 import mdd.MDD;
 import mdd.Node;
 
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -58,7 +59,7 @@ public class Solver {
         lowerBound = -Double.MAX_VALUE;
         upperBound = Double.MAX_VALUE;
 
-        Queue<Node> q = new PriorityQueue<>(); // nodes are popped starting with the one with least value
+        Queue<Node> q = new PriorityQueue<>(Comparator.comparingDouble(Node::value)); // nodes are popped starting with the one with least value
         q.add(this.problem.root());
 
         while (!q.isEmpty()) {

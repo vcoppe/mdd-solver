@@ -92,21 +92,22 @@ public class MinLA {
 
             MergeSelector ms = new MinLPMergeSelector();
             DeleteSelector ds = new MinLPDeleteSelector();
-            VariableSelector vs = new problems.MinLABidir.MinLABidirVariableSelector();
+            VariableSelector vs = new SimpleVariableSelector();
 
             Solver solver = new Solver(mdd, ms, ds, vs);
 
             System.out.println("MDD model created");
             System.out.println("Solving...");
 
-            if (args.length == 4) solver.setWidth(Integer.valueOf(args[3]));
+            if (args.length == 4 && Integer.valueOf(args[3]) > 0) solver.setWidth(Integer.valueOf(args[3]));
 
             Node result = solver.solve(timeLimit);
 
             System.out.println("runTime : " + solver.runTime());
             System.out.println("objValue : " + -result.value());
             System.out.println("gap : " + solver.gap());
-        }
+        } else System.out.println("Arguments needed :\n\tfilename\n\ttimeLimit\n\tmip/mdd\n\t[mdd max width]");
+
     }
 
 }
