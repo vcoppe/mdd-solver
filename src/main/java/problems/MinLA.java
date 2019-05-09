@@ -17,6 +17,8 @@ import static problems.Edge.toWeightedGraphArray;
  */
 public class MinLA implements Problem {
 
+    public static int[] maxBinomial = {1, 1, 2, 3, 6, 10, 20, 35, 70, 126, 252, 462, 924, 1716, 3432, 6435, 12870, 24310, 48620, 92378, 184756, 352716, 705432, 1352078};
+
     private int[][] g;
 
     private int nVariables;

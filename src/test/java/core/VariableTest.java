@@ -10,14 +10,14 @@ public class VariableTest {
     public void testConstructor1() {
         Variable var = new Variable(0);
 
-        assertEquals(var.value(), -1);
+        assertEquals(Double.compare(var.value(), -1), 0);
     }
 
     @Test
     public void testConstructor2() {
         Variable var = new Variable(0, 3);
 
-        assertEquals(var.value(), 3);
+        assertEquals(Double.compare(var.value(), 3), 0);
     }
 
     @Test
@@ -25,9 +25,9 @@ public class VariableTest {
         Variable var = new Variable(0);
 
         var.assign(2);
-        assertEquals(var.value(), 2);
+        assertEquals(Double.compare(var.value(), 2), 0);
 
         var.assign(3);
-        assertEquals(var.value(), 3);
+        assertEquals(Double.compare(var.value(), 3), 0);
     }
 }

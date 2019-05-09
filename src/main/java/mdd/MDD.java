@@ -26,6 +26,7 @@ public class MDD {
     private Layer root;
     private Layer lastExactLayer;
     private boolean exact;
+    public boolean LELcutset = true;
 
     /**
      * Returns the MDD representation of the problem.
@@ -52,7 +53,7 @@ public class MDD {
         this.root = new Layer(problem, this, initialNode, initialNode.layerNumber());
         this.exact = true;
         this.lastExactLayer = null;
-        this.frontier = new HashSet<>();
+        if (!this.LELcutset) this.frontier = new HashSet<>();
         this.mergeSelector = mergeSelector;
         this.deleteSelector = deleteSelector;
         this.variableSelector = variableSelector;
@@ -106,7 +107,7 @@ public class MDD {
      */
     public Node solveRelaxed(int width) {
         this.lastExactLayer = null;
-        this.frontier.clear();
+        if (!this.LELcutset) this.frontier.clear();
         Layer lastLayer = root;
 
         boolean first = true;
@@ -124,9 +125,11 @@ public class MDD {
             }
         }
 
-        for (Node s : lastLayer.nodes()) {
-            if (s.isExact()) {
-                this.frontier.add(s);
+        if (!this.LELcutset) {
+            for (Node s : lastLayer.nodes()) {
+                if (s.isExact()) {
+                    this.frontier.add(s);
+                }
             }
         }
 
@@ -157,8 +160,7 @@ public class MDD {
      * @return a set of exact nodes being an exact cutset
      */
     public Collection<Node> exactCutset() {
-        return this.lastExactLayerCutset();
-        //return this.frontierCutset();
+        return this.LELcutset ? this.lastExactLayerCutset() : this.frontierCutset();
     }
 
     /**

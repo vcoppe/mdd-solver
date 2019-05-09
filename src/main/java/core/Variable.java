@@ -6,7 +6,7 @@ package core;
 public class Variable {
 
     public int id;
-    private int value;
+    private double value;
 
     /**
      * Returns a free variable.
@@ -24,7 +24,7 @@ public class Variable {
      * @param id     the id of the variable in the problem
      * @param value the value of the variable
      */
-    public Variable(int id, int value) {
+    public Variable(int id, double value) {
         this.id = id;
         this.value = value;
     }
@@ -39,12 +39,17 @@ public class Variable {
     }
 
     /**
-     * Returns the value of the variable if it is assigned.
+     * Returns an array of {@code n} variables with {@code id}s from {@code 0} to {@code n-1}.
      *
-     * @return the value of the variable of {@code -1} if it is not assigned
+     * @param n the number of variables needed
+     * @return an array of {@code Variable} objects
      */
-    public int value() {
-        return this.value;
+    public static Variable[] newArray(int n) {
+        Variable[] variables = new Variable[n];
+        for (int i = 0; i < n; i++) {
+            variables[i] = new Variable(i);
+        }
+        return variables;
     }
 
     /**
@@ -56,11 +61,12 @@ public class Variable {
         this.value = value;
     }
 
-    public static Variable[] newArray(int n) {
-        Variable[] variables = new Variable[n];
-        for (int i = 0; i < n; i++) {
-            variables[i] = new Variable(i);
-        }
-        return variables;
+    /**
+     * Returns the value of the variable if it is assigned.
+     *
+     * @return the value of the variable of {@code -1} if it is not assigned
+     */
+    public double value() {
+        return this.value;
     }
 }

@@ -74,7 +74,7 @@ public class Layer {
 
         next.setExact(this.exact);
         for (Node node : this.nodes.values()) {
-            if (node.isExact()) {
+            if (node.isExact() && !this.mdd.LELcutset) {
                 node.exactParents().clear(); // we do not need them anymore -> garbage collection
             }
 
@@ -82,17 +82,20 @@ public class Layer {
                 nextVar = this.mdd.variableSelector.select(node.freeVariables(), this);
             }
 
-            for (Node s : this.problem.successors(node, nextVar)) {
-                if (node.isExact()) s.addParent(node);
-                else s.setExact(false);
-                next.addNode(s);
+            for (Node n : this.problem.successors(node, nextVar)) {
+                if (node.isExact()) {
+                    if (!this.mdd.LELcutset) n.addParent(node);
+                } else n.setExact(false);
+                next.addNode(n);
             }
         }
 
         while (next.width() > width) {
             if (relaxed) {
                 Node[] toMerge = this.mdd.mergeSelector.select(next, next.width() - width + 1);
-                next.removeNodes(toMerge, this.mdd.frontier);
+
+                if (this.mdd.LELcutset) next.removeNodes(toMerge);
+                else next.removeNodes(toMerge, this.mdd.frontier);
 
                 Node mergedNode = this.problem.merge(toMerge);
                 mergedNode.setExact(false);

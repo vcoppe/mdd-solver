@@ -53,7 +53,7 @@ public class NodeTest {
         for (int i = 0; i < n; i++) {
             s.setLayerNumber(1);
             s.assign(i, 0);
-            assertEquals(s.getVariable(i).value(), 0);
+            assertEquals(Double.compare(s.getVariable(i).value(), 0), 0);
             assertTrue(s.isBound(i));
         }
     }

@@ -249,10 +249,10 @@ public class Node<R extends State> implements Comparable<Node> {
     /**
      * Adds an exact parent to the node
      *
-     * @param s an exact parent of this node
+     * @param node an exact parent of this node
      */
-    public void addParent(Node s) {
-        this.parents.add(s);
+    public void addParent(Node node) {
+        this.parents.add(node);
     }
 
     /**
