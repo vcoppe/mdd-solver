@@ -5,7 +5,6 @@ import core.Variable;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,7 +14,7 @@ import java.util.Set;
  */
 public class Layer {
 
-    private Map<State, Node> nodes;
+    private HashMap<State, Node> nodes;
     private Problem problem;
     private MDD mdd;
     private boolean exact;
