@@ -46,8 +46,6 @@ public class MinLA implements Problem {
     }
 
     /**
-     * Instances can be found on <a href=https://www.cs.upc.edu/~jpetit/MinLA/Experiments/</a>.
-     *
      * @param path path to a .gra file
      * @return a MinLA object encoding the problem
      */
@@ -238,14 +236,6 @@ public class MinLA implements Problem {
 
         public double rank(Node node) {
             return node.value();
-        }
-
-        public String toString() {
-            StringBuilder s = new StringBuilder();
-            for (int i = 0; i < nVariables; i++)
-                if (((mask[i / 64] >> (i % 64)) & 1L) == 1L)
-                s.append(i + 1);
-            return s.toString();
         }
 
         int edgeWeight(int i, int j) {

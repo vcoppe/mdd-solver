@@ -28,24 +28,6 @@ public class NodeTest {
     }
 
     @Test
-    public void testCopy() {
-        State sr = p.new MISPState(n);
-        Node s = new Node(sr, vars, 10);
-
-        assertEquals(s.nVariables(), n);
-
-        Node s2 = s.copy();
-
-        assertEquals(Double.compare(s.value(), s2.value()), 0);
-        assertEquals(s.state, s2.state);
-        assertEquals(s.isExact(), s2.isExact());
-        assertEquals(s.hashCode(), s2.hashCode());
-
-        assertTrue(s.equals(s2));
-        assertEquals(s.compareTo(s2), 0);
-    }
-
-    @Test
     public void testAssign() {
         State sr = p.new MISPState(n);
         Node s = new Node(sr, vars, 0);
@@ -96,11 +78,9 @@ public class NodeTest {
 
         s.setLayerNumber(1);
         assertEquals(s.layerNumber(), 1);
-        assertFalse(s.isFinal());
 
         s.setLayerNumber(n);
         assertEquals(s.layerNumber(), n);
-        assertTrue(s.isFinal());
 
         s.setRelaxedValue(10);
         assertEquals(Double.compare(s.relaxedValue(), 10), 0);

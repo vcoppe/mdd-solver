@@ -25,7 +25,7 @@ public class Solver {
     private MDD mdd;
 
     /**
-     * Constructor of the solver : allows the user to choose heuristics.
+     * Constructor of the solver with default heuristics.
      *
      * @param problem the implementation of a problem
      */
@@ -52,7 +52,7 @@ public class Solver {
      *
      * @return an object {@code Node} containing the optimal value and assignment
      */
-    public Node solve(int timeOut) {
+    public Node solve(int timeLimit) {
         startTime = System.currentTimeMillis();
 
         Node best = null;
@@ -77,7 +77,7 @@ public class Solver {
 
             Node resultRestricted = this.mdd.solveRestricted(maxW);
 
-            if (System.currentTimeMillis() - startTime > timeOut * 1000) {
+            if (System.currentTimeMillis() - startTime > timeLimit * 1000) {
                 endTime = System.currentTimeMillis();
                 return best;
             }
@@ -104,7 +104,7 @@ public class Solver {
                     for (Node s : q) {
                         queueUpperBound = Math.max(queueUpperBound, s.relaxedValue());
                     }
-                    if (queueUpperBound != upperBound || queueUpperBound < upperBound) {
+                    if (queueUpperBound < upperBound) {
                         upperBound = queueUpperBound;
                         printInfo(false);
                     }

@@ -76,7 +76,6 @@ public class TestMIPAll extends TestHelper {
         try {
             mip.MinLA mip = new mip.MinLA(n, edges);
             mip.solve(timeOut);
-            System.out.println("TIME : " + mip.runTime());
             mip.dispose();
         } catch (GRBException e) {
             e.printStackTrace();

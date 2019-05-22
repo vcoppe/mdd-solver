@@ -27,16 +27,16 @@ public interface Problem {
     int nVariables();
 
     /**
-     * Given a ndoe and a variable, returns the list of nodes reached after having assigned
+     * Given a node and a variable, returns the list of nodes reached after having assigned
      * the variable to every possible value.
      * Should transmit the cost, the exact property, the variables and assign a valid State
      * to the successors.
      *
-     * @param s   a node
-     * @param var a variable belonging to the node's variables and not assigned yet
+     * @param node a node
+     * @param var  a variable belonging to the node's variables and not assigned yet
      * @return an array of nodes resulting from a valid value assigned to the variable based on the given node
      */
-    List<Node> successors(Node s, Variable var);
+    List<Node> successors(Node node, Variable var);
 
     /**
      * Given a set of nodes, returns a new node with a {@code State}

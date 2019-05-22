@@ -53,7 +53,7 @@ public class Variable {
     }
 
     /**
-     * Assigns the variable to a value.
+     * Assigns a value to the variable.
      *
      * @param value the value to be assigned which should be in the domain
      */

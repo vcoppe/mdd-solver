@@ -16,7 +16,7 @@ public class TestMinLAAll extends TestHelper {
 
     private static double run(Problem p, int timeOut, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
-        solver.setWidth(MinLA.maxBinomial[p.nVariables()] / 8);
+        solver.setWidth(MinLA.maxBinomial[p.nVariables()] / 4);
         return solver.solve(timeOut).value();
     }
 

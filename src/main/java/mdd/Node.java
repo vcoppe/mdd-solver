@@ -70,15 +70,6 @@ public class Node<R extends State> implements Comparable<Node> {
     }
 
     /**
-     * Returns a copy of the node.
-     *
-     * @return a different {@code Node} object with the same properties
-     */
-    public Node copy() {
-        return new Node(this.state.copy(), this.variables, this.indexes, this.value, this.exact);
-    }
-
-    /**
      * Assigns a variable of the problem to the given value.
      *
      * @param id    the identifier of the variable to be assigned
@@ -205,15 +196,6 @@ public class Node<R extends State> implements Comparable<Node> {
      */
     public void setExact(boolean exact) {
         this.exact = exact;
-    }
-
-    /**
-     * Returns a {@code boolean} telling if the node belongs to the final layer i. e. all the variables are assigned.
-     *
-     * @return {@code true} <==> the node is a final one
-     */
-    public boolean isFinal() {
-        return this.layerNumber == this.nVariables;
     }
 
     /**
