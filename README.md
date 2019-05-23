@@ -11,11 +11,11 @@ where the three first are formalized in the article mentioned previously and the
 
 ## Contents
 
-1. [Installation](#installation)
-2. [Usage](#usage)
+- [Installation](#installation)
+- [Usage](#usage)
     * [Example : the Unbounded Knapsack Problem](#example)
-3. [Javadoc](#javadoc)
-4. [License](#license)
+- [Javadoc](#javadoc)
+- [License](#license)
 
 ## Installation
 Use [IntelliJ IDEA](https://www.jetbrains.com/idea/) and open directly the Maven project (file [pom.xml](https://github.com/vcoppe/mdd-solver/blob/master/pom.xml)). 
