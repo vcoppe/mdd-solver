@@ -7,6 +7,7 @@ Four problems are already implemented in the `problems` package :
 * Maximum Cut Problem
 * Maximum 2-Satisfiability Problem
 * Minimum Linear Arrangement Problem
+
 where the three first are formalized in the article mentioned previously and the latter is part of my thesis (link to follow).
 
 ## Contents
