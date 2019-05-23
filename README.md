@@ -113,6 +113,7 @@ public class Knapsack implements Problem {
     public Node merge(Node[] nodes) { ... }
 
     private class KnapsackState implements State { ... }
+    
 }
 
 ```
