@@ -14,7 +14,8 @@ where the three first are formalized in the article mentioned previously and the
 1. [Installation](#installation)
 2. [Usage](#usage)
     * [Example : the Unbounded Knapsack Problem](#example)
-3. [License](#license)
+3. [Javadoc](#javadoc)
+4. [License](#license)
 
 ## Installation
 Use [IntelliJ IDEA](https://www.jetbrains.com/idea/) and open directly the Maven project (file [pom.xml](https://github.com/vcoppe/mdd-solver/blob/master/pom.xml)). 
@@ -54,8 +55,6 @@ public interface Problem {
 
 }
 ```
-
-You can also refer to the [javadoc](https://vcoppe.github.io/mdd-solver/) for general information about the implementation.
 
 ### Example
 
@@ -136,7 +135,7 @@ public List<Node> successors(Node node, Variable var) {
 }
 ```
 
-In the method `merge`, we implement the merging operation described in Example \ref{ex:knap:relaxed}. We loop over the nodes to merge, store the largest remaining capacity and keep track of the node with the longest path value. We then replace its capacity by the largest we found and return that node.
+In the method `merge`, we implement a simple valid merging operation : we keep the largest remaining capacity among the nodes to merge. We loop over the nodes to merge, store the largest remaining capacity and keep track of the node with the longest path value. We then replace its capacity by the largest we found and return that node.
 
 ```java
 public Node merge(Node[] nodes) {
@@ -153,6 +152,10 @@ public Node merge(Node[] nodes) {
     return best;
 }
 ```
+
+## Javadoc
+
+You can also refer to the [javadoc](https://vcoppe.github.io/mdd-solver/) for general information about the implementation.
 
 ## License
 This project is licensed under the GNU General Public License v3.0 - see [LICENSE.md](https://github.com/vcoppe/mdd-solver/blob/master/LICENSE.md) for details.
