@@ -4,7 +4,7 @@ import mdd.Layer;
 import mdd.Node;
 
 /**
- * Enables defining heuristics to select nodes to be merged when building a relax MDD.
+ * Enables defining heuristics to select nodes to be merged when building a relaxed MDD.
  *
  * @author Vianney Coppé
  */

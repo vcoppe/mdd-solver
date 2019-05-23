@@ -2,7 +2,6 @@ package problems;
 
 import core.Problem;
 import core.Solver;
-import heuristics.*;
 import org.junit.Test;
 
 import java.util.Random;
@@ -28,12 +27,8 @@ public class TestKnapsack {
     }
 
     private static double run() {
-        MergeSelector ms = new MinLPMergeSelector();
-        DeleteSelector ds = new MinLPDeleteSelector();
-        VariableSelector vs = new SimpleVariableSelector();
-
         Problem p = new Knapsack(n, c, w, v);
-        Solver solver = new Solver(p, ms, ds, vs);
+        Solver solver = new Solver(p);
         return solver.solve().value();
     }
 
@@ -70,12 +65,8 @@ public class TestKnapsack {
         w = new int[]{4, 2, 3};
         v = new double[]{7, 2, 5};
 
-        MergeSelector ms = new MinLPMergeSelector();
-        DeleteSelector ds = new MinLPDeleteSelector();
-        VariableSelector vs = new SimpleVariableSelector();
-
         Problem p = new Knapsack(n, c, w, v);
-        Solver solver = new Solver(p, ms, ds, vs);
+        Solver solver = new Solver(p);
         solver.setWidth(2);
         solver.solve();
     }

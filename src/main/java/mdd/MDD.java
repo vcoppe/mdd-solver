@@ -139,7 +139,7 @@ public class MDD {
     /**
      * Returns a {@code boolean} telling if this MDD resolution was exact.
      *
-     * @return {@code true} <==> all the layers are exact
+     * @return {@code true} iff all the layers are exact
      */
     public boolean isExact() {
         return this.exact;

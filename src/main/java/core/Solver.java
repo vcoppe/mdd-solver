@@ -31,7 +31,7 @@ public class Solver {
      */
     public Solver(Problem problem) {
         this.problem = problem;
-        this.mdd = new MDD(problem, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+        this.mdd = new MDD(problem, new MinRankMergeSelector(), new MinRankDeleteSelector(), new SimpleVariableSelector());
     }
 
     /**
@@ -50,6 +50,7 @@ public class Solver {
     /**
      * Solves the given maximization problem with the given heuristics and returns the optimal solution if it exists.
      *
+     * @param timeLimit a time limit in seconds
      * @return an object {@code Node} containing the optimal value and assignment
      */
     public Node solve(int timeLimit) {
@@ -152,11 +153,21 @@ public class Solver {
         return this.solve(Integer.MAX_VALUE / 1000);
     }
 
+    /**
+     * Sets the maximum width of the decision diagrams used in the solver.
+     *
+     * @param width the maximum width
+     */
     public void setWidth(int width) {
         this.adaptiveWidth = false;
         this.maxWidth = width;
     }
 
+    /**
+     * Gives the gap in [0,1] between the lower and upper bound.
+     *
+     * @return the gap as real number in [0,1]
+     */
     public double gap() {
         if (upperBound == Double.MAX_VALUE) return 1;
         if (upperBound < 0) return Math.abs(upperBound - lowerBound) / Math.abs(lowerBound);

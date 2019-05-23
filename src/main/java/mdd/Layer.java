@@ -65,6 +65,8 @@ public class Layer {
      * to assign and the {@code problem} implementation to provide the successors of all the nodes of
      * the layer.
      *
+     * @param width the maximum width of the relaxed/restricted decision diagram
+     * @param relaxed {@code true} for a relaxed decision diagram and {@code false} for a restricted one
      * @return the next layer of the MDD
      */
     public Layer nextLayer(int width, boolean relaxed) {
@@ -167,7 +169,7 @@ public class Layer {
     }
 
     /**
-     * Returns the best node of the layer.
+     * Returns the best node of the layer, the one with maximum longest-path value.
      *
      * @return a {@code Node} object representing the best node of the layer
      */
@@ -184,7 +186,7 @@ public class Layer {
     /**
      * Returns a {@code boolean} telling if the layer is equal to the corresponding complete MDD layer.
      *
-     * @return {@code true} <==> the layer is equal to the corresponding complete MDD layer
+     * @return {@code true} iff the layer is equal to the corresponding complete MDD layer
      */
     public boolean isExact() {
         return this.exact;
@@ -202,7 +204,7 @@ public class Layer {
     /**
      * Returns a {@code boolean} telling if the layer is the last one i. e. all the variables are assigned.
      *
-     * @return {@code true} <==> the layer is the final one
+     * @return {@code true} iff the layer is the final one
      */
     public boolean isFinal() {
         return this.number == this.problem.nVariables();

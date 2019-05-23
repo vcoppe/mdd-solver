@@ -147,7 +147,7 @@ public class Node<R extends State> implements Comparable<Node> {
      * Returns a {@code boolean} telling if the variable {@code i} is bound.
      *
      * @param i the id of a variable
-     * @return {@code true} <==> the variable {@code i} is bound
+     * @return {@code true} iff the variable {@code i} is bound
      */
     public boolean isBound(int i) {
         return this.indexes[i] < this.layerNumber;
@@ -183,7 +183,7 @@ public class Node<R extends State> implements Comparable<Node> {
     /**
      * Returns a {@code boolean} telling if the node is exact.
      *
-     * @return {@code true} <==> the node is exact
+     * @return {@code true} iff the node is exact
      */
     public boolean isExact() {
         return this.exact;

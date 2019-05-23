@@ -12,8 +12,20 @@ public interface State {
 
     boolean equals(Object obj);
 
+    /**
+     * Function assigning a rank to each node of a layer used to determine which nodes to
+     * delete/merge in restricted/relaxed decision diagrams.
+     *
+     * @param node the node containing this state
+     * @return the rank
+     */
     double rank(Node node);
 
+    /**
+     * Should return a deep copy of the state.
+     *
+     * @return another {@code State} object with the same properties
+     */
     State copy();
 
 }

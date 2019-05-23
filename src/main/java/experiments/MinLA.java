@@ -90,8 +90,8 @@ public class MinLA {
         } else if (args[2].equals("mdd")) {
             problems.MinLA mdd = new problems.MinLA(n, edges);
 
-            MergeSelector ms = new MinLPMergeSelector();
-            DeleteSelector ds = new MinLPDeleteSelector();
+            MergeSelector ms = new MinRankMergeSelector();
+            DeleteSelector ds = new MinRankDeleteSelector();
             VariableSelector vs = new SimpleVariableSelector();
 
             Solver solver = new Solver(mdd, ms, ds, vs);

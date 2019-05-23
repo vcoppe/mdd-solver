@@ -36,7 +36,7 @@ public class TestMISP extends TestHelper {
 
     protected boolean testData(int timeOut) {
         MISP p = MISP.readDIMACS(path);
-        double found = run(p, timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MISP.MISPVariableSelector());
+        double found = run(p, timeOut, new MinRankMergeSelector(), new MinRankDeleteSelector(), new MISP.MISPVariableSelector());
         return p.opt == found;
     }
 

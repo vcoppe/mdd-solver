@@ -5,7 +5,12 @@ import mdd.Node;
 
 import java.util.Arrays;
 
-public class MinLPDeleteSelector implements DeleteSelector {
+/**
+ * Deletes the nodes with the least rank values.
+ *
+ * @author Vianney Coppé
+ */
+public class MinRankDeleteSelector implements DeleteSelector {
 
     @Override
     public Node[] select(Layer layer, int number) {

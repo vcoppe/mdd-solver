@@ -28,7 +28,7 @@ public class TestMinLAAll extends TestHelper {
     @Override
     protected boolean testData(int timeOut) {
         MinLA p = MinLA.readGra(path);
-        run(p, timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+        run(p, timeOut, new MinRankMergeSelector(), new MinRankDeleteSelector(), new SimpleVariableSelector());
         return true;
     }
 

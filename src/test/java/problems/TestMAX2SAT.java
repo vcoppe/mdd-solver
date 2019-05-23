@@ -75,12 +75,12 @@ public class TestMAX2SAT {
 
     @Test
     public void testRandom() {
-        MergeSelector ms = new MinLPMergeSelector();
-        DeleteSelector ds = new MinLPDeleteSelector();
+        MergeSelector ms = new MinRankMergeSelector();
+        DeleteSelector ds = new MinRankDeleteSelector();
         VariableSelector vs = new MAX2SAT.MAX2SATVariableSelector();
 
         for (n = 5; n <= 20; n += 5) {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 generate();
                 assertTrue(run(ms, ds, vs) == bruteForce());
             }
@@ -94,7 +94,7 @@ public class TestMAX2SAT {
         VariableSelector vs = new SimpleVariableSelector();
 
         for (n = 5; n <= 20; n += 5) {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 generate();
                 assertTrue(run(ms, ds, vs) == bruteForce());
             }
@@ -104,7 +104,7 @@ public class TestMAX2SAT {
     @Test
     public void testRandom3() {
         for (n = 5; n <= 20; n += 5) {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 generate();
 
                 Problem p = new MAX2SAT(n, clauses.toArray(new Clause[0]));
@@ -117,8 +117,8 @@ public class TestMAX2SAT {
 
     @Test
     public void testReadDIMACS() {
-        MergeSelector ms = new MinLPMergeSelector();
-        DeleteSelector ds = new MinLPDeleteSelector();
+        MergeSelector ms = new MinRankMergeSelector();
+        DeleteSelector ds = new MinRankDeleteSelector();
         VariableSelector vs = new MAX2SAT.MAX2SATVariableSelector();
 
         MAX2SAT p = MAX2SAT.readDIMACS("data/max2sat/pass.wcnf");

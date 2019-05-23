@@ -277,7 +277,7 @@ public class MAX2SAT implements Problem {
     }
 
     /**
-     * Instances can be found on <a href=http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
+     * Instances can be found on <a href="http://sites.nlsde.buaa.edu.cn/~kexu/benchmarks/max-sat-benchmarks.htm">this website</a>.
      *
      * @param path path to an input file in DIMACS wcnf format
      * @return a MAX2SAT object encoding the problem

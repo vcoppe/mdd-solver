@@ -81,14 +81,14 @@ public class TestMCP {
 
     @Test
     public void testRandom() {
-        MergeSelector ms = new MinLPMergeSelector();
-        DeleteSelector ds = new MinLPDeleteSelector();
+        MergeSelector ms = new MinRankMergeSelector();
+        DeleteSelector ds = new MinRankDeleteSelector();
         VariableSelector vs = new SimpleVariableSelector();
 
         p = 0.5;
 
         for (n = 5; n <= 20; n += 5) {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 generate();
                 assertTrue(run(ms, ds, vs) == bruteForce());
             }
@@ -104,7 +104,7 @@ public class TestMCP {
         p = 0.5;
 
         for (n = 5; n <= 20; n += 5) {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 generate();
                 assertTrue(run(ms, ds, vs) == bruteForce());
             }

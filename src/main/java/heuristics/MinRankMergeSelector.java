@@ -6,11 +6,11 @@ import mdd.Node;
 import java.util.Arrays;
 
 /**
- * Merges the nodes with the least path values.
+ * Merges the nodes with the least rank values.
  *
  * @author Vianney Coppé
  */
-public class MinLPMergeSelector implements MergeSelector {
+public class MinRankMergeSelector implements MergeSelector {
 
     public Node[] select(Layer layer, int number) {
         Node[] nodes = new Node[layer.width()];

@@ -37,43 +37,9 @@ public class TestMAX2SATAll extends TestHelper {
         return new MAX2SAT(n, input);
     }
 
-    private static long runTime(Problem p, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
-        Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
-
-        long startTime = System.currentTimeMillis();
-        solver.solve();
-        long endTime = System.currentTimeMillis();
-
-        return endTime - startTime;
-    }
-
     private static double run(Problem p, int timeOut, MergeSelector mergeSelector, DeleteSelector deleteSelector, VariableSelector variableSelector) {
         Solver solver = new Solver(p, mergeSelector, deleteSelector, variableSelector);
         return solver.solve(timeOut).value();
-    }
-
-    private static void testPerf() {
-        Problem p = generate(100);
-
-        int times = 5;
-        long conf1 = 0, conf2 = 0, conf3 = 0, conf4 = 0, conf5 = 0;
-        System.out.print("[");
-        for (int i = 0; i < times; i++) {
-            //conf1 += runTime(p, new SimpleMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-            //conf2 += runTime(p, new MinLPMergeSelector(), new SimpleDeleteSelector(), new SimpleVariableSelector());
-            //conf3 += runTime(p, new SimpleMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-            conf4 += runTime(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
-            //conf5 += runTime(p, new MinLPMergeSelector(), new MinLPDeleteSelector(), new MAX2SAT.MAX2SATVariableSelector());
-            System.out.print("=");
-        }
-        System.out.println("]");
-
-        System.out.println("===== Average resolution time =====");
-        System.out.println("All simple heuristics : " + conf1 / times);
-        System.out.println("With MinLP merging : " + conf2 / times);
-        System.out.println("With MinLP deleting : " + conf3 / times);
-        System.out.println("With MinLP merging & deleting : " + conf4 / times);
-        System.out.println("With MinLP merging & deleting + MAX2SAT variable selection : " + conf5 / times);
     }
 
     @Parameterized.Parameters
@@ -83,7 +49,7 @@ public class TestMAX2SATAll extends TestHelper {
 
     protected boolean testData(int timeOut) {
         MAX2SAT p = MAX2SAT.readDIMACS(path);
-        double found = run(p, timeOut, new MinLPMergeSelector(), new MinLPDeleteSelector(), new SimpleVariableSelector());
+        double found = run(p, timeOut, new MinRankMergeSelector(), new MinRankDeleteSelector(), new SimpleVariableSelector());
         return p.opt == found;
     }
 
