@@ -60,7 +60,8 @@ public class Solver {
         lowerBound = -Double.MAX_VALUE;
         upperBound = Double.MAX_VALUE;
 
-        Queue<Node> q = new PriorityQueue<>(Comparator.comparingDouble(Node::value)); // nodes are popped starting with the one with least value
+        Queue<Node> q = new PriorityQueue<>(Comparator.comparingDouble(Node::value)); // nodes are popped starting with
+        // the one with least longest-path value
         q.add(this.problem.root());
 
         while (!q.isEmpty()) {

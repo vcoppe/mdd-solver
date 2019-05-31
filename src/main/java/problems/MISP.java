@@ -20,13 +20,13 @@ import static problems.Edge.toGraph;
  *
  * @author Vianney Coppé
  */
-public class MISP implements Problem {
+public class MISP implements Problem<MISP.MISPState> {
 
     private double[] weights;
     private LinkedList<Integer>[] g;
 
     private int nVariables;
-    private Node root;
+    private Node<MISPState> root;
 
     public double opt;
 
@@ -52,10 +52,10 @@ public class MISP implements Problem {
         this.weights = weights;
         this.g = g;
 
-        this.root = new Node(new MISPState(this.nVariables), Variable.newArray(nVariables), 0);
+        this.root = new Node<>(new MISPState(this.nVariables), Variable.newArray(nVariables), 0);
     }
 
-    public Node root() {
+    public Node<MISPState> root() {
         return this.root;
     }
 
@@ -63,17 +63,17 @@ public class MISP implements Problem {
         return this.nVariables;
     }
 
-    public Node merge(Node[] nodes) {
+    public Node merge(Node<MISPState>[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
         MISPState mispState = null;
 
-        for (Node node : nodes) {
+        for (Node<MISPState> node : nodes) {
             if (mispState == null) {
-                mispState = (MISPState) node.state;
+                mispState = node.state;
             } else {
-                mispState.bs.or(((MISPState) node.state).bs);
+                mispState.bs.or((node.state).bs);
             }
 
             if (node.value() > maxValue) {
@@ -83,19 +83,18 @@ public class MISP implements Problem {
             }
         }
 
-        return new Node(mispState, variables, indexes, maxValue, false);
+        return new Node<>(mispState, variables, indexes, maxValue, false);
     }
 
-    public List<Node> successors(Node s, Variable var) {
+    public List<Node> successors(Node<MISPState> node, Variable var) {
         int u = var.id;
-        MISPState mispState = ((MISPState) s.state);
+        MISPState mispState = node.state;
         List<Node> succs = new LinkedList<>();
 
         // assign 0
         MISPState mispState0 = mispState.copy();
         mispState0.bs.clear(u);
-        Node dontTake = s.getSuccessor(mispState0, s.value(), u, 0);
-        succs.add(dontTake);
+        succs.add(node.getSuccessor(mispState0, node.value(), u, 0));
 
         if (!mispState.isFree(u)) {
             return succs;
@@ -109,8 +108,7 @@ public class MISP implements Problem {
             mispState1.bs.clear(v);
         }
 
-        Node take = s.getSuccessor(mispState1, s.value() + this.weights[u], u, 1);
-        succs.add(take);
+        succs.add(node.getSuccessor(mispState1, node.value() + this.weights[u], u, 1));
 
         return succs;
     }

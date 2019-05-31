@@ -1,6 +1,7 @@
 package core;
 
 import mdd.Node;
+import mdd.State;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  *
  * @author Vianney Coppé
  */
-public interface Problem {
+public interface Problem<R extends State> {
 
     /**
      * Returns the initial node of the problem i. e. the empty assignment.
@@ -36,7 +37,7 @@ public interface Problem {
      * @param var  a variable belonging to the node's variables and not assigned yet
      * @return an array of nodes resulting from a valid value assigned to the variable based on the given node
      */
-    List<Node> successors(Node node, Variable var);
+    List<Node> successors(Node<R> node, Variable var);
 
     /**
      * Given a set of nodes, returns a new node with a {@code State}
@@ -46,6 +47,6 @@ public interface Problem {
      * @return the resulting merged node,
      * should have consistent {@code variables} and {@code indexes} arrays
      */
-    Node merge(Node[] nodes);
+    Node merge(Node<R>[] nodes);
 
 }

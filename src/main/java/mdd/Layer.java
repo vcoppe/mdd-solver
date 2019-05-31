@@ -5,6 +5,7 @@ import core.Variable;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -83,7 +84,8 @@ public class Layer {
                 nextVar = this.mdd.variableSelector.select(node.freeVariables(), this);
             }
 
-            for (Node n : this.problem.successors(node, nextVar)) {
+            List<Node> successors = this.problem.successors(node, nextVar);
+            for (Node n : successors) {
                 if (node.isExact()) {
                     if (!this.mdd.LELcutset) n.addParent(node);
                 } else n.setExact(false);

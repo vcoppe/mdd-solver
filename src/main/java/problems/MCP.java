@@ -17,12 +17,12 @@ import static problems.Edge.toWeightedGraph;
  *
  * @author Vianney Coppé
  */
-public class MCP implements Problem {
+public class MCP implements Problem<MCP.MCPState> {
 
     private Map<Integer, Integer>[] g;
 
     private int nVariables;
-    private Node root;
+    private Node<MCPState> root;
 
     /**
      * Returns the representation of the MCP problem.
@@ -64,11 +64,11 @@ public class MCP implements Problem {
             }
         }
 
-        this.root = new Node(new MCPState(benefits0), variables, rootValue);
+        this.root = new Node<>(new MCPState(benefits0), variables, rootValue);
         this.root.setLayerNumber(1); // already 1 variable assigned
     }
 
-    public Node root() {
+    public Node<MCPState> root() {
         return this.root;
     }
 
@@ -76,7 +76,7 @@ public class MCP implements Problem {
         return this.nVariables;
     }
 
-    public Node merge(Node[] nodes) {
+    public Node merge(Node<MCPState>[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
@@ -85,9 +85,9 @@ public class MCP implements Problem {
         MCPState[] statesRep = new MCPState[nodes.length];
 
         int i = 0;
-        for (Node node : nodes) {
+        for (Node<MCPState> node : nodes) {
             newValues[i] = node.value();
-            statesRep[i++] = (MCPState) node.state;
+            statesRep[i++] = node.state;
         }
 
         for (i = 0; i < nVariables; i++) {
@@ -122,22 +122,21 @@ public class MCP implements Problem {
             }
         }
 
-        return new Node(new MCPState(benefits), variables, indexes, maxValue, false);
+        return new Node<>(new MCPState(benefits), variables, indexes, maxValue, false);
     }
 
-    public List<Node> successors(Node s, Variable var) {
+    public List<Node> successors(Node<MCPState> node, Variable var) {
         int u = var.id;
         List<Node> succs = new LinkedList<>();
 
-        Variable[] variables = s.variables;
-        MCPState mcpState = ((MCPState) s.state);
+        MCPState mcpState = node.state;
 
         // assigning var to 0
         double[] benefits0 = new double[this.nVariables];
-        double value0 = s.value() + Math.max(0, -mcpState.benefits[u]);
+        double value0 = node.value() + Math.max(0, -mcpState.benefits[u]);
 
         for (int i = 0; i < this.nVariables; i++) {
-            if (i != u && !s.isBound(i)) {
+            if (i != u && !node.isBound(i)) {
                 benefits0[i] = mcpState.benefits[i];
                 if (g[u].containsKey(i)) {
                     if (mcpState.benefits[i] * g[u].get(i) <= 0) {
@@ -148,14 +147,14 @@ public class MCP implements Problem {
             }
         }
 
-        succs.add(s.getSuccessor(new MCPState(benefits0), value0, u, 0));
+        succs.add(node.getSuccessor(new MCPState(benefits0), value0, u, 0));
 
         // assigning var to 1
         double[] benefits1 = new double[this.nVariables];
-        double value1 = s.value() + Math.max(0, mcpState.benefits[u]);
+        double value1 = node.value() + Math.max(0, mcpState.benefits[u]);
 
         for (int i = 0; i < this.nVariables; i++) {
-            if (i != u && !s.isBound(i)) {
+            if (i != u && !node.isBound(i)) {
                 benefits1[i] = mcpState.benefits[i];
                 if (g[u].containsKey(i)) {
                     if (mcpState.benefits[i] * g[u].get(i) >= 0) {
@@ -166,7 +165,7 @@ public class MCP implements Problem {
             }
         }
 
-        succs.add(s.getSuccessor(new MCPState(benefits1), value1, u, 1));
+        succs.add(node.getSuccessor(new MCPState(benefits1), value1, u, 1));
 
         return succs;
     }

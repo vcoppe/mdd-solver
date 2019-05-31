@@ -97,12 +97,12 @@ public class Node<R extends State> implements Comparable<Node> {
      *
      * @param other another node with the same {@code State}
      */
-    public void update(Node other) {
+    public void update(Node<R> other) {
         if (this.value < other.value()) {
             System.arraycopy(other.variables, 0, this.variables, 0, this.nVariables);
             System.arraycopy(other.indexes, 0, this.indexes, 0, this.nVariables);
             this.value = other.value;
-            this.state = (R) other.state;
+            this.state = other.state;
         }
         this.exact &= other.exact;
         this.parents.addAll(other.parents);
@@ -117,8 +117,8 @@ public class Node<R extends State> implements Comparable<Node> {
      * @param val   the value to bind to the variable chosen
      * @return a new node with the internal properties required to be the successor of this node
      */
-    public Node getSuccessor(State state, double value, int id, int val) {
-        Node succ = new Node(state, variables, indexes, value, exact);
+    public Node<R> getSuccessor(R state, double value, int id, int val) {
+        Node<R> succ = new Node<R>(state, variables, indexes, value, exact);
         succ.setLayerNumber(this.layerNumber + 1);
         succ.assign(id, val);
         return succ;

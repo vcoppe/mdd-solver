@@ -13,22 +13,22 @@ import java.util.List;
  *
  * @author Vianney Coppé
  */
-public class Knapsack implements Problem {
+public class Knapsack implements Problem<Knapsack.KnapsackState> {
 
     private int n, w[];
     private double[] v;
 
-    private Node root;
+    private Node<KnapsackState> root;
 
     Knapsack(int n, int c, int[] w, double[] v) {
         this.n = n;
         this.w = w;
         this.v = v;
 
-        root = new Node(new KnapsackState(c), Variable.newArray(n), 0);
+        root = new Node<>(new KnapsackState(c), Variable.newArray(n), 0);
     }
 
-    public Node root() {
+    public Node<KnapsackState> root() {
         return root;
     }
 
@@ -36,9 +36,9 @@ public class Knapsack implements Problem {
         return n;
     }
 
-    public List<Node> successors(Node node, Variable var) {
+    public List<Node> successors(Node<KnapsackState> node, Variable var) {
         int i = var.id;
-        KnapsackState knapsackState = (KnapsackState) node.state;
+        KnapsackState knapsackState = node.state;
         List<Node> successors = new LinkedList<>();
 
         for (int x = 0; x <= knapsackState.capacity / w[i]; x++) {
@@ -50,7 +50,7 @@ public class Knapsack implements Problem {
         return successors;
     }
 
-    public Node merge(Node[] nodes) {
+    public Node merge(Node<KnapsackState>[] nodes) {
         Node<KnapsackState> best = nodes[0];
         int maxCapacity = 0;
 
@@ -64,7 +64,7 @@ public class Knapsack implements Problem {
         return best;
     }
 
-    private class KnapsackState implements State {
+    public class KnapsackState implements State {
 
         int capacity;
 

@@ -15,14 +15,14 @@ import static problems.Edge.toWeightedGraphArray;
  *
  * @author Vianney Coppé
  */
-public class MinLA implements Problem {
+public class MinLA implements Problem<MinLA.MinLAState> {
 
     public static int[] maxBinomial = {1, 1, 2, 3, 6, 10, 20, 35, 70, 126, 252, 462, 924, 1716, 3432, 6435, 12870, 24310, 48620, 92378, 184756, 352716, 705432, 1352078};
 
     private int[][] g;
 
     private int nVariables;
-    private Node root;
+    private Node<MinLAState> root;
 
     public double opt;
 
@@ -34,10 +34,10 @@ public class MinLA implements Problem {
         this.nVariables = g.length;
         this.g = g;
 
-        this.root = new Node(new MinLAState(this.nVariables), Variable.newArray(nVariables), 0);
+        this.root = new Node<>(new MinLAState(this.nVariables), Variable.newArray(nVariables), 0);
     }
 
-    public Node root() {
+    public Node<MinLAState> root() {
         return this.root;
     }
 
@@ -96,20 +96,20 @@ public class MinLA implements Problem {
         return p;
     }
 
-    public List<Node> successors(Node s, Variable var) {
+    public List<Node> successors(Node<MinLAState> node, Variable var) {
         int pos = var.id;
-        MinLAState minLAState = (MinLAState) s.state;
+        MinLAState minLAState = node.state;
         List<Node> succs = new LinkedList<>();
 
         double value;
 
         for (int i = 0; i < nVariables; i++) {
-            if (s.layerNumber() == 0 && i == nVariables - 1) break;
+            if (node.layerNumber() == 0 && i == nVariables - 1) break;
             if (((minLAState.mask[i / 64] >> (i % 64)) & 1L) == 1L) {
                 MinLAState succMinLAState = minLAState.copy();
                 succMinLAState.mask[i / 64] &= ~(1L << (i % 64));
 
-                value = s.value();
+                value = node.value();
 
                 // add weight of edges between fixed vertices and free vertices
                 for (int j = 0; j < nVariables; j++)
@@ -121,14 +121,14 @@ public class MinLA implements Problem {
                         value += toFixedWeight + edgeWeight;
                     }
 
-                succs.add(s.getSuccessor(succMinLAState, value, pos, i));
+                succs.add(node.getSuccessor(succMinLAState, value, pos, i));
             }
         }
 
         return succs;
     }
 
-    public Node merge(Node[] nodes) {
+    public Node merge(Node<MinLAState>[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
@@ -136,7 +136,7 @@ public class MinLA implements Problem {
         MinLAState[] minLAStates = new MinLAState[nodes.length];
 
         for (int i = 0; i < nodes.length; i++) {
-            minLAStates[i] = (MinLAState) nodes[i].state;
+            minLAStates[i] = nodes[i].state;
 
             if (nodes[i].value() > maxValue) {
                 maxValue = nodes[i].value();
@@ -147,7 +147,7 @@ public class MinLA implements Problem {
 
         merge(minLAStates);
 
-        return new Node(minLAStates[0], variables, indexes, maxValue, false);
+        return new Node<>(minLAStates[0], variables, indexes, maxValue, false);
     }
 
     private void merge(MinLAState[] states) {

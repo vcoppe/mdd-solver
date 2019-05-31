@@ -10,12 +10,12 @@ import mdd.State;
 import java.io.File;
 import java.util.*;
 
-public class MAX2SAT implements Problem {
+public class MAX2SAT implements Problem<MAX2SAT.MAX2SATState> {
 
     private static Map<Integer, double[]>[] g;
 
     private static int nVariables;
-    private Node root;
+    private Node<MAX2SATState> root;
     private static boolean done = false;
 
     public double opt;
@@ -46,10 +46,10 @@ public class MAX2SAT implements Problem {
         done = false;
         MAX2SAT.g = g;
 
-        this.root = new Node(new MAX2SATState(nVariables), Variable.newArray(nVariables), 0);
+        this.root = new Node<>(new MAX2SATState(nVariables), Variable.newArray(nVariables), 0);
     }
 
-    public Node root() {
+    public Node<MAX2SATState> root() {
         return this.root;
     }
 
@@ -57,18 +57,18 @@ public class MAX2SAT implements Problem {
         return nVariables;
     }
 
-    public List<Node> successors(Node s, Variable var) {
+    public List<Node> successors(Node<MAX2SATState> node, Variable var) {
         int u = var.id;
         List<Node> succs = new LinkedList<>();
 
-        MAX2SATState max2satState = ((MAX2SATState) s.state);
+        MAX2SATState max2satState = node.state;
 
         // assigning var to 0
         double[] benefits0 = new double[nVariables];
-        double value0 = s.value() + Math.max(0, -max2satState.benefits[u]);
+        double value0 = node.value() + Math.max(0, -max2satState.benefits[u]);
 
         for (int i = 0; i < nVariables; i++) {
-            if (!s.isBound(i)) {
+            if (!node.isBound(i)) {
                 if (u != i) benefits0[i] = max2satState.benefits[i];
                 if (g[u].containsKey(i)) {
                     int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
@@ -91,14 +91,14 @@ public class MAX2SAT implements Problem {
             }
         }
 
-        succs.add(s.getSuccessor(new MAX2SATState(benefits0), value0, u, 0));
+        succs.add(node.getSuccessor(new MAX2SATState(benefits0), value0, u, 0));
 
         // assigning var to 1
         double[] benefits1 = new double[nVariables];
-        double value1 = s.value() + Math.max(0, max2satState.benefits[u]);
+        double value1 = node.value() + Math.max(0, max2satState.benefits[u]);
 
         for (int i = 0; i < nVariables; i++) {
-            if (!s.isBound(i)) {
+            if (!node.isBound(i)) {
                 if (u != i) benefits1[i] = max2satState.benefits[i];
                 if (g[u].containsKey(i)) {
                     int numTT = 3, numTF = 2, numFT = 1, numFF = 0;
@@ -121,12 +121,12 @@ public class MAX2SAT implements Problem {
             }
         }
 
-        succs.add(s.getSuccessor(new MAX2SATState(benefits1), value1, u, 1));
+        succs.add(node.getSuccessor(new MAX2SATState(benefits1), value1, u, 1));
 
         return succs;
     }
 
-    public Node merge(Node[] nodes) {
+    public Node merge(Node<MAX2SATState>[] nodes) {
         Variable[] variables = null;
         int[] indexes = null;
         double maxValue = -Double.MAX_VALUE;
@@ -135,9 +135,9 @@ public class MAX2SAT implements Problem {
         MAX2SATState[] statesRep = new MAX2SATState[nodes.length];
 
         int i = 0;
-        for (Node node : nodes) {
+        for (Node<MAX2SATState> node : nodes) {
             newValues[i] = node.value();
-            statesRep[i++] = (MAX2SATState) node.state;
+            statesRep[i++] = node.state;
         }
 
         for (i = 0; i < nVariables; i++) {
@@ -172,7 +172,7 @@ public class MAX2SAT implements Problem {
             }
         }
 
-        return new Node(new MAX2SATState(benefits), variables, indexes, maxValue, false);
+        return new Node<>(new MAX2SATState(benefits), variables, indexes, maxValue, false);
     }
 
     private static Map<Integer, double[]>[] toGraph(int n, Clause[] clauses) {
