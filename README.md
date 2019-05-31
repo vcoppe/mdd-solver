@@ -50,7 +50,7 @@ public interface Problem {
 
     int nVariables();
 
-    List<Node> successors(Node s, Variable var);
+    List<Node> successors(Node node, Variable var);
 
     Node merge(Node[] nodes);
 
