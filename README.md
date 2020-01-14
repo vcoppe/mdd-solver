@@ -8,7 +8,7 @@ Four problems are already implemented in the `problems` package :
 * Maximum 2-Satisfiability Problem
 * Minimum Linear Arrangement Problem
 
-where the three first are formalized in the article mentioned previously and the latter is part of my thesis (link to follow).
+where the three first are formalized in the article mentioned previously and the latter is part of my [thesis](https://dial.uclouvain.be/memoire/ucl/en/object/thesis%3A19396).
 
 ## Contents
 
