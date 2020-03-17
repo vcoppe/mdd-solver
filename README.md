@@ -8,7 +8,7 @@ Four problems are already implemented in the `problems` package :
 * Maximum 2-Satisfiability Problem
 * Minimum Linear Arrangement Problem
 
-where the three first are formalized in the article mentioned previously and the latter is part of my thesis (link to follow).
+where the three first are formalized in the article mentioned previously and the latter is part of my [thesis](https://dial.uclouvain.be/memoire/ucl/en/object/thesis%3A19396).
 
 ## Contents
 
@@ -44,15 +44,15 @@ public interface State {
 
 The interface [Problem.java](https://github.com/vcoppe/mdd-solver/blob/master/src/main/java/core/Problem.java) showed below is the second component which has to be adapted to every problem and it will contain the rest of the information about the problem, mainly the state transitions *t<sub>j</sub>(s<sup>j</sup>,x<sub>j</sub>)* and *h<sub>j</sub>(s<sup>j</sup>,x<sub>j</sub>)* and the merging operator ⊕(M). The two first methods are very simple : `root` should return a node with the root state *r* of the problem and `nVariables` should return the number of variables *n* of the problem. Given a node and an unbound variable, the method `successors` should return a list of nodes that we reach by assigning every possible value to the variable. The method `merge` takes an array of nodes and should return a single node resulting from a valid merging operation.
 ```java
-public interface Problem {
+public interface Problem<R extends State> {
 
     Node root();
 
     int nVariables();
 
-    List<Node> successors(Node node, Variable var);
+    List<Node> successors(Node<R> node, Variable var);
 
-    Node merge(Node[] nodes);
+    Node merge(Node<R>[] nodes);
 
 }
 ```
@@ -92,47 +92,47 @@ We now discuss the implementation of the interface [Problem.java](https://github
 In the constructor, we instantiate the root node of the decision diagram with 3 parameters : the associated state which has a remaining capacity equal to `c`, the variables in the number of `n` and the root value which is set to `0`.
 
 ```java
-public class Knapsack implements Problem {
+public class Knapsack implements Problem<Knapsack.KnapsackState> {
 
     private int n, w[];
     private double[] v;
-    private Node root;
+    private Node<KnapsackState> root;
 
     Knapsack(int n, int c, int[] w, double[] v) {
         this.n = n;
         this.w = w;
         this.v = v;
-        root = new Node(new KnapsackState(c), Variable.newArray(n), 0);
+
+        root = new Node<>(new KnapsackState(c), Variable.newArray(n), 0);
     }
 
-    public Node root() { return root; }
+    public Node<KnapsackState> root() { return root; }
 
     public int nVariables() { return n; }
 
-    public List<Node> successors(Node node, Variable var) { ... }
+    public List<Node> successors(Node<KnapsackState> node, Variable var) { ... }
 
-    public Node merge(Node[] nodes) { ... }
+    public Node merge(Node<KnapsackState>[] nodes) { ... }
 
-    private class KnapsackState implements State { ... }
-    
+    public class KnapsackState implements State { ... }
 }
-
 ```
 
 In `successors`, we first retrieve the index of the variable we are considering (since variables can be assigned in a different order in order to reduce the size of the decision diagram) and the remaining capacity contained in the state of the given node. Then, we iterate over each feasible quantity of item `i` that we can still put in the knapsack (from `0` to `knapsackState.capacity / w[i]`) and add the corresponding successor to the list. For each of them, a new state is created with the new remaining capacity and the new value of the knapsack is computed.
 
 ```java
-public List<Node> successors(Node node, Variable var) {
+public List<Node> successors(Node<KnapsackState> node, Variable var) {
     int i = var.id;
-    KnapsackState knapsackState = (KnapsackState) node.state;
+    KnapsackState knapsackState = node.state;
     List<Node> successors = new LinkedList<>();
     
     for (int x = 0; x <= knapsackState.capacity / w[i]; x++) {
-        KnapsackState succKnapsackState = new KnapsackState(knapsackState.capacity - x * w[i]);
+        KnapsackState succKnapsackState =
+            new KnapsackState(knapsackState.capacity - x * w[i]);
         double value = node.value() + x * v[i];
         successors.add(node.getSuccessor(succKnapsackState, value, i, x));
     }
-
+    
     return successors;
 }
 ```
@@ -140,16 +140,16 @@ public List<Node> successors(Node node, Variable var) {
 In the method `merge`, we implement a simple valid merging operation : we keep the largest remaining capacity among the nodes to merge. We loop over the nodes to merge, store the largest remaining capacity and keep track of the node with the longest path value. We then replace its capacity by the largest we found and return that node.
 
 ```java
-public Node merge(Node[] nodes) {
+public Node merge(Node<KnapsackState>[] nodes) {
     Node<KnapsackState> best = nodes[0];
     int maxCapacity = 0;
-    
+
     for (Node<KnapsackState> node : nodes) {
         maxCapacity = Math.max(maxCapacity, node.state.capacity);
-        
+
         if (node.value() > best.value()) best = node;
     }
-    
+
     best.state.capacity = maxCapacity;
     return best;
 }
