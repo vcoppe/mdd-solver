@@ -75,7 +75,7 @@ public class MinLA {
         int timeLimit = Integer.valueOf(args[1]);
 
         if (args[2].equals("mip")) {
-            mip.MinLA mip = new mip.MinLA(n, edges);
+            mip.MinLA2 mip = new mip.MinLA2(n, edges);
 
             System.out.println("MIP model created");
             System.out.println("Solving...");
@@ -83,7 +83,7 @@ public class MinLA {
             mip.solve(timeLimit);
 
             System.out.println("runTime : " + mip.runTime());
-            System.out.println("objValue : " + mip.objVal());
+            System.out.printf("objValue : %.0f\n", mip.objVal());
             System.out.println("gap : " + mip.gap());
 
             mip.dispose();

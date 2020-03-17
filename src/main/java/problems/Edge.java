@@ -60,6 +60,15 @@ public class Edge {
         return adj;
     }
 
+    public static int[][] toMatrix(int n, Edge[] edges) {
+        int[][] adj = new int[n][n];
+
+        for (Edge e : edges)
+            adj[e.u][e.v] = adj[e.v][e.u] = 1;
+
+        return adj;
+    }
+
     /**
      * Given the list of edges of a graph, returns the corresponding adjacency lists (weighted).
      *
